@@ -21,7 +21,7 @@ erDiagram
         uuid id PK
         int displayId UK "表示用ID"
         string name "氏名・ニックネーム"
-        string contact "連絡先（任意）"
+        string contact "メールアドレス（任意）"
         datetime createdAt
         datetime updatedAt
     }
@@ -61,7 +61,7 @@ erDiagram
 | id        | UUID         | PRIMARY KEY             | 主キー（QR コード用）       |
 | displayId | INTEGER      | UNIQUE, NOT NULL        | 表示用 ID（YYMMDDXXX 形式） |
 | name      | VARCHAR(100) | NOT NULL                | 氏名・ニックネーム          |
-| contact   | VARCHAR(255) | NULL                    | 連絡先（任意）              |
+| contact   | VARCHAR(255) | NULL                    | メールアドレス（任意）      |
 | createdAt | TIMESTAMP    | NOT NULL, DEFAULT NOW() | 登録日時                    |
 | updatedAt | TIMESTAMP    | NOT NULL, DEFAULT NOW() | 更新日時                    |
 
