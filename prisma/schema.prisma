@@ -13,3 +13,42 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+// 2.1. User（管理者）テーブル
+model User {
+  id             String   @id @default(uuid())
+  username       String   @unique @db.VarChar(50)
+  hashedPassword String   @db.VarChar(255)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+// 2.2. Guest（ゲスト）テーブル
+model Guest {
+  id             String          @id @default(uuid())
+  displayId      Int             @unique
+  name           String          @db.VarChar(100)
+  contact        String?         @db.VarChar(255)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  checkinRecords CheckinRecord[] // リレーション
+
+  @@index([name])
+}
+
+// 2.3. CheckinRecord（入退場記録）テーブル
+model CheckinRecord {
+  id         String    @id @default(uuid())
+  guestId    String
+  checkinAt  DateTime
+  checkoutAt DateTime?
+  isActive   Boolean   @default(true)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  guest      Guest     @relation(fields: [guestId], references: [id], onDelete: Cascade)
+
+  @@index([guestId])
+  @@index([checkinAt])
+  @@index([isActive])
+  @@index([guestId, isActive])
+}
