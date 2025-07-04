@@ -20,7 +20,7 @@ export default function CheckinPage() {
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
-      setError("ばんごう か なまえ を にゅうりょく してください");
+      setError("番号または名前を入力してください");
       return;
     }
 
@@ -36,14 +36,12 @@ export default function CheckinPage() {
       const result: ApiResponse<GuestData[]> = await response.json();
 
       if (!result.success) {
-        setError(result.error?.message || "けんさく に しっぱい しました");
+        setError(result.error?.message || "検索に失敗しました");
         return;
       }
 
       if (result.data!.length === 0) {
-        setError(
-          "みつかりませんでした。ばんごう か なまえ を かくにん してください"
-        );
+        setError("見つかりませんでした。番号または名前を確認してください");
         return;
       }
 
@@ -53,7 +51,7 @@ export default function CheckinPage() {
       }
     } catch (err) {
       console.error("Search error:", err);
-      setError("サーバー エラー が はっせい しました");
+      setError("サーバーエラーが発生しました");
     } finally {
       setSearchLoading(false);
     }
@@ -77,7 +75,7 @@ export default function CheckinPage() {
       const result: ApiResponse<CheckinRecordData> = await response.json();
 
       if (!result.success) {
-        setError(result.error?.message || "チェックイン に しっぱい しました");
+        setError(result.error?.message || "チェックインに失敗しました");
         return;
       }
 
@@ -85,7 +83,7 @@ export default function CheckinPage() {
       router.push(`/checkin/complete?type=checkin&guestId=${selectedGuest.id}`);
     } catch (err) {
       console.error("Checkin error:", err);
-      setError("サーバー エラー が はっせい しました");
+      setError("サーバーエラーが発生しました");
     } finally {
       setLoading(false);
     }
@@ -109,9 +107,7 @@ export default function CheckinPage() {
       const result: ApiResponse<CheckinRecordData> = await response.json();
 
       if (!result.success) {
-        setError(
-          result.error?.message || "チェックアウト に しっぱい しました"
-        );
+        setError(result.error?.message || "チェックアウトに失敗しました");
         return;
       }
 
@@ -121,7 +117,7 @@ export default function CheckinPage() {
       );
     } catch (err) {
       console.error("Checkout error:", err);
-      setError("サーバー エラー が はっせい しました");
+      setError("サーバーエラーが発生しました");
     } finally {
       setLoading(false);
     }
@@ -135,31 +131,29 @@ export default function CheckinPage() {
           <Link href="/" className="inline-block mb-4">
             <h1 className="text-4xl font-bold text-indigo-900">tec-nova</h1>
           </Link>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">
-            にゅうたいじょう
-          </h2>
-          <p className="text-lg text-gray-600">入退場</p>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">入退場管理</h2>
+          <p className="text-lg text-gray-600">施設の入場・退場手続き</p>
         </div>
 
         {/* 検索セクション */}
         <Card className="mb-6">
           <CardHeader>
             <CardTitle className="text-xl text-center">
-              あなたを さがします
+              登録情報の検索
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <div>
                 <Label htmlFor="search" className="text-lg">
-                  あなたの ばんごう か なまえ を にゅうりょく してね
+                  あなたの番号または名前を入力してください
                 </Label>
                 <div className="flex gap-2 mt-2">
                   <Input
                     id="search"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="250704001 か たなか たろう"
+                    placeholder="250704001 または 田中太郎"
                     className="text-lg p-4 h-12"
                     onKeyPress={(e) => {
                       if (e.key === "Enter") {
@@ -173,7 +167,7 @@ export default function CheckinPage() {
                     disabled={searchLoading}
                     className="px-8 h-12"
                   >
-                    {searchLoading ? "さがしています..." : "さがす"}
+                    {searchLoading ? "検索中..." : "検索"}
                   </Button>
                 </div>
               </div>
@@ -192,7 +186,9 @@ export default function CheckinPage() {
         {searchResults.length > 1 && (
           <Card className="mb-6">
             <CardHeader>
-              <CardTitle className="text-lg">だれですか？</CardTitle>
+              <CardTitle className="text-lg">
+                該当するお名前を選択してください
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
@@ -209,13 +205,11 @@ export default function CheckinPage() {
                     <div className="flex justify-between items-center">
                       <div>
                         <p className="font-semibold text-lg">{guest.name}</p>
-                        <p className="text-gray-600">
-                          ばんごう: {guest.displayId}
-                        </p>
+                        <p className="text-gray-600">番号: {guest.displayId}</p>
                       </div>
                       {guest.isCurrentlyCheckedIn && (
                         <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm">
-                          ざいせき ちゅう
+                          在室中
                         </span>
                       )}
                     </div>
@@ -234,7 +228,7 @@ export default function CheckinPage() {
                 {selectedGuest.name} さん
               </CardTitle>
               <p className="text-center text-gray-600">
-                ばんごう: {selectedGuest.displayId}
+                番号: {selectedGuest.displayId}
               </p>
             </CardHeader>
             <CardContent>
@@ -243,7 +237,7 @@ export default function CheckinPage() {
                   <div className="text-center space-y-4">
                     <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                       <p className="text-green-800 font-semibold">
-                        げんざい ざいせき ちゅう です
+                        現在入場中です
                       </p>
                     </div>
                     <Button
@@ -252,16 +246,14 @@ export default function CheckinPage() {
                       size="lg"
                       className="w-full bg-red-600 hover:bg-red-700 text-white"
                     >
-                      {loading
-                        ? "しょり ちゅう..."
-                        : "🚪 チェックアウト（たいじょう）"}
+                      {loading ? "処理中..." : "🚪 チェックアウト（退場）"}
                     </Button>
                   </div>
                 ) : (
                   <div className="text-center space-y-4">
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                       <p className="text-blue-800 font-semibold">
-                        げんざい たいじょう ちゅう です
+                        現在退場中です
                       </p>
                     </div>
                     <Button
@@ -270,9 +262,7 @@ export default function CheckinPage() {
                       size="lg"
                       className="w-full bg-green-600 hover:bg-green-700 text-white"
                     >
-                      {loading
-                        ? "しょり ちゅう..."
-                        : "🏠 チェックイン（にゅうじょう）"}
+                      {loading ? "処理中..." : "🏠 チェックイン（入場）"}
                     </Button>
                   </div>
                 )}
@@ -285,7 +275,7 @@ export default function CheckinPage() {
         <div className="text-center">
           <Link href="/">
             <Button variant="outline" size="lg">
-              ホームに もどる
+              ホームに戻る
             </Button>
           </Link>
         </div>

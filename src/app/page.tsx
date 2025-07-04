@@ -22,10 +22,10 @@ export default function HomePage() {
             height={160}
             className="mx-auto mb-4 bg-white rounded-lg p-8"
           />
-          <p className="text-xl text-indigo-700 mb-2">
-            いりたいじょう かんり システム
+          <p className="text-xl text-indigo-700 mb-2">入退場管理システム</p>
+          <p className="text-lg text-gray-600">
+            施設利用のチェックイン・チェックアウト
           </p>
-          <p className="text-lg text-gray-600">入退場管理システム</p>
         </div>
 
         {/* メインメニュー */}
@@ -38,7 +38,7 @@ export default function HomePage() {
                   <span className="text-3xl">👋</span>
                 </div>
                 <CardTitle className="text-2xl text-green-800">
-                  はじめての方
+                  初回利用の方
                 </CardTitle>
                 <CardDescription className="text-lg">新規登録</CardDescription>
               </CardHeader>
@@ -50,7 +50,7 @@ export default function HomePage() {
                   size="lg"
                   className="bg-green-600 hover:bg-green-700 text-white"
                 >
-                  とうろく する
+                  登録する
                 </Button>
               </CardContent>
             </Link>
@@ -66,7 +66,9 @@ export default function HomePage() {
                 <CardTitle className="text-2xl text-blue-800">
                   メンバーの方
                 </CardTitle>
-                <CardDescription className="text-lg">入退場</CardDescription>
+                <CardDescription className="text-lg">
+                  入退場手続き
+                </CardDescription>
               </CardHeader>
               <CardContent className="text-center">
                 <p className="text-gray-600 mb-4">
@@ -76,7 +78,7 @@ export default function HomePage() {
                   size="lg"
                   className="bg-blue-600 hover:bg-blue-700 text-white"
                 >
-                  にゅうたいじょう
+                  入退場手続き
                 </Button>
               </CardContent>
             </Link>

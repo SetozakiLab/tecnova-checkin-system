@@ -60,7 +60,7 @@ function CheckinCompleteContent() {
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-lg">よみこみ ちゅう...</p>
+          <p className="text-lg">読み込み中...</p>
         </div>
       </div>
     );
@@ -111,7 +111,7 @@ function CheckinCompleteContent() {
               isCheckin ? "text-green-800" : "text-orange-800"
             }`}
           >
-            {isCheckin ? "ようこそ！" : "また きてね！"}
+            {isCheckin ? "いらっしゃいませ！" : "お疲れ様でした！"}
           </h1>
           <p
             className={`text-2xl ${
@@ -128,32 +128,32 @@ function CheckinCompleteContent() {
               {isCheckin ? (
                 <>
                   <p className="text-xl text-green-800 font-semibold">
-                    チェックイン かんりょう！
+                    チェックイン完了！
                   </p>
                   <p className="text-lg text-gray-700">
-                    きょうも たのしく すごしてね！
+                    今日も楽しく過ごしてくださいね！
                   </p>
                   <div className="bg-green-50 p-4 rounded-lg border border-green-200">
                     <p className="text-green-800">
-                      なにか こまったことが あったら、
+                      何か困ったことがあったら、
                       <br />
-                      すぐに メンター に そうだん してね
+                      すぐにメンターに相談してください
                     </p>
                   </div>
                 </>
               ) : (
                 <>
                   <p className="text-xl text-orange-800 font-semibold">
-                    チェックアウト かんりょう！
+                    チェックアウト完了！
                   </p>
                   <p className="text-lg text-gray-700">
-                    きょうは ありがとう！また あそびに きてね！
+                    今日はありがとうございました！また遊びに来てくださいね！
                   </p>
                   <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
                     <p className="text-orange-800">
-                      きをつけて かえってね。
+                      気をつけて帰ってください。
                       <br />
-                      また まってるよ！
+                      また待っています！
                     </p>
                   </div>
                 </>
@@ -166,25 +166,22 @@ function CheckinCompleteContent() {
         <Card className="mb-8">
           <CardContent className="pt-6">
             <div className="text-center space-y-3">
-              <h3 className="text-lg font-semibold">つぎ から は かんたん！</h3>
+              <h3 className="text-lg font-semibold">次回からは簡単！</h3>
               <div className="text-left space-y-2">
                 <div className="flex items-center space-x-3">
                   <span className="flex-shrink-0 w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
                     1
                   </span>
                   <p>
-                    あなたの ばんごう <strong>{guest.displayId}</strong> を
-                    おぼえておいてね
+                    あなたの番号 <strong>{guest.displayId}</strong> を
+                    覚えておいてください
                   </p>
                 </div>
                 <div className="flex items-center space-x-3">
                   <span className="flex-shrink-0 w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
                     2
                   </span>
-                  <p>
-                    つぎ から は ばんごう を にゅうりょく するだけ で
-                    だいじょうぶ
-                  </p>
+                  <p>次回からは番号を入力するだけで 大丈夫です</p>
                 </div>
               </div>
             </div>
@@ -195,7 +192,7 @@ function CheckinCompleteContent() {
         <div className="flex gap-4">
           <Link href="/" className="flex-1">
             <Button variant="outline" size="lg" className="w-full">
-              ホームに もどる
+              ホームに戻る
             </Button>
           </Link>
           {isCheckin && (
@@ -204,7 +201,7 @@ function CheckinCompleteContent() {
                 size="lg"
                 className="w-full bg-orange-600 hover:bg-orange-700"
               >
-                チェックアウト する ばあい
+                チェックアウトする場合
               </Button>
             </Link>
           )}
@@ -213,7 +210,7 @@ function CheckinCompleteContent() {
         {/* 自動的に戻る */}
         <div className="text-center mt-6">
           <p className="text-sm text-gray-500">
-            10びょう ご に じどうてき に ホーム に もどります
+            10秒後に自動的にホームに戻ります
           </p>
         </div>
       </div>

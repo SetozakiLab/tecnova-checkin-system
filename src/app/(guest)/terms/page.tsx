@@ -11,8 +11,8 @@ export default function TermsPage() {
           <Link href="/" className="inline-block mb-4">
             <h1 className="text-4xl font-bold text-indigo-900">tec-nova</h1>
           </Link>
-          <h2 className="text-2xl font-bold text-gray-800">りようきやく</h2>
-          <p className="text-lg text-gray-600">利用規約</p>
+          <h2 className="text-2xl font-bold text-gray-800">利用規約</h2>
+          <p className="text-lg text-gray-600">施設利用に関する約束事</p>
         </div>
 
         <Card className="mb-8">
@@ -78,12 +78,12 @@ export default function TermsPage() {
         <div className="flex justify-center gap-4">
           <Link href="/">
             <Button variant="outline" size="lg">
-              もどる
+              戻る
             </Button>
           </Link>
           <Link href="/register">
             <Button size="lg" className="bg-green-600 hover:bg-green-700">
-              りようきやくに どうい して とうろく
+              利用規約に同意して登録
             </Button>
           </Link>
         </div>

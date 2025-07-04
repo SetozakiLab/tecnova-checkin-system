@@ -16,15 +16,15 @@ import { ApiResponse, GuestData } from "@/types/api";
 const registerSchema = z.object({
   name: z
     .string()
-    .min(1, "なまえは ひつよう です")
-    .max(50, "なまえは 50もじ いない で にゅうりょく してください"),
+    .min(1, "名前は必須です")
+    .max(50, "名前は50文字以内で入力してください"),
   contact: z
     .string()
-    .email("ただしい メールアドレス を にゅうりょく してください")
+    .email("正しいメールアドレスを入力してください")
     .optional()
     .or(z.literal("")),
   acceptTerms: z.boolean().refine((val) => val === true, {
-    message: "りようきやく に どうい してください",
+    message: "利用規約に同意してください",
   }),
 });
 
@@ -69,7 +69,7 @@ export default function RegisterPage() {
       const result: ApiResponse<GuestData> = await response.json();
 
       if (!result.success) {
-        setError(result.error?.message || "とうろく に しっぱい しました");
+        setError(result.error?.message || "登録に失敗しました");
         return;
       }
 
@@ -77,7 +77,7 @@ export default function RegisterPage() {
       router.push(`/register/complete?guestId=${result.data!.id}`);
     } catch (err) {
       console.error("Registration error:", err);
-      setError("サーバー エラー が はっせい しました");
+      setError("サーバーエラーが発生しました");
     } finally {
       setLoading(false);
     }
@@ -91,16 +91,14 @@ export default function RegisterPage() {
           <Link href="/" className="inline-block mb-4">
             <h1 className="text-4xl font-bold text-emerald-900">tec-nova</h1>
           </Link>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">
-            しんき とうろく
-          </h2>
-          <p className="text-lg text-gray-600">新規登録</p>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">新規登録</h2>
+          <p className="text-lg text-gray-600">初回利用者の情報登録</p>
         </div>
 
         <Card>
           <CardHeader>
             <CardTitle className="text-xl text-center">
-              あなたの じょうほう を おしえて ください
+              あなたの情報を教えてください
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -115,12 +113,12 @@ export default function RegisterPage() {
               {/* 名前 */}
               <div className="space-y-2">
                 <Label htmlFor="name" className="text-lg">
-                  なまえ <span className="text-red-500">*</span>
+                  お名前 <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   id="name"
                   {...register("name")}
-                  placeholder="たなか たろう"
+                  placeholder="田中太郎"
                   className="text-lg p-4 h-12"
                   disabled={loading}
                 />
@@ -132,7 +130,7 @@ export default function RegisterPage() {
               {/* メールアドレス（任意） */}
               <div className="space-y-2">
                 <Label htmlFor="contact" className="text-lg">
-                  メールアドレス（にゅうりょく しなくても だいじょうぶ）
+                  メールアドレス（入力しなくても大丈夫です）
                 </Label>
                 <Input
                   id="contact"
@@ -166,10 +164,9 @@ export default function RegisterPage() {
                         href="/terms"
                         className="text-blue-600 hover:underline"
                       >
-                        りようきやく
+                        利用規約
                       </Link>
-                      を よんで どうい します{" "}
-                      <span className="text-red-500">*</span>
+                      を読んで同意します <span className="text-red-500">*</span>
                     </Label>
                   </div>
                 </div>
@@ -190,7 +187,7 @@ export default function RegisterPage() {
                     className="w-full"
                     disabled={loading}
                   >
-                    もどる
+                    戻る
                   </Button>
                 </Link>
                 <Button
@@ -199,7 +196,7 @@ export default function RegisterPage() {
                   className="flex-1 bg-green-600 hover:bg-green-700"
                   disabled={loading || !acceptTerms}
                 >
-                  {loading ? "とうろく ちゅう..." : "とうろく する"}
+                  {loading ? "登録中..." : "登録する"}
                 </Button>
               </div>
             </form>
