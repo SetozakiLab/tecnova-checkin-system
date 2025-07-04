@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ApiResponse, GuestData } from "@/types/api";
 
-export default function RegisterCompletePage() {
+function RegisterCompleteContent() {
   const searchParams = useSearchParams();
   const guestId = searchParams.get("guestId");
   const [guest, setGuest] = useState<GuestData | null>(null);
@@ -173,5 +173,24 @@ export default function RegisterCompletePage() {
         </div>
       </div>
     </div>
+  );
+}
+
+function LoadingFallback() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-green-600 mx-auto mb-4"></div>
+        <p className="text-green-700 text-lg">読み込み中...</p>
+      </div>
+    </div>
+  );
+}
+
+export default function RegisterCompletePage() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <RegisterCompleteContent />
+    </Suspense>
   );
 }

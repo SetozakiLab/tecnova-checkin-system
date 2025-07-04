@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ApiResponse, GuestData } from "@/types/api";
 
-export default function CheckinCompletePage() {
+function CheckinCompleteContent() {
   const searchParams = useSearchParams();
   const type = searchParams.get("type"); // 'checkin' or 'checkout'
   const guestId = searchParams.get("guestId");
@@ -43,6 +43,17 @@ export default function CheckinCompletePage() {
 
     fetchGuest();
   }, [guestId]);
+
+  // 10秒後に自動でホームに戻る
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (typeof window !== "undefined") {
+        window.location.href = "/";
+      }
+    }, 10000);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   if (loading) {
     return (
@@ -210,9 +221,21 @@ export default function CheckinCompletePage() {
   );
 }
 
-// 10秒後に自動でホームに戻る
-setTimeout(() => {
-  if (typeof window !== "undefined") {
-    window.location.href = "/";
-  }
-}, 10000);
+function LoadingFallback() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto mb-4"></div>
+        <p className="text-blue-700 text-lg">読み込み中...</p>
+      </div>
+    </div>
+  );
+}
+
+export default function CheckinCompletePage() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <CheckinCompleteContent />
+    </Suspense>
+  );
+}
