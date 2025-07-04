@@ -9,15 +9,18 @@ const checkinSchema = z.object({
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // パラメータを解決
+    const { id } = await params;
+    
     const body = await request.json();
     const validatedData = checkinSchema.parse(body);
 
     // ゲストの存在確認
     const guest = await prisma.guest.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         checkins: {
           where: { isActive: true },
@@ -59,7 +62,7 @@ export async function POST(
 
     const checkinRecord = await prisma.checkinRecord.create({
       data: {
-        guestId: params.id,
+        guestId: id,
         checkinAt: checkinTime,
         isActive: true,
       },

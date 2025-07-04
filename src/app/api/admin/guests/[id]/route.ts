@@ -19,9 +19,12 @@ const updateGuestSchema = z.object({
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // パラメータを解決
+    const { id } = await params;
+    
     // 認証チェック
     const session = await getServerSession(authOptions);
     if (!session) {
@@ -42,7 +45,7 @@ export async function PUT(
 
     // ゲストの存在確認
     const existingGuest = await prisma.guest.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!existingGuest) {
@@ -62,7 +65,7 @@ export async function PUT(
     const duplicateGuest = await prisma.guest.findFirst({
       where: {
         name: validatedData.name,
-        id: { not: params.id },
+        id: { not: id },
       },
     });
 
@@ -80,7 +83,7 @@ export async function PUT(
     }
 
     const updatedGuest = await prisma.guest.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         name: validatedData.name,
         contact: validatedData.contact || null,
@@ -135,9 +138,12 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // パラメータを解決
+    const { id } = await params;
+    
     // 認証チェック
     const session = await getServerSession(authOptions);
     if (!session) {
@@ -155,7 +161,7 @@ export async function DELETE(
 
     // ゲストの存在確認
     const guest = await prisma.guest.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         checkins: {
           where: { isActive: true },
@@ -191,7 +197,7 @@ export async function DELETE(
     }
 
     await prisma.guest.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json<ApiResponse>({
