@@ -7,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import Image from "next/image";
 
 export default function HomePage() {
   return (
@@ -14,7 +15,13 @@ export default function HomePage() {
       <div className="w-full max-w-4xl">
         {/* ヘッダー */}
         <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold text-indigo-900 mb-4">tec-nova</h1>
+          <Image
+            src="/logo.png"
+            alt="tec-nova"
+            width={400}
+            height={160}
+            className="mx-auto mb-4 bg-white rounded-lg p-8"
+          />
           <p className="text-xl text-indigo-700 mb-2">
             いりたいじょう かんり システム
           </p>
