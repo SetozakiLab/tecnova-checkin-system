@@ -4,11 +4,14 @@ import { ApiResponse, GuestData } from "@/types/api";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // パラメータを解決
+    const { id } = await params;
+    
     const guest = await prisma.guest.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         checkins: {
           where: { isActive: true },
