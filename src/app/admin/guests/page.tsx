@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { GuestsTable } from "@/components/features/admin/guests-table";
 import { Pagination } from "@/components/shared/pagination";
-import { LoadingState } from "@/components/shared/loading";
+import { GuestsTableSkeleton } from "@/components/shared/loading";
 import { ErrorState } from "@/components/shared/error-state";
 import { usePaginatedData } from "@/hooks/use-paginated-data";
 import { GuestData, PaginationData } from "@/types/api";
@@ -104,7 +104,7 @@ export default function AdminGuestsPage() {
           </CardHeader>
           <CardContent>
             {loading ? (
-              <LoadingState message="データを読み込み中..." size="md" />
+              <GuestsTableSkeleton />
             ) : (
               <>
                 <GuestsTable guests={data?.guests || []} onUpdate={refresh} />

@@ -3,7 +3,8 @@
 import { AdminLayout } from "@/components/admin-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { LoadingState } from "@/components/shared/loading";
+import { DashboardSkeleton, LoadingState } from "@/components/shared/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/shared/error-state";
 import { useDashboardData } from "@/hooks/use-dashboard-data";
 import {
@@ -19,7 +20,7 @@ export default function AdminDashboardPage() {
   if (loading) {
     return (
       <AdminLayout title="ダッシュボード">
-        <LoadingState message="データを読み込み中..." />
+        <DashboardSkeleton />
       </AdminLayout>
     );
   }
@@ -64,8 +65,14 @@ export default function AdminDashboardPage() {
           </CardHeader>
           <CardContent>
             {isRefreshing ? (
-              <div className="flex justify-center py-8">
-                <LoadingState message="更新中..." size="sm" />
+              <div className="space-y-3 py-4">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="flex items-center space-x-4">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-4 w-20" />
+                  </div>
+                ))}
               </div>
             ) : (
               <CurrentGuestsList guests={currentGuests} />
