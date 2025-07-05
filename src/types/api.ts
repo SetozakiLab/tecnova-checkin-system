@@ -43,3 +43,24 @@ export interface CheckinRecordData {
   stayDuration?: string;
   isActive: boolean;
 }
+
+export interface CheckinData {
+  id: string;
+  guestId: string;
+  guestName: string;
+  guestDisplayId: number;
+  checkinAt: string;
+  checkoutAt?: string | null;
+  isActive: boolean;
+}
+
+export interface CheckinRecord {
+  id: string;
+  guestId: string;
+  guestName: string;
+  guestDisplayId: number;
+  checkinAt: string;
+  checkoutAt?: string | null;
+  isActive: boolean;
+  duration?: number | null;
+}
