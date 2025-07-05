@@ -13,7 +13,7 @@ import {
 } from "@/components/features/admin/dashboard-components";
 
 export default function AdminDashboardPage() {
-  const { currentGuests, todayStats, loading, error, refetch } =
+  const { currentGuests, todayStats, loading, isRefreshing, error, refetch } =
     useDashboardData();
 
   if (loading) {
@@ -38,7 +38,11 @@ export default function AdminDashboardPage() {
     <AdminLayout title="ダッシュボード">
       <div className="space-y-6">
         {/* 統計カード */}
-        {todayStats && <DashboardStats stats={todayStats} />}
+        {todayStats && (
+          <div className={isRefreshing ? "opacity-60 pointer-events-none" : ""}>
+            <DashboardStats stats={todayStats} />
+          </div>
+        )}
 
         {/* 現在の滞在者 */}
         <Card>
@@ -52,19 +56,29 @@ export default function AdminDashboardPage() {
                 onClick={refetch}
                 variant="outline"
                 size="sm"
-                disabled={loading}
+                disabled={isRefreshing}
               >
-                更新
+                {isRefreshing ? "更新中..." : "更新"}
               </Button>
             </div>
           </CardHeader>
           <CardContent>
-            <CurrentGuestsList guests={currentGuests} />
+            {isRefreshing ? (
+              <div className="flex justify-center py-8">
+                <LoadingState message="更新中..." size="sm" />
+              </div>
+            ) : (
+              <CurrentGuestsList guests={currentGuests} />
+            )}
           </CardContent>
         </Card>
 
         {/* 今日の入退場サマリー */}
-        {todayStats && <TodaySummary stats={todayStats} />}
+        {todayStats && (
+          <div className={isRefreshing ? "opacity-60 pointer-events-none" : ""}>
+            <TodaySummary stats={todayStats} />
+          </div>
+        )}
       </div>
     </AdminLayout>
   );

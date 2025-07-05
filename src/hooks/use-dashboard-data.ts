@@ -12,6 +12,7 @@ interface UseDashboardDataReturn {
   currentGuests: CheckinRecord[];
   todayStats: TodayStats | null;
   loading: boolean;
+  isRefreshing: boolean;
   error: string;
   refetch: () => Promise<void>;
 }
@@ -20,13 +21,18 @@ export function useDashboardData(): UseDashboardDataReturn {
   const [currentGuests, setCurrentGuests] = useState<CheckinRecord[]>([]);
   const [todayStats, setTodayStats] = useState<TodayStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState("");
 
   const { execute } = useApi();
 
-  const fetchData = async () => {
+  const fetchData = async (isRefresh = false) => {
     try {
-      setLoading(true);
+      if (isRefresh) {
+        setIsRefreshing(true);
+      } else {
+        setLoading(true);
+      }
       setError("");
 
       const [guestsResponse, statsResponse] = await Promise.all([
@@ -55,7 +61,11 @@ export function useDashboardData(): UseDashboardDataReturn {
       console.error("Fetch data error:", err);
       setError("データの取得に失敗しました");
     } finally {
-      setLoading(false);
+      if (isRefresh) {
+        setIsRefreshing(false);
+      } else {
+        setLoading(false);
+      }
     }
   };
 
@@ -63,11 +73,14 @@ export function useDashboardData(): UseDashboardDataReturn {
     fetchData();
   }, []);
 
+  const handleRefetch = () => fetchData(true);
+
   return {
     currentGuests,
     todayStats,
     loading,
+    isRefreshing,
     error,
-    refetch: fetchData,
+    refetch: handleRefetch,
   };
 }
