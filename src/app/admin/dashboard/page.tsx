@@ -14,6 +14,10 @@ import { CheckinService } from "@/services/checkin.service";
 // Import the refresh button from shared components
 import { RefreshButton } from "@/components/shared";
 
+// Force dynamic rendering for real-time data
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 interface TodayStats {
   totalCheckins: number;
   currentGuests: number;
@@ -23,6 +27,7 @@ interface TodayStats {
 // Server Components for data fetching with error handling
 async function DashboardStatsSection() {
   try {
+    // Force dynamic rendering by revalidating data
     const stats = await CheckinService.getTodayStats();
     return <DashboardStats stats={stats} />;
   } catch (error) {
@@ -46,6 +51,7 @@ async function DashboardStatsSection() {
 
 async function CurrentGuestsSection() {
   try {
+    // Force dynamic rendering
     const guests = await CheckinService.getCurrentGuests();
     return (
       <Card>
@@ -83,6 +89,7 @@ async function CurrentGuestsSection() {
 
 async function TodaySummarySection() {
   try {
+    // Force dynamic rendering
     const stats = await CheckinService.getTodayStats();
     return <TodaySummary stats={stats} />;
   } catch (error) {
