@@ -16,10 +16,10 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { formatDateTime } from "@/lib/date-utils";
-import { ApiResponse, CheckinRecordData, PaginationData } from "@/types/api";
+import { ApiResponse, CheckinRecord, PaginationData } from "@/types/api";
 
 interface HistoryData {
-  records: CheckinRecordData[];
+  records: CheckinRecord[];
   pagination: PaginationData;
 }
 
@@ -182,9 +182,9 @@ export default function AdminHistoryPage() {
                       {data.records.map((record) => (
                         <TableRow key={record.id}>
                           <TableCell className="font-medium">
-                            {record.guest?.name}
+                            {record.guestName}
                           </TableCell>
-                          <TableCell>{record.guest?.displayId}</TableCell>
+                          <TableCell>{record.guestDisplayId}</TableCell>
                           <TableCell>
                             {formatDateTime(record.checkinAt)}
                           </TableCell>
@@ -193,7 +193,9 @@ export default function AdminHistoryPage() {
                               ? formatDateTime(record.checkoutAt)
                               : "-"}
                           </TableCell>
-                          <TableCell>{record.stayDuration || "-"}</TableCell>
+                          <TableCell>
+                            {record.duration ? `${record.duration}分` : "-"}
+                          </TableCell>
                           <TableCell>
                             <Badge
                               variant={

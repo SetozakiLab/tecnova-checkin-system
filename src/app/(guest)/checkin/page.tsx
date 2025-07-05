@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ApiResponse, GuestData, CheckinRecordData } from "@/types/api";
+import { ApiResponse, GuestData, CheckinData } from "@/types/api";
 
 export default function CheckinPage() {
   const router = useRouter();
@@ -72,7 +72,7 @@ export default function CheckinPage() {
         body: JSON.stringify({}),
       });
 
-      const result: ApiResponse<CheckinRecordData> = await response.json();
+      const result: ApiResponse<CheckinData> = await response.json();
 
       if (!result.success) {
         setError(result.error?.message || "チェックインに失敗しました");
@@ -104,7 +104,7 @@ export default function CheckinPage() {
         body: JSON.stringify({}),
       });
 
-      const result: ApiResponse<CheckinRecordData> = await response.json();
+      const result: ApiResponse<CheckinData> = await response.json();
 
       if (!result.success) {
         setError(result.error?.message || "チェックアウトに失敗しました");

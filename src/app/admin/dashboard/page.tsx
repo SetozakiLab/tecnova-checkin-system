@@ -6,29 +6,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatTime } from "@/lib/date-utils";
-import { ApiResponse } from "@/types/api";
-
-interface CurrentGuest {
-  id: string;
-  displayId: number;
-  name: string;
-  checkinAt: string;
-  stayDuration: string;
-}
+import { ApiResponse, CheckinRecord } from "@/types/api";
 
 interface TodayStats {
-  date: string;
-  totalVisitors: number;
-  currentGuests: number;
   totalCheckins: number;
-  totalCheckouts: number;
-  averageStayTime: string;
-  peakTime: string;
-  peakCount: number;
+  currentGuests: number;
+  averageStayTime: number;
 }
 
 export default function AdminDashboardPage() {
-  const [currentGuests, setCurrentGuests] = useState<CurrentGuest[]>([]);
+  const [currentGuests, setCurrentGuests] = useState<CheckinRecord[]>([]);
   const [todayStats, setTodayStats] = useState<TodayStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -40,10 +27,8 @@ export default function AdminDashboardPage() {
         fetch("/api/admin/dashboard/today-stats"),
       ]);
 
-      const guestsResult: ApiResponse<{
-        totalCount: number;
-        guests: CurrentGuest[];
-      }> = await guestsResponse.json();
+      const guestsResult: ApiResponse<CheckinRecord[]> =
+        await guestsResponse.json();
       const statsResult: ApiResponse<TodayStats> = await statsResponse.json();
 
       if (!guestsResult.success) {
@@ -56,7 +41,7 @@ export default function AdminDashboardPage() {
         return;
       }
 
-      setCurrentGuests(guestsResult.data!.guests);
+      setCurrentGuests(guestsResult.data!);
       setTodayStats(statsResult.data!);
     } catch (err) {
       console.error("Fetch data error:", err);
@@ -121,14 +106,14 @@ export default function AdminDashboardPage() {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-slate-600">
-                  今日の来場者数
+                  今日のチェックイン数
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-3xl font-bold text-blue-600">
-                  {todayStats.totalVisitors}
+                  {todayStats.totalCheckins}
                 </div>
-                <p className="text-sm text-slate-600">人</p>
+                <p className="text-sm text-slate-600">回</p>
               </CardContent>
             </Card>
 
@@ -140,24 +125,8 @@ export default function AdminDashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-purple-600">
-                  {todayStats.averageStayTime}
+                  {todayStats.averageStayTime}分
                 </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-slate-600">
-                  ピーク時間
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-xl font-bold text-orange-600">
-                  {todayStats.peakTime}
-                </div>
-                <p className="text-sm text-slate-600">
-                  {todayStats.peakCount}人
-                </p>
               </CardContent>
             </Card>
           </div>
@@ -194,9 +163,11 @@ export default function AdminDashboardPage() {
                     <div className="flex-1">
                       <div className="flex items-center space-x-3">
                         <div>
-                          <p className="font-semibold text-lg">{guest.name}</p>
+                          <p className="font-semibold text-lg">
+                            {guest.guestName}
+                          </p>
                           <p className="text-sm text-slate-600">
-                            ID: {guest.displayId}
+                            ID: {guest.guestDisplayId}
                           </p>
                         </div>
                       </div>
@@ -207,7 +178,7 @@ export default function AdminDashboardPage() {
                         {formatTime(guest.checkinAt)}
                       </p>
                       <p className="text-sm text-slate-600 mt-1">
-                        滞在時間: {guest.stayDuration}
+                        滞在時間: {guest.duration ? `${guest.duration}分` : "-"}
                       </p>
                     </div>
                   </div>
@@ -234,21 +205,21 @@ export default function AdminDashboardPage() {
                   </p>
                   <p className="text-sm text-blue-600">回</p>
                 </div>
-                <div className="text-center p-4 bg-orange-50 rounded-lg">
-                  <p className="text-sm text-orange-600 font-medium">
-                    チェックアウト
-                  </p>
-                  <p className="text-2xl font-bold text-orange-700">
-                    {todayStats.totalCheckouts}
-                  </p>
-                  <p className="text-sm text-orange-600">回</p>
-                </div>
                 <div className="text-center p-4 bg-green-50 rounded-lg">
                   <p className="text-sm text-green-600 font-medium">滞在中</p>
                   <p className="text-2xl font-bold text-green-700">
                     {todayStats.currentGuests}
                   </p>
                   <p className="text-sm text-green-600">人</p>
+                </div>
+                <div className="text-center p-4 bg-purple-50 rounded-lg">
+                  <p className="text-sm text-purple-600 font-medium">
+                    平均滞在時間
+                  </p>
+                  <p className="text-2xl font-bold text-purple-700">
+                    {todayStats.averageStayTime}
+                  </p>
+                  <p className="text-sm text-purple-600">分</p>
                 </div>
               </div>
             </CardContent>
