@@ -1,91 +1,143 @@
-"use client";
-
-import { AdminLayout } from "@/components/admin-layout";
+import { Suspense } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { DashboardSkeleton, LoadingState } from "@/components/shared/loading";
-import { Skeleton } from "@/components/ui/skeleton";
-import { ErrorState } from "@/components/shared/error-state";
-import { useDashboardData } from "@/hooks/use-dashboard-data";
+import { AdminLayout } from "@/components/admin-layout";
 import {
   DashboardStats,
   CurrentGuestsList,
   TodaySummary,
+  StatsCardsSkeleton,
+  CurrentGuestsSkeleton,
+  TodaySummarySkeleton,
 } from "@/components/features/admin/dashboard-components";
+import { CheckinService } from "@/services/checkin.service";
 
+// Import the refresh button from shared components
+import { RefreshButton } from "@/components/shared";
+
+interface TodayStats {
+  totalCheckins: number;
+  currentGuests: number;
+  averageStayTime: number;
+}
+
+// Server Components for data fetching with error handling
+async function DashboardStatsSection() {
+  try {
+    const stats = await CheckinService.getTodayStats();
+    return <DashboardStats stats={stats} />;
+  } catch (error) {
+    console.error("Stats fetch error:", error);
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card className="border-red-200 bg-red-50">
+          <CardContent className="p-6">
+            <p className="text-red-600 text-sm">
+              統計データの読み込みに失敗しました
+            </p>
+            <p className="text-xs text-red-500 mt-1">
+              しばらく時間をおいて再度お試しください
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+}
+
+async function CurrentGuestsSection() {
+  try {
+    const guests = await CheckinService.getCurrentGuests();
+    return (
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="text-xl">現在の滞在者</CardTitle>
+          <div className="flex items-center gap-4">
+            <div className="text-sm text-slate-600">
+              {guests.length}人が滞在中
+            </div>
+            <RefreshButton />
+          </div>
+        </CardHeader>
+        <CardContent>
+          <CurrentGuestsList guests={guests} />
+        </CardContent>
+      </Card>
+    );
+  } catch (error) {
+    console.error("Current guests fetch error:", error);
+    return (
+      <Card className="border-red-200 bg-red-50">
+        <CardHeader>
+          <CardTitle className="text-xl text-red-600">現在の滞在者</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-red-600 text-sm">
+            滞在者データの読み込みに失敗しました
+          </p>
+          <RefreshButton />
+        </CardContent>
+      </Card>
+    );
+  }
+}
+
+async function TodaySummarySection() {
+  try {
+    const stats = await CheckinService.getTodayStats();
+    return <TodaySummary stats={stats} />;
+  } catch (error) {
+    console.error("Today summary fetch error:", error);
+    return (
+      <Card className="border-red-200 bg-red-50">
+        <CardHeader>
+          <CardTitle className="text-xl text-red-600">
+            今日の入退場サマリー
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-red-600 text-sm">
+            サマリーデータの読み込みに失敗しました
+          </p>
+          <p className="text-xs text-red-500 mt-1">
+            しばらく時間をおいて再度お試しください
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+}
+
+// Main Dashboard Page with Suspense boundaries
 export default function AdminDashboardPage() {
-  const { currentGuests, todayStats, loading, isRefreshing, error, refetch } =
-    useDashboardData();
-
-  if (loading) {
-    return (
-      <AdminLayout title="ダッシュボード">
-        <DashboardSkeleton />
-      </AdminLayout>
-    );
-  }
-
-  if (error) {
-    return (
-      <AdminLayout title="ダッシュボード">
-        <div className="text-center py-12">
-          <ErrorState message={error} onRetry={refetch} />
-        </div>
-      </AdminLayout>
-    );
-  }
-
   return (
     <AdminLayout title="ダッシュボード">
       <div className="space-y-6">
-        {/* 統計カード */}
-        {todayStats && (
-          <div className={isRefreshing ? "opacity-60 pointer-events-none" : ""}>
-            <DashboardStats stats={todayStats} />
-          </div>
-        )}
+        {/* Statistics Cards - Loads first */}
+        <Suspense fallback={<StatsCardsSkeleton />}>
+          <DashboardStatsSection />
+        </Suspense>
 
-        {/* 現在の滞在者 */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-xl">現在の滞在者</CardTitle>
-            <div className="flex items-center gap-4">
-              <div className="text-sm text-slate-600">
-                {currentGuests.length}人が滞在中
-              </div>
-              <Button
-                onClick={refetch}
-                variant="outline"
-                size="sm"
-                disabled={isRefreshing}
-              >
-                {isRefreshing ? "更新中..." : "更新"}
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {isRefreshing ? (
-              <div className="space-y-3 py-4">
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="flex items-center space-x-4">
-                    <Skeleton className="h-4 w-32" />
-                    <Skeleton className="h-4 w-24" />
-                    <Skeleton className="h-4 w-20" />
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <CurrentGuestsList guests={currentGuests} />
-            )}
-          </CardContent>
-        </Card>
+        {/* Current Guests - Independent loading */}
+        <Suspense
+          fallback={
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle className="text-xl">現在の滞在者</CardTitle>
+                <div className="text-sm text-slate-600">読み込み中...</div>
+              </CardHeader>
+              <CardContent>
+                <CurrentGuestsSkeleton />
+              </CardContent>
+            </Card>
+          }
+        >
+          <CurrentGuestsSection />
+        </Suspense>
 
-        {/* 今日の入退場サマリー */}
-        {todayStats && (
-          <div className={isRefreshing ? "opacity-60 pointer-events-none" : ""}>
-            <TodaySummary stats={todayStats} />
-          </div>
-        )}
+        {/* Today Summary - Loads independently */}
+        <Suspense fallback={<TodaySummarySkeleton />}>
+          <TodaySummarySection />
+        </Suspense>
       </div>
     </AdminLayout>
   );
