@@ -61,10 +61,6 @@ export function useDashboardData(): UseDashboardDataReturn {
 
   useEffect(() => {
     fetchData();
-
-    // 5秒間隔で自動更新
-    const interval = setInterval(fetchData, 5000);
-    return () => clearInterval(interval);
   }, []);
 
   return {

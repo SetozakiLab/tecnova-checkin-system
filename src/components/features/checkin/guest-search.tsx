@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -23,6 +23,13 @@ export function GuestSearch({ onGuestSelect }: GuestSearchProps) {
   } = useGuestSearch();
 
   const [searchError, setSearchError] = useState("");
+
+  // 検索結果が1件の場合に自動的に親コンポーネントに通知
+  useEffect(() => {
+    if (selectedGuest) {
+      onGuestSelect(selectedGuest);
+    }
+  }, [selectedGuest, onGuestSelect]);
 
   const onSearch = async () => {
     if (!searchQuery.trim()) {
@@ -87,6 +94,11 @@ export function GuestSearch({ onGuestSelect }: GuestSearchProps) {
                         ID: {guest.displayId}
                       </p>
                     </div>
+                    {selectedGuest?.id === guest.id && (
+                      <div className="text-green-600 font-semibold">
+                        ✓ 選択中
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -94,21 +106,17 @@ export function GuestSearch({ onGuestSelect }: GuestSearchProps) {
           </div>
         )}
 
-        {searchResults.length === 1 && selectedGuest && (
+        {searchResults.length === 1 && (
           <Card className="bg-blue-50 border-blue-300">
             <CardContent className="p-4">
               <div className="flex justify-between items-center">
                 <div>
-                  <p className="font-semibold">{selectedGuest.name}</p>
+                  <p className="font-semibold">{searchResults[0].name}</p>
                   <p className="text-sm text-gray-600">
-                    ID: {selectedGuest.displayId}
+                    ID: {searchResults[0].displayId}
                   </p>
-                  {selectedGuest.contact && (
-                    <p className="text-sm text-gray-600">
-                      {selectedGuest.contact}
-                    </p>
-                  )}
                 </div>
+                <div className="text-green-600 font-semibold">✓ 選択中</div>
               </div>
             </CardContent>
           </Card>

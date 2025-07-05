@@ -23,9 +23,6 @@ export function CheckinActions({ guest }: CheckinActionsProps) {
             <div>
               <h3 className="font-semibold text-lg">{guest.name}</h3>
               <p className="text-sm text-gray-600">ID: {guest.displayId}</p>
-              {guest.contact && (
-                <p className="text-sm text-gray-600">{guest.contact}</p>
-              )}
             </div>
             <StatusBadge isActive={!!guest.isCurrentlyCheckedIn} />
           </div>

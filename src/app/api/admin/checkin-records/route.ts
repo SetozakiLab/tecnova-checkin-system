@@ -17,6 +17,7 @@ export const GET = withApiHandler(
       startDate: searchParams.get("startDate") || undefined,
       endDate: searchParams.get("endDate") || undefined,
       guestId: searchParams.get("guestId") || undefined,
+      guestName: searchParams.get("guestName") || undefined,
     });
 
     const result = await CheckinService.getCheckinRecords(params);

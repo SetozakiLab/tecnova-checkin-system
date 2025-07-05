@@ -13,7 +13,8 @@ import {
 } from "@/components/features/admin/dashboard-components";
 
 export default function AdminDashboardPage() {
-  const { currentGuests, todayStats, loading, error, refetch } = useDashboardData();
+  const { currentGuests, todayStats, loading, error, refetch } =
+    useDashboardData();
 
   if (loading) {
     return (
@@ -43,8 +44,18 @@ export default function AdminDashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-xl">現在の滞在者</CardTitle>
-            <div className="text-sm text-slate-600">
-              {currentGuests.length}人が滞在中
+            <div className="flex items-center gap-4">
+              <div className="text-sm text-slate-600">
+                {currentGuests.length}人が滞在中
+              </div>
+              <Button
+                onClick={refetch}
+                variant="outline"
+                size="sm"
+                disabled={loading}
+              >
+                更新
+              </Button>
             </div>
           </CardHeader>
           <CardContent>

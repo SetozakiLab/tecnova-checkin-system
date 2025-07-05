@@ -9,6 +9,7 @@ export const checkinSearchSchema = z.object({
   startDate: z.string().optional(),
   endDate: z.string().optional(),
   guestId: z.string().optional(),
+  guestName: z.string().optional(),
 });
 
 export type CheckinSearchParams = z.infer<typeof checkinSearchSchema>;
@@ -89,13 +90,22 @@ export class CheckinService {
     records: CheckinRecord[];
     pagination: PaginationData;
   }> {
-    const { page, limit, startDate, endDate, guestId } = params;
+    const { page, limit, startDate, endDate, guestId, guestName } = params;
 
     // 検索条件の構築
     const whereConditions: any = {};
 
     if (guestId) {
       whereConditions.guestId = guestId;
+    }
+
+    if (guestName) {
+      whereConditions.guest = {
+        name: {
+          contains: guestName,
+          mode: "insensitive",
+        },
+      };
     }
 
     if (startDate || endDate) {

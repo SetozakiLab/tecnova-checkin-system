@@ -63,13 +63,13 @@ export function usePaginatedData<T>(
 
   const handlePageChange = useCallback(
     (page: number) => {
-      fetchData(page, {});
+      fetchData(page);
     },
     [fetchData]
   );
 
   const refresh = useCallback(() => {
-    return fetchData(currentPage, {});
+    return fetchData(currentPage);
   }, [fetchData, currentPage]);
 
   return {

@@ -63,11 +63,12 @@ export function GuestsTable({ guests, onUpdate }: GuestsTableProps) {
   const handleDeleteClick = async (guest: GuestData) => {
     if (!confirm(`「${guest.name}」を削除しますか？`)) return;
 
-    const result = await execute(`/api/admin/guests/${guest.id}`, {
+    await execute(`/api/admin/guests/${guest.id}`, {
       method: "DELETE",
     });
 
-    if (result) {
+    // エラーがない場合は削除成功とみなして更新
+    if (!editError) {
       onUpdate();
     }
   };
