@@ -128,7 +128,7 @@ export default function RegisterPage() {
               </div>
 
               {/* メールアドレス（任意） */}
-              <div className="space-y-2">
+              {/* <div className="space-y-2">
                 <Label htmlFor="contact" className="text-lg">
                   メールアドレス（入力しなくても大丈夫です）
                 </Label>
@@ -145,8 +145,7 @@ export default function RegisterPage() {
                     {errors.contact.message}
                   </p>
                 )}
-              </div>
-
+              </div> */}
               {/* 利用規約同意 */}
               <div className="space-y-4">
                 <div className="flex items-start space-x-3">

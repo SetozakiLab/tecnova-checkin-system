@@ -56,14 +56,14 @@ erDiagram
 
 ### 2.2. Guest（ゲスト）テーブル
 
-| カラム名  | データ型     | 制約                    | 説明                        |
-| --------- | ------------ | ----------------------- | --------------------------- |
-| id        | UUID         | PRIMARY KEY             | 主キー（QR コード用）       |
-| displayId | INTEGER      | UNIQUE, NOT NULL        | 表示用 ID（YYMMDDXXX 形式） |
-| name      | VARCHAR(100) | NOT NULL                | 氏名・ニックネーム          |
-| contact   | VARCHAR(255) | NULL                    | メールアドレス（任意）      |
-| createdAt | TIMESTAMP    | NOT NULL, DEFAULT NOW() | 登録日時                    |
-| updatedAt | TIMESTAMP    | NOT NULL, DEFAULT NOW() | 更新日時                    |
+| カラム名  | データ型     | 制約                    | 説明                    |
+| --------- | ------------ | ----------------------- | ----------------------- |
+| id        | UUID         | PRIMARY KEY             | 主キー（QR コード用）   |
+| displayId | INTEGER      | UNIQUE, NOT NULL        | 表示用 ID（YYXXX 形式） |
+| name      | VARCHAR(100) | NOT NULL                | 氏名・ニックネーム      |
+| contact   | VARCHAR(255) | NULL                    | メールアドレス（任意）  |
+| createdAt | TIMESTAMP    | NOT NULL, DEFAULT NOW() | 登録日時                |
+| updatedAt | TIMESTAMP    | NOT NULL, DEFAULT NOW() | 更新日時                |
 
 **インデックス:**
 
@@ -73,7 +73,9 @@ erDiagram
 
 **備考:**
 
-- displayId は `YYMMDDXXX` 形式（例: 250703001）
+- displayId は `YYXXX` 形式（例: 25001, 25002）
+- YY: 年（2025 → 25）
+- XXX: 年内の連番（001 から 999 まで）
 - name はニックネーム可
 
 ### 2.3. CheckinRecord（入退場記録）テーブル
@@ -112,16 +114,39 @@ erDiagram
 
 ```typescript
 // 表示用ID生成ロジック
-const generateDisplayId = (date: Date): number => {
-  const year = date.getFullYear().toString().slice(-2); // YY
-  const month = (date.getMonth() + 1).toString().padStart(2, "0"); // MM
-  const day = date.getDate().toString().padStart(2, "0"); // DD
-
-  // その日の最大連番を取得し、+1
-  const sequence = getMaxSequenceForDate(date) + 1;
+const generateDisplayId = (sequence: number): number => {
+  const year = new Date().getFullYear().toString().slice(-2); // YY
   const sequenceStr = sequence.toString().padStart(3, "0"); // XXX
 
-  return parseInt(`${year}${month}${day}${sequenceStr}`);
+  return parseInt(`${year}${sequenceStr}`);
+};
+
+// 年ごとの次の連番を取得
+const getNextSequenceForYear = async (year: number): Promise<number> => {
+  const yearPrefix = year.toString().slice(-2);
+
+  // 該当年のdisplayIdの最大値を取得
+  const maxDisplayId = await prisma.guest.findFirst({
+    where: {
+      displayId: {
+        gte: parseInt(`${yearPrefix}000`),
+        lt: parseInt(
+          `${(parseInt(yearPrefix) + 1).toString().padStart(2, "0")}000`
+        ),
+      },
+    },
+    orderBy: {
+      displayId: "desc",
+    },
+  });
+
+  if (!maxDisplayId) {
+    return 1; // 該当年の最初のゲスト
+  }
+
+  // 現在の最大displayIdから連番部分を抽出
+  const currentSequence = maxDisplayId.displayId % 1000;
+  return currentSequence + 1;
 };
 ```
 

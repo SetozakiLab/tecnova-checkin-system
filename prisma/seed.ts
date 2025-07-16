@@ -20,25 +20,35 @@ async function main() {
 
   // テスト用ゲストの作成
   const guest1 = await prisma.guest.upsert({
-    where: { displayId: 250704001 },
+    where: { displayId: 25001 },
     update: {},
     create: {
-      displayId: 250704001,
+      displayId: 25001,
       name: "田中太郎",
       contact: "taro@example.com",
     },
   });
 
   const guest2 = await prisma.guest.upsert({
-    where: { displayId: 250704002 },
+    where: { displayId: 25002 },
     update: {},
     create: {
-      displayId: 250704002,
+      displayId: 25002,
       name: "佐藤花子",
     },
   });
 
-  console.log({ guest1, guest2 });
+  const guest3 = await prisma.guest.upsert({
+    where: { displayId: 25003 },
+    update: {},
+    create: {
+      displayId: 25003,
+      name: "山田次郎",
+      contact: "jiro@example.com",
+    },
+  });
+
+  console.log({ guest1, guest2, guest3 });
 }
 
 main()

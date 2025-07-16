@@ -75,7 +75,7 @@
   "success": true,
   "data": {
     "id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
-    "displayId": 250703001,
+    "displayId": 25001,
     "name": "田中太郎",
     "contact": "taro@example.com",
     "createdAt": "2025-07-03T10:30:00Z"
@@ -108,14 +108,14 @@
   "data": [
     {
       "id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
-      "displayId": 250703001,
+      "displayId": 25001,
       "name": "田中太郎",
       "isCurrentlyCheckedIn": false,
       "lastCheckinAt": "2025-07-02T14:30:00Z"
     },
     {
       "id": "b2c3d4e5-f6g7-8901-2345-678901bcdefg",
-      "displayId": 250703002,
+      "displayId": 25002,
       "name": "田中花子",
       "isCurrentlyCheckedIn": true,
       "lastCheckinAt": "2025-07-03T09:15:00Z"
@@ -139,7 +139,7 @@
   "success": true,
   "data": {
     "id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
-    "displayId": 250703001,
+    "displayId": 25001,
     "name": "田中太郎",
     "contact": "taro@example.com",
     "isCurrentlyCheckedIn": false,
@@ -288,14 +288,14 @@
     "guests": [
       {
         "id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
-        "displayId": 250703001,
+        "displayId": 25001,
         "name": "田中太郎",
         "checkinAt": "2025-07-03T10:30:00Z",
         "stayDuration": "2時間15分"
       },
       {
         "id": "b2c3d4e5-f6g7-8901-2345-678901bcdefg",
-        "displayId": 250703002,
+        "displayId": 25002,
         "name": "田中花子",
         "checkinAt": "2025-07-03T09:15:00Z",
         "stayDuration": "3時間30分"
@@ -355,7 +355,7 @@
         "id": "c3d4e5f6-g7h8-9012-3456-789012cdefgh",
         "guest": {
           "id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
-          "displayId": 250703001,
+          "displayId": 25001,
           "name": "田中太郎"
         },
         "checkinAt": "2025-07-03T10:30:00Z",
@@ -395,7 +395,7 @@
     "guests": [
       {
         "id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
-        "displayId": 250703001,
+        "displayId": 25001,
         "name": "田中太郎",
         "contact": "taro@example.com",
         "isCurrentlyCheckedIn": false,
@@ -438,7 +438,7 @@
   "success": true,
   "data": {
     "id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
-    "displayId": 250703001,
+    "displayId": 25001,
     "name": "田中太郎（更新）",
     "contact": "taro@example.com",
     "updatedAt": "2025-07-03T16:00:00Z"

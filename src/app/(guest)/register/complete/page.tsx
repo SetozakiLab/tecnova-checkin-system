@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ApiResponse, GuestData } from "@/types/api";
 
 function RegisterCompleteContent() {
@@ -170,10 +171,38 @@ function RegisterCompleteContent() {
 function LoadingFallback() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-green-600 mx-auto mb-4"></div>
-        <p className="text-green-700 text-lg">読み込み中...</p>
-      </div>
+      <Card className="w-full max-w-md mx-auto">
+        <CardHeader className="text-center">
+          <Skeleton className="h-8 w-48 mx-auto mb-2" />
+          <Skeleton className="h-4 w-32 mx-auto" />
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="text-center space-y-4">
+            <Skeleton className="h-24 w-24 rounded-full mx-auto" />
+            <div className="space-y-2">
+              <Skeleton className="h-6 w-40 mx-auto" />
+              <Skeleton className="h-4 w-32 mx-auto" />
+            </div>
+          </div>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Skeleton className="h-4 w-16 mb-1" />
+                <Skeleton className="h-6 w-full" />
+              </div>
+              <div>
+                <Skeleton className="h-4 w-20 mb-1" />
+                <Skeleton className="h-6 w-full" />
+              </div>
+            </div>
+            <div>
+              <Skeleton className="h-4 w-12 mb-1" />
+              <Skeleton className="h-6 w-full" />
+            </div>
+          </div>
+          <Skeleton className="h-12 w-full" />
+        </CardContent>
+      </Card>
     </div>
   );
 }
