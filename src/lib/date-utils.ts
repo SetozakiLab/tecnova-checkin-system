@@ -1,16 +1,41 @@
 import { differenceInMinutes, format } from "date-fns";
 import { ja } from "date-fns/locale";
+import { prisma } from "./prisma";
 
-export function generateDisplayId(): number {
+export function generateDisplayId(sequence: number): number {
   const now = new Date();
   const year = now.getFullYear().toString().slice(-2);
-  const month = (now.getMonth() + 1).toString().padStart(2, "0");
-  const day = now.getDate().toString().padStart(2, "0");
-  const random = Math.floor(Math.random() * 1000)
-    .toString()
-    .padStart(3, "0");
+  const sequenceStr = sequence.toString().padStart(3, "0");
 
-  return parseInt(`${year}${month}${day}${random}`);
+  return parseInt(`${year}${sequenceStr}`);
+}
+
+export async function getNextSequenceForYear(year?: number): Promise<number> {
+  const targetYear = year || new Date().getFullYear();
+  const yearPrefix = targetYear.toString().slice(-2);
+
+  // 該当年のdisplayIdの最大値を取得
+  const maxDisplayId = await prisma.guest.findFirst({
+    where: {
+      displayId: {
+        gte: parseInt(`${yearPrefix}000`),
+        lt: parseInt(
+          `${(parseInt(yearPrefix) + 1).toString().padStart(2, "0")}000`
+        ),
+      },
+    },
+    orderBy: {
+      displayId: "desc",
+    },
+  });
+
+  if (!maxDisplayId) {
+    return 1; // 該当年の最初のゲスト
+  }
+
+  // 現在の最大displayIdから連番部分を抽出
+  const currentSequence = maxDisplayId.displayId % 1000;
+  return currentSequence + 1;
 }
 
 export function formatStayDuration(

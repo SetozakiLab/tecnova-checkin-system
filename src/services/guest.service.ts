@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { generateDisplayId } from "@/lib/date-utils";
+import { generateDisplayId, getNextSequenceForYear } from "@/lib/date-utils";
 import { GuestData, PaginationData } from "@/types/api";
 import { z } from "zod";
 
@@ -263,20 +263,21 @@ export class GuestService {
 
   // ユニークなdisplayIdを生成
   private static async generateUniqueDisplayId(): Promise<number> {
-    let displayId: number;
-    let attempts = 0;
-    const maxAttempts = 10;
+    const currentYear = new Date().getFullYear();
+    const sequence = await getNextSequenceForYear(currentYear);
 
-    do {
-      displayId = generateDisplayId();
-      const existingDisplayId = await prisma.guest.findUnique({
-        where: { displayId },
-      });
-      if (!existingDisplayId) break;
-      attempts++;
-    } while (attempts < maxAttempts);
+    if (sequence > 999) {
+      throw new Error("SEQUENCE_LIMIT_EXCEEDED");
+    }
 
-    if (attempts >= maxAttempts) {
+    const displayId = generateDisplayId(sequence);
+
+    // 念のため、生成されたdisplayIdが既に存在しないかチェック
+    const existingDisplayId = await prisma.guest.findUnique({
+      where: { displayId },
+    });
+
+    if (existingDisplayId) {
       throw new Error("DISPLAY_ID_GENERATION_FAILED");
     }
 
