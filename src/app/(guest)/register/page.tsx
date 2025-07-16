@@ -113,12 +113,12 @@ export default function RegisterPage() {
               {/* 名前 */}
               <div className="space-y-2">
                 <Label htmlFor="name" className="text-lg">
-                  お名前 <span className="text-red-500">*</span>
+                  お名前（ニックネーム） <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   id="name"
                   {...register("name")}
-                  placeholder="田中太郎"
+                  placeholder="テッくん"
                   className="text-lg p-4 h-12"
                   disabled={loading}
                 />
