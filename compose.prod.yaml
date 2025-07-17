@@ -8,6 +8,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      TZ: Asia/Tokyo
     volumes:
       - postgres-prod-data:/var/lib/postgresql/data
       - ./backups:/backups
@@ -28,6 +29,8 @@ services:
       - "3000:3000"
     env_file:
       - .env.prod
+    environment:
+      - TZ=Asia/Tokyo
     depends_on:
       db:
         condition: service_healthy

@@ -8,6 +8,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      TZ: Asia/Tokyo
     volumes:
       - postgres-dev-data:/var/lib/postgresql/data
       - ./prisma/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
@@ -26,6 +27,8 @@ services:
       - "3000:3000"
     env_file:
       - .env.dev
+    environment:
+      - TZ=Asia/Tokyo
     depends_on:
       db:
         condition: service_healthy

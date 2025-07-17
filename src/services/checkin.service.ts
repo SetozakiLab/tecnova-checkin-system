@@ -1,6 +1,13 @@
 import { prisma } from "@/lib/prisma";
 import { CheckinData, CheckinRecord, PaginationData } from "@/types/api";
 import { z } from "zod";
+import { 
+  nowInJST, 
+  getTodayStartJST, 
+  getTomorrowStartJST, 
+  getDateStartJST, 
+  getDateEndJST 
+} from "@/lib/timezone";
 
 // Zodスキーマ
 export const checkinSearchSchema = z.object({
@@ -42,7 +49,7 @@ export class CheckinService {
     const checkinRecord = await prisma.checkinRecord.create({
       data: {
         guestId,
-        checkinAt: new Date(),
+        checkinAt: nowInJST(),
         isActive: true,
       },
       include: {
@@ -74,7 +81,7 @@ export class CheckinService {
     const checkinRecord = await prisma.checkinRecord.update({
       where: { id: activeCheckin.id },
       data: {
-        checkoutAt: new Date(),
+        checkoutAt: nowInJST(),
         isActive: false,
       },
       include: {
@@ -111,10 +118,10 @@ export class CheckinService {
     if (startDate || endDate) {
       whereConditions.checkinAt = {};
       if (startDate) {
-        whereConditions.checkinAt.gte = new Date(startDate);
+        whereConditions.checkinAt.gte = getDateStartJST(startDate);
       }
       if (endDate) {
-        whereConditions.checkinAt.lte = new Date(endDate);
+        whereConditions.checkinAt.lte = getDateEndJST(endDate);
       }
     }
 
@@ -190,10 +197,8 @@ export class CheckinService {
     currentGuests: number;
     averageStayTime: number;
   }> {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    const today = getTodayStartJST();
+    const tomorrow = getTomorrowStartJST();
 
     // 今日のチェックイン総数
     const totalCheckins = await prisma.checkinRecord.count({

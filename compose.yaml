@@ -6,6 +6,8 @@ services:
       - "5432:5432"
     env_file:
       - .env.dev
+    environment:
+      - TZ=Asia/Tokyo
     volumes:
       - postgres-data:/var/lib/postgresql/data
 

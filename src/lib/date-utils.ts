@@ -1,9 +1,9 @@
-import { differenceInMinutes, format } from "date-fns";
-import { ja } from "date-fns/locale";
+import { differenceInMinutes } from "date-fns";
 import { prisma } from "./prisma";
+import { nowInJST, formatJSTDateTime, formatJSTTime } from "./timezone";
 
 export function generateDisplayId(sequence: number): number {
-  const now = new Date();
+  const now = nowInJST();
   const year = now.getFullYear().toString().slice(-2);
   const sequenceStr = sequence.toString().padStart(3, "0");
 
@@ -11,7 +11,7 @@ export function generateDisplayId(sequence: number): number {
 }
 
 export async function getNextSequenceForYear(year?: number): Promise<number> {
-  const targetYear = year || new Date().getFullYear();
+  const targetYear = year || nowInJST().getFullYear();
   const yearPrefix = targetYear.toString().slice(-2);
 
   // 該当年のdisplayIdの最大値を取得
@@ -58,11 +58,9 @@ export function formatStayDuration(
 }
 
 export function formatDateTime(date: Date | string): string {
-  const dateObj = typeof date === "string" ? new Date(date) : date;
-  return format(dateObj, "yyyy年MM月dd日 HH:mm", { locale: ja });
+  return formatJSTDateTime(date);
 }
 
 export function formatTime(date: Date | string): string {
-  const dateObj = typeof date === "string" ? new Date(date) : date;
-  return format(dateObj, "HH:mm", { locale: ja });
+  return formatJSTTime(date);
 }

@@ -1,6 +1,9 @@
 # Node.js公式イメージを使用
 FROM node:24-alpine
 
+# タイムゾーンを設定
+ENV TZ=Asia/Tokyo
+
 # 作業ディレクトリを設定
 WORKDIR /app
 
