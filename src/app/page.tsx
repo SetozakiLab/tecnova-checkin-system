@@ -32,7 +32,7 @@ export default function HomePage() {
         <div className="grid md:grid-cols-2 gap-8 mb-12">
           {/* はじめての方 */}
           <Card className="hover:shadow-lg transition-shadow cursor-pointer border-2 border-green-200 hover:border-green-400">
-            <Link href="/register">
+            <Link href="/terms">
               <CardHeader className="text-center pb-4">
                 <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <span className="text-3xl">👋</span>
@@ -40,17 +40,19 @@ export default function HomePage() {
                 <CardTitle className="text-2xl text-green-800">
                   初回利用の方
                 </CardTitle>
-                <CardDescription className="text-lg">新規登録</CardDescription>
+                <CardDescription className="text-lg">
+                  利用規約の確認
+                </CardDescription>
               </CardHeader>
               <CardContent className="text-center">
                 <p className="text-gray-600 mb-4">
-                  初回の方は、こちらから登録をお願いします
+                  初回の方は、利用規約を確認してから登録をお願いします
                 </p>
                 <Button
                   size="lg"
                   className="bg-green-600 hover:bg-green-700 text-white"
                 >
-                  登録する
+                  規約を確認する
                 </Button>
               </CardContent>
             </Link>

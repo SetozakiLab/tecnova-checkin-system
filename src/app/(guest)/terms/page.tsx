@@ -1,11 +1,25 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 
 export default function TermsPage() {
+  const router = useRouter();
+  const [acceptTerms, setAcceptTerms] = useState(false);
+
+  const handleProceedToRegister = () => {
+    if (acceptTerms) {
+      router.push("/register?agreed=true");
+    }
+  };
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
       <div className="max-w-4xl mx-auto">
@@ -138,6 +152,40 @@ export default function TermsPage() {
           </CardContent>
         </Card>
 
+        {/* 利用規約同意セクション */}
+        <Card className="mb-6">
+          <CardContent className="pt-6">
+            <div className="space-y-4">
+              <div className="flex items-start space-x-3">
+                <Checkbox
+                  id="acceptTerms"
+                  checked={acceptTerms}
+                  onCheckedChange={(checked) =>
+                    setAcceptTerms(checked === true)
+                  }
+                />
+                <div>
+                  <Label
+                    htmlFor="acceptTerms"
+                    className="text-lg cursor-pointer"
+                  >
+                    上記の利用規約を読み、内容に同意します
+                    <span className="text-red-500 ml-1">*</span>
+                  </Label>
+                </div>
+              </div>
+
+              {!acceptTerms && (
+                <Alert className="border-amber-200 bg-amber-50">
+                  <AlertDescription className="text-amber-700">
+                    利用規約に同意していただく必要があります。
+                  </AlertDescription>
+                </Alert>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
         {/* ナビゲーション */}
         <div className="space-y-4">
           <Separator />
@@ -147,11 +195,14 @@ export default function TermsPage() {
                 戻る
               </Button>
             </Link>
-            <Link href="/register">
-              <Button size="lg" className="bg-green-600 hover:bg-green-700">
-                利用規約に同意して登録
-              </Button>
-            </Link>
+            <Button
+              size="lg"
+              className="bg-green-600 hover:bg-green-700"
+              disabled={!acceptTerms}
+              onClick={handleProceedToRegister}
+            >
+              登録へ進む
+            </Button>
           </div>
         </div>
       </div>

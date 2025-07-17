@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -32,8 +32,10 @@ type RegisterForm = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>("");
+  const [agreedFromTerms, setAgreedFromTerms] = useState(false);
 
   const {
     register,
@@ -47,6 +49,14 @@ export default function RegisterPage() {
       acceptTerms: false,
     },
   });
+
+  useEffect(() => {
+    const agreed = searchParams.get("agreed") === "true";
+    if (agreed) {
+      setAgreedFromTerms(true);
+      setValue("acceptTerms", true);
+    }
+  }, [searchParams, setValue]);
 
   const acceptTerms = watch("acceptTerms");
 
@@ -147,38 +157,52 @@ export default function RegisterPage() {
                 )}
               </div> */}
               {/* 利用規約同意 */}
-              <div className="space-y-4">
-                <div className="flex items-start space-x-3">
-                  <Checkbox
-                    id="acceptTerms"
-                    checked={acceptTerms}
-                    onCheckedChange={(checked) =>
-                      setValue("acceptTerms", checked === true)
-                    }
-                    disabled={loading}
-                  />
-                  <div>
-                    <Label htmlFor="acceptTerms" className="text-lg">
-                      <Link
-                        href="/terms"
-                        className="text-blue-600 hover:underline"
-                      >
-                        利用規約
-                      </Link>
-                      を読んで同意します <span className="text-red-500">*</span>
-                    </Label>
+              {!agreedFromTerms && (
+                <div className="space-y-4">
+                  <div className="flex items-start space-x-3">
+                    <Checkbox
+                      id="acceptTerms"
+                      checked={acceptTerms}
+                      onCheckedChange={(checked) =>
+                        setValue("acceptTerms", checked === true)
+                      }
+                      disabled={loading}
+                    />
+                    <div>
+                      <Label htmlFor="acceptTerms" className="text-lg">
+                        <Link
+                          href="/terms"
+                          className="text-blue-600 hover:underline"
+                        >
+                          利用規約
+                        </Link>
+                        を読んで同意します{" "}
+                        <span className="text-red-500">*</span>
+                      </Label>
+                    </div>
                   </div>
+                  {errors.acceptTerms && (
+                    <p className="text-red-500 text-sm">
+                      {errors.acceptTerms.message}
+                    </p>
+                  )}
                 </div>
-                {errors.acceptTerms && (
-                  <p className="text-red-500 text-sm">
-                    {errors.acceptTerms.message}
+              )}
+
+              {agreedFromTerms && (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <p className="text-green-700 text-center">
+                    ✓ 利用規約に同意済み
                   </p>
-                )}
-              </div>
+                </div>
+              )}
 
               {/* ボタン */}
               <div className="flex gap-4 pt-4">
-                <Link href="/" className="flex-1">
+                <Link
+                  href={agreedFromTerms ? "/terms" : "/"}
+                  className="flex-1"
+                >
                   <Button
                     type="button"
                     variant="outline"
