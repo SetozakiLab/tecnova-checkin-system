@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -28,9 +28,10 @@ const registerSchema = z.object({
   }),
 });
 
-type RegisterForm = z.infer<typeof registerSchema>;
+type RegisterFormData = z.infer<typeof registerSchema>;
 
-export default function RegisterPage() {
+// SearchParamsを使用するコンポーネントを分離
+function RegisterForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
@@ -43,7 +44,7 @@ export default function RegisterPage() {
     setValue,
     watch,
     formState: { errors },
-  } = useForm<RegisterForm>({
+  } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
       acceptTerms: false,
@@ -60,7 +61,7 @@ export default function RegisterPage() {
 
   const acceptTerms = watch("acceptTerms");
 
-  const onSubmit = async (data: RegisterForm) => {
+  const onSubmit = async (data: RegisterFormData) => {
     try {
       setLoading(true);
       setError("");
@@ -94,6 +95,131 @@ export default function RegisterPage() {
   };
 
   return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-xl text-center">
+          あなたの情報を教えてください
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          {/* エラーメッセージ */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <p className="text-red-700 text-center">{error}</p>
+            </div>
+          )}
+
+          {/* 名前 */}
+          <div className="space-y-2">
+            <Label htmlFor="name" className="text-lg">
+              お名前（ニックネーム） <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              id="name"
+              {...register("name")}
+              placeholder="テッくん"
+              className="text-lg p-4 h-12"
+              disabled={loading}
+            />
+            {errors.name && (
+              <p className="text-red-500 text-sm">{errors.name.message}</p>
+            )}
+          </div>
+
+          {/* メールアドレス（任意） */}
+          {/* <div className="space-y-2">
+            <Label htmlFor="contact" className="text-lg">
+              メールアドレス（入力しなくても大丈夫です）
+            </Label>
+            <Input
+              id="contact"
+              type="email"
+              {...register("contact")}
+              placeholder="taro@example.com"
+              className="text-lg p-4 h-12"
+              disabled={loading}
+            />
+            {errors.contact && (
+              <p className="text-red-500 text-sm">
+                {errors.contact.message}
+              </p>
+            )}
+          </div> */}
+          {/* 利用規約同意 */}
+          {!agreedFromTerms && (
+            <div className="space-y-4">
+              <div className="flex items-start space-x-3">
+                <Checkbox
+                  id="acceptTerms"
+                  checked={acceptTerms}
+                  onCheckedChange={(checked) =>
+                    setValue("acceptTerms", checked === true)
+                  }
+                  disabled={loading}
+                />
+                <div>
+                  <Label htmlFor="acceptTerms" className="text-lg">
+                    <Link
+                      href="/terms"
+                      className="text-blue-600 hover:underline"
+                    >
+                      利用規約
+                    </Link>
+                    を読んで同意します{" "}
+                    <span className="text-red-500">*</span>
+                  </Label>
+                </div>
+              </div>
+              {errors.acceptTerms && (
+                <p className="text-red-500 text-sm">
+                  {errors.acceptTerms.message}
+                </p>
+              )}
+            </div>
+          )}
+
+          {agreedFromTerms && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <p className="text-green-700 text-center">
+                ✓ 利用規約に同意済み
+              </p>
+            </div>
+          )}
+
+          {/* ボタン */}
+          <div className="flex gap-4 pt-4">
+            <Link
+              href={agreedFromTerms ? "/terms" : "/"}
+              className="flex-1"
+            >
+              <Button
+                type="button"
+                variant="outline"
+                size="lg"
+                className="w-full"
+                disabled={loading}
+              >
+                戻る
+              </Button>
+            </Link>
+            <Button
+              type="submit"
+              size="lg"
+              className="flex-1 bg-green-600 hover:bg-green-700"
+              disabled={loading || !acceptTerms}
+            >
+              {loading ? "登録中..." : "登録する"}
+            </Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
+  );
+}
+
+export default function RegisterPage() {
+  return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 p-4">
       <div className="max-w-2xl mx-auto">
         {/* ヘッダー */}
@@ -105,126 +231,9 @@ export default function RegisterPage() {
           <p className="text-lg text-gray-600">初回利用者の情報登録</p>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-xl text-center">
-              あなたの情報を教えてください
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-              {/* エラーメッセージ */}
-              {error && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                  <p className="text-red-700 text-center">{error}</p>
-                </div>
-              )}
-
-              {/* 名前 */}
-              <div className="space-y-2">
-                <Label htmlFor="name" className="text-lg">
-                  お名前（ニックネーム） <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="name"
-                  {...register("name")}
-                  placeholder="テッくん"
-                  className="text-lg p-4 h-12"
-                  disabled={loading}
-                />
-                {errors.name && (
-                  <p className="text-red-500 text-sm">{errors.name.message}</p>
-                )}
-              </div>
-
-              {/* メールアドレス（任意） */}
-              {/* <div className="space-y-2">
-                <Label htmlFor="contact" className="text-lg">
-                  メールアドレス（入力しなくても大丈夫です）
-                </Label>
-                <Input
-                  id="contact"
-                  type="email"
-                  {...register("contact")}
-                  placeholder="taro@example.com"
-                  className="text-lg p-4 h-12"
-                  disabled={loading}
-                />
-                {errors.contact && (
-                  <p className="text-red-500 text-sm">
-                    {errors.contact.message}
-                  </p>
-                )}
-              </div> */}
-              {/* 利用規約同意 */}
-              {!agreedFromTerms && (
-                <div className="space-y-4">
-                  <div className="flex items-start space-x-3">
-                    <Checkbox
-                      id="acceptTerms"
-                      checked={acceptTerms}
-                      onCheckedChange={(checked) =>
-                        setValue("acceptTerms", checked === true)
-                      }
-                      disabled={loading}
-                    />
-                    <div>
-                      <Label htmlFor="acceptTerms" className="text-lg">
-                        <Link
-                          href="/terms"
-                          className="text-blue-600 hover:underline"
-                        >
-                          利用規約
-                        </Link>
-                        を読んで同意します{" "}
-                        <span className="text-red-500">*</span>
-                      </Label>
-                    </div>
-                  </div>
-                  {errors.acceptTerms && (
-                    <p className="text-red-500 text-sm">
-                      {errors.acceptTerms.message}
-                    </p>
-                  )}
-                </div>
-              )}
-
-              {agreedFromTerms && (
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                  <p className="text-green-700 text-center">
-                    ✓ 利用規約に同意済み
-                  </p>
-                </div>
-              )}
-
-              {/* ボタン */}
-              <div className="flex gap-4 pt-4">
-                <Link
-                  href={agreedFromTerms ? "/terms" : "/"}
-                  className="flex-1"
-                >
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="lg"
-                    className="w-full"
-                    disabled={loading}
-                  >
-                    戻る
-                  </Button>
-                </Link>
-                <Button
-                  type="submit"
-                  size="lg"
-                  className="flex-1 bg-green-600 hover:bg-green-700"
-                  disabled={loading || !acceptTerms}
-                >
-                  {loading ? "登録中..." : "登録する"}
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
+        <Suspense fallback={<div>Loading...</div>}>
+          <RegisterForm />
+        </Suspense>
       </div>
     </div>
   );
