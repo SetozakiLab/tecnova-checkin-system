@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 
 export default function TermsPage() {
   return (
@@ -17,82 +20,139 @@ export default function TermsPage() {
 
         <Card className="mb-8">
           <CardHeader>
-            <CardTitle className="text-xl">参加にあたって</CardTitle>
+            <div className="flex items-center gap-2">
+              <Badge variant="destructive">重要</Badge>
+              <CardTitle className="text-xl">参加にあたって</CardTitle>
+            </div>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div>
-              <h3 className="text-lg font-semibold mb-2">
+            <Alert className="border-blue-200 bg-blue-50">
+              <AlertTitle className="text-blue-800">
                 テクノバの決まりごと
-              </h3>
-              <ol className="list-decimal list-inside space-y-1 text-gray-700">
-                <li>
-                  機材はゆずり合って大切に使い、使ったものは元の場所に片付けましょう。
+              </AlertTitle>
+              <AlertDescription className="text-blue-700">
+                みんなで楽しく安全に利用するための基本的なルールです。
+              </AlertDescription>
+            </Alert>
+
+            <div className="space-y-4">
+              <ol className="list-decimal list-inside space-y-3 text-gray-700">
+                <li className="leading-relaxed">
+                  <strong>機材はゆずり合って大切に使い</strong>
+                  、使ったものは元の場所に片付けましょう。
                 </li>
-                <li>
-                  ほかの人の作るものを大切にして、お互いのことを尊重しましょう。
+                <li className="leading-relaxed">
+                  ほかの人の作るものを大切にして、
+                  <strong>お互いのことを尊重</strong>しましょう。
                 </li>
-                <li>
-                  ほかの人の作業をじゃましたり、ばかにしたりしないようにしましょう。
+                <li className="leading-relaxed">
+                  ほかの人の作業をじゃましたり、
+                  <strong>ばかにしたりしない</strong>ようにしましょう。
                 </li>
-                <li>
-                  人を傷つける、差別する、怒らせるようなことはやめましょう。
+                <li className="leading-relaxed">
+                  <strong>
+                    人を傷つける、差別する、怒らせるようなことはやめ
+                  </strong>
+                  ましょう。
                 </li>
-                <li>
-                  ケンカはやめましょう。自分たちで解決できない問題が起こったら、大人に相談しましょう。
+                <li className="leading-relaxed">
+                  <strong>ケンカはやめ</strong>
+                  ましょう。自分たちで解決できない問題が起こったら、
+                  <strong>大人に相談</strong>しましょう。
                 </li>
-                <li>
-                  何かをダウンロードまたはアップロードするときは、かならずスタッフに聞きましょう。
+                <li className="leading-relaxed">
+                  何かをダウンロードまたはアップロードするときは、
+                  <strong>かならずスタッフに聞き</strong>ましょう。
                 </li>
-                <li>
-                  ケガにつながる機材もあるので、スタッフの注意を聞いて安全に使いましょう。
+                <li className="leading-relaxed">
+                  <strong>ケガにつながる機材</strong>
+                  もあるので、スタッフの注意を聞いて<strong>安全に使い</strong>
+                  ましょう。
                 </li>
               </ol>
             </div>
 
-            <div>
-              <h3 className="text-lg font-semibold mb-2">守ってほしいこと</h3>
-              <ol className="list-decimal list-inside space-y-1 text-gray-700">
-                <li>
-                  初回利用時に利用者カードをお渡しします。無くさないようにして、利用時は必ず持って来てください。
+            <Separator className="my-6" />
+
+            <Alert className="border-amber-200 bg-amber-50">
+              <AlertTitle className="text-amber-800">
+                守ってほしいこと
+              </AlertTitle>
+              <AlertDescription className="text-amber-700">
+                施設利用時の具体的な手順とルールです。
+              </AlertDescription>
+            </Alert>
+
+            <div className="space-y-4">
+              <ol className="list-decimal list-inside space-y-3 text-gray-700">
+                <li className="leading-relaxed">
+                  初回利用時に<strong>利用者カード</strong>をお渡しします。
+                  <strong>無くさないように</strong>して、利用時は
+                  <strong>必ず持って来て</strong>ください。
                 </li>
-                <li>利用する際は受付をして、名札を着用してください。</li>
-                <li>
-                  帰る際はアンケートに回答して、スタッフに報告をし、名札ケースを置いて帰ってください。
+                <li className="leading-relaxed">
+                  利用する際は<strong>受付をして、名札を着用</strong>
+                  してください。
                 </li>
-                <li>
-                  遅い時間帯（小学生の場合は18時以降）に参加する際は、迎えに来てもらってください。
+                <li className="leading-relaxed">
+                  帰る際は<strong>アンケートに回答</strong>して、
+                  <strong>スタッフに報告</strong>をし、
+                  <strong>名札ケースを置いて</strong>帰ってください。
                 </li>
-                <li>
-                  トイレ以外で途中退室する（建物から出る）際はスタッフに報告してください（名札は置いていく）。
+                <li className="leading-relaxed">
+                  遅い時間帯（<strong>小学生の場合は18時以降</strong>
+                  ）に参加する際は、<strong>迎えに来てもらって</strong>
+                  ください。
                 </li>
-                <li>
-                  トラブル防止のため、スタッフと利用者のSNS等連絡先の交換を禁止します。
+                <li className="leading-relaxed">
+                  トイレ以外で途中退室する（建物から出る）際は
+                  <strong>スタッフに報告</strong>
+                  してください（名札は置いていく）。
                 </li>
-                <li>SNSで他の人の姿や作品などを投稿しないでください。</li>
-                <li>熱中症対策のために、飲み物を持参しましょう。</li>
+                <li className="leading-relaxed">
+                  トラブル防止のため、
+                  <strong>スタッフと利用者のSNS等連絡先の交換を禁止</strong>
+                  します。
+                </li>
+                <li className="leading-relaxed">
+                  <strong>SNSで他の人の姿や作品などを投稿しない</strong>
+                  でください。
+                </li>
+                <li className="leading-relaxed">
+                  <strong>熱中症対策</strong>のために、
+                  <strong>飲み物を持参</strong>しましょう。
+                </li>
               </ol>
             </div>
-            <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
-              <p className="text-sm text-gray-700">
-                これらの約束事を守って、みんなで楽しく安全にテクノバを利用しましょう！
+
+            <Separator className="my-6" />
+
+            <Alert className="border-green-200 bg-green-50">
+              <AlertDescription className="text-green-800">
+                <strong>
+                  これらの約束事を守って、みんなで楽しく安全にテクノバを利用しましょう！
+                </strong>
                 わからないことがあったら、いつでもスタッフに聞いてくださいね。
-              </p>
-            </div>
+              </AlertDescription>
+            </Alert>
           </CardContent>
         </Card>
 
         {/* ナビゲーション */}
-        <div className="flex justify-center gap-4">
-          <Link href="/">
-            <Button variant="outline" size="lg">
-              戻る
-            </Button>
-          </Link>
-          <Link href="/register">
-            <Button size="lg" className="bg-green-600 hover:bg-green-700">
-              利用規約に同意して登録
-            </Button>
-          </Link>
+        <div className="space-y-4">
+          <Separator />
+          <div className="flex justify-center gap-4">
+            <Link href="/">
+              <Button variant="outline" size="lg">
+                戻る
+              </Button>
+            </Link>
+            <Link href="/register">
+              <Button size="lg" className="bg-green-600 hover:bg-green-700">
+                利用規約に同意して登録
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
     </div>
