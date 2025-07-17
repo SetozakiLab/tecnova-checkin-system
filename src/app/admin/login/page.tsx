@@ -126,21 +126,6 @@ export default function AdminLoginPage() {
                 {loading ? "ログイン中..." : "ログイン"}
               </Button>
             </form>
-
-            {/* デモ情報 */}
-            <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-              <p className="text-sm text-blue-800 text-center font-semibold mb-2">
-                デモ用アカウント
-              </p>
-              <div className="text-sm text-blue-700 space-y-1">
-                <p>
-                  <strong>ユーザー名:</strong> admin
-                </p>
-                <p>
-                  <strong>パスワード:</strong> admin123
-                </p>
-              </div>
-            </div>
           </CardContent>
         </Card>
 
