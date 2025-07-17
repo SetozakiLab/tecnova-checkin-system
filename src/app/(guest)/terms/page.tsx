@@ -17,58 +17,65 @@ export default function TermsPage() {
 
         <Card className="mb-8">
           <CardHeader>
-            <CardTitle className="text-xl">ご利用にあたって</CardTitle>
+            <CardTitle className="text-xl">参加にあたって</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             <div>
               <h3 className="text-lg font-semibold mb-2">
-                1. 施設利用について
+                テクノバの決まりごと
               </h3>
-              <ul className="list-disc list-inside space-y-1 text-gray-700">
+              <ol className="list-decimal list-inside space-y-1 text-gray-700">
                 <li>
-                  施設を利用する際は、必ずチェックイン・チェックアウトをしてください
+                  機材はゆずり合って大切に使い、使ったものは元の場所に片付けましょう。
                 </li>
-                <li>保護者の方の許可を得てから利用してください</li>
-                <li>他の利用者と仲良く過ごしましょう</li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="text-lg font-semibold mb-2">2. 安全について</h3>
-              <ul className="list-disc list-inside space-y-1 text-gray-700">
-                <li>施設内では走らず、歩いて移動してください</li>
-                <li>困ったことがあったら、すぐにメンターに相談してください</li>
-                <li>体調が悪くなったら、無理をせずに休憩してください</li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="text-lg font-semibold mb-2">
-                3. 個人情報について
-              </h3>
-              <ul className="list-disc list-inside space-y-1 text-gray-700">
-                <li>登録された情報は、施設の運営管理のためにのみ使用します</li>
-                <li>個人情報は適切に管理し、外部に漏らすことはありません</li>
                 <li>
-                  保護者の方からの問い合わせがあった場合にのみ、情報を提供する場合があります
+                  ほかの人の作るものを大切にして、お互いのことを尊重しましょう。
                 </li>
-              </ul>
+                <li>
+                  ほかの人の作業をじゃましたり、ばかにしたりしないようにしましょう。
+                </li>
+                <li>
+                  人を傷つける、差別する、怒らせるようなことはやめましょう。
+                </li>
+                <li>
+                  ケンカはやめましょう。自分たちで解決できない問題が起こったら、大人に相談しましょう。
+                </li>
+                <li>
+                  何かをダウンロードまたはアップロードするときは、かならずスタッフに聞きましょう。
+                </li>
+                <li>
+                  ケガにつながる機材もあるので、スタッフの注意を聞いて安全に使いましょう。
+                </li>
+              </ol>
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold mb-2">4. 禁止事項</h3>
-              <ul className="list-disc list-inside space-y-1 text-gray-700">
-                <li>他の人の迷惑になる行為</li>
-                <li>施設の設備を壊すこと</li>
-                <li>危険な行為</li>
-                <li>嘘の情報で登録すること</li>
-              </ul>
+              <h3 className="text-lg font-semibold mb-2">守ってほしいこと</h3>
+              <ol className="list-decimal list-inside space-y-1 text-gray-700">
+                <li>
+                  初回利用時に利用者カードをお渡しします。無くさないようにして、利用時は必ず持って来てください。
+                </li>
+                <li>利用する際は受付をして、名札を着用してください。</li>
+                <li>
+                  帰る際はアンケートに回答して、スタッフに報告をし、名札ケースを置いて帰ってください。
+                </li>
+                <li>
+                  遅い時間帯（小学生の場合は18時以降）に参加する際は、迎えに来てもらってください。
+                </li>
+                <li>
+                  トイレ以外で途中退室する（建物から出る）際はスタッフに報告してください（名札は置いていく）。
+                </li>
+                <li>
+                  トラブル防止のため、スタッフと利用者のSNS等連絡先の交換を禁止します。
+                </li>
+                <li>SNSで他の人の姿や作品などを投稿しないでください。</li>
+                <li>熱中症対策のために、飲み物を持参しましょう。</li>
+              </ol>
             </div>
-
             <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
               <p className="text-sm text-gray-700">
-                これらの規約を守って、みんなで楽しく安全に施設を利用しましょう！
-                わからないことがあったら、いつでもメンターに聞いてくださいね。
+                これらの約束事を守って、みんなで楽しく安全にテクノバを利用しましょう！
+                わからないことがあったら、いつでもスタッフに聞いてくださいね。
               </p>
             </div>
           </CardContent>
