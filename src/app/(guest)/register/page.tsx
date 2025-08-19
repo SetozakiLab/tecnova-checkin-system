@@ -84,8 +84,8 @@ function RegisterForm() {
         return;
       }
 
-      // 登録完了ページに遷移
-      router.push(`/register/complete?guestId=${result.data!.id}`);
+      // 登録後は自動チェックイン済みのため、チェックイン完了ページへ
+      router.push(`/checkin/complete?type=checkin&guestId=${result.data!.id}`);
     } catch (err) {
       console.error("Registration error:", err);
       setError("サーバーエラーが発生しました");
@@ -166,8 +166,7 @@ function RegisterForm() {
                     >
                       利用規約
                     </Link>
-                    を読んで同意します{" "}
-                    <span className="text-red-500">*</span>
+                    を読んで同意します <span className="text-red-500">*</span>
                   </Label>
                 </div>
               </div>
@@ -181,18 +180,13 @@ function RegisterForm() {
 
           {agreedFromTerms && (
             <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <p className="text-green-700 text-center">
-                ✓ 利用規約に同意済み
-              </p>
+              <p className="text-green-700 text-center">✓ 利用規約に同意済み</p>
             </div>
           )}
 
           {/* ボタン */}
           <div className="flex gap-4 pt-4">
-            <Link
-              href={agreedFromTerms ? "/terms" : "/"}
-              className="flex-1"
-            >
+            <Link href={agreedFromTerms ? "/terms" : "/"} className="flex-1">
               <Button
                 type="button"
                 variant="outline"
