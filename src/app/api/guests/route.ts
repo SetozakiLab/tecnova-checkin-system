@@ -33,13 +33,7 @@ export const POST = withApiHandler(
       }
       return createSuccessResponse(guest, "ゲストを登録しました", 201);
     } catch (error: any) {
-      if (error.message === "DUPLICATE_GUEST") {
-        return createErrorResponse(
-          "CONFLICT",
-          "同じ名前のゲストが既に登録されています",
-          409
-        );
-      }
+      // 名前重複は許容する仕様のため分岐なし
       if (error.message === "DISPLAY_ID_GENERATION_FAILED") {
         return createErrorResponse(
           "INTERNAL_SERVER_ERROR",

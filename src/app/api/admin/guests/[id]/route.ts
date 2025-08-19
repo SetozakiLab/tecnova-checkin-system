@@ -31,13 +31,7 @@ export const PUT = withApiHandler(
       if (error.message === "GUEST_NOT_FOUND") {
         return createErrorResponse("NOT_FOUND", "ゲストが見つかりません", 404);
       }
-      if (error.message === "DUPLICATE_GUEST") {
-        return createErrorResponse(
-          "CONFLICT",
-          "同じ名前のゲストが既に存在します",
-          409
-        );
-      }
+      // 名前重複は許容
       throw error; // withApiHandlerで共通エラーハンドリング
     }
   },

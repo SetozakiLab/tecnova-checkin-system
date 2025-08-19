@@ -43,15 +43,6 @@ export type GuestSearchParams = z.infer<typeof guestSearchSchema>;
 export class GuestService {
   // ゲスト作成
   static async createGuest(data: CreateGuestData): Promise<GuestData> {
-    // 同名のゲストが存在するかチェック
-    const existingGuest = await prisma.guest.findFirst({
-      where: { name: data.name },
-    });
-
-    if (existingGuest) {
-      throw new Error("DUPLICATE_GUEST");
-    }
-
     // ユニークなdisplayIdを生成
     const displayId = await this.generateUniqueDisplayId();
 
@@ -96,17 +87,6 @@ export class GuestService {
     const guest = await prisma.guest.findUnique({ where: { id } });
     if (!guest) {
       throw new Error("GUEST_NOT_FOUND");
-    }
-
-    // 名前の変更時は重複チェック
-    if (data.name && data.name !== guest.name) {
-      const existingGuest = await prisma.guest.findFirst({
-        where: { name: data.name, id: { not: id } },
-      });
-
-      if (existingGuest) {
-        throw new Error("DUPLICATE_GUEST");
-      }
     }
 
     const updatedGuest = await prisma.guest.update({
