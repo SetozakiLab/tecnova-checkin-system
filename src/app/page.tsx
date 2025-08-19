@@ -17,7 +17,7 @@ export default function HomePage() {
         <div className="text-center mb-12">
           <Image
             src="/logo.png"
-            alt="tec-nova"
+            alt="Tec-nova ロゴ"
             width={400}
             height={160}
             className="mx-auto mb-4 bg-white rounded-lg p-8"
@@ -29,15 +29,15 @@ export default function HomePage() {
         </div>
 
         {/* メインメニュー */}
-        <div className="grid md:grid-cols-2 gap-8 mb-12">
+        <div className="grid md:grid-cols-3 gap-8 mb-12">
           {/* はじめての方 */}
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer border-2 border-green-200 hover:border-green-400">
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer border-2 border-green-200">
             <Link href="/terms">
               <CardHeader className="text-center pb-4">
                 <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <span className="text-3xl">👋</span>
                 </div>
-                <CardTitle className="text-2xl text-green-800">
+                <CardTitle className="text-2xl font-bold text-green-800">
                   初回利用の方
                 </CardTitle>
                 <CardDescription className="text-lg">
@@ -46,7 +46,7 @@ export default function HomePage() {
               </CardHeader>
               <CardContent className="text-center">
                 <p className="text-gray-600 mb-4">
-                  初回の方は、利用規約を確認してから登録をお願いします
+                  初回の方は、利用規約を確認してから新規登録をお願いします
                 </p>
                 <Button
                   size="lg"
@@ -59,28 +59,56 @@ export default function HomePage() {
           </Card>
 
           {/* メンバーの方 */}
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer border-2 border-blue-200 hover:border-blue-400">
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer border-2 border-blue-200">
             <Link href="/checkin">
               <CardHeader className="text-center pb-4">
                 <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <span className="text-3xl">🏠</span>
                 </div>
-                <CardTitle className="text-2xl text-blue-800">
-                  メンバーの方
+                <CardTitle className="text-2xl font-bold">
+                  チェックイン
                 </CardTitle>
                 <CardDescription className="text-lg">
-                  入退場手続き
+                  入場手続き
                 </CardDescription>
               </CardHeader>
               <CardContent className="text-center">
                 <p className="text-gray-600 mb-4">
-                  登録済みの方は、こちらから入退場の手続きをしてください
+                  2回目以降の方は、こちらから入場手続きをしてください
                 </p>
                 <Button
                   size="lg"
                   className="bg-blue-600 hover:bg-blue-700 text-white"
                 >
-                  入退場手続き
+                  チェックイン
+                </Button>
+              </CardContent>
+            </Link>
+          </Card>
+
+          {/* チェックアウト */}
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer border-2 border-red-200">
+            <Link href="/checkout">
+              <CardHeader className="text-center pb-4">
+                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-3xl">🚪</span>
+                </div>
+                <CardTitle className="text-2xl font-bold">
+                  チェックアウト
+                </CardTitle>
+                <CardDescription className="text-lg">
+                  退場手続き
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="text-center">
+                <p className="text-gray-600 mb-4">
+                  お帰りの方は、こちらから退場手続きをしてください
+                </p>
+                <Button
+                  size="lg"
+                  className="bg-red-600 hover:bg-red-700 text-white"
+                >
+                  チェックアウト
                 </Button>
               </CardContent>
             </Link>
