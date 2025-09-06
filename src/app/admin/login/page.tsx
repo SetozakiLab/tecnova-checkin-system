@@ -174,8 +174,8 @@ export default function AdminLoginPage() {
                   </p>
                 )}
                 <p className="text-xs text-slate-500">
-                  既存SUPERユーザーは従来パスワードを使用 /
-                  新規はMANAGERとして作成されます
+                  初めて管理画面にログインする場合は、新規ユーザー作成を選択し、
+                  ユーザー名を入力してください。
                 </p>
               </div>
 
