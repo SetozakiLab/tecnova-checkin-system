@@ -20,6 +20,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import Image from "next/image";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -98,8 +99,18 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
       {/* サイドバー (デスクトップ) */}
       <aside className="hidden md:flex w-60 flex-col border-r bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/60">
         <div className="h-16 px-4 flex items-center border-b">
-          <Link href="/admin/dashboard" className="flex flex-col leading-tight">
-            <span className="text-lg font-bold tracking-tight">tec-nova</span>
+          <Link
+            href="/admin/dashboard"
+            className="mx-auto flex flex-col items-center leading-tight text-center"
+          >
+            <Image
+              src="/logo.png"
+              alt="tec-nova Nagasaki"
+              width={160}
+              height={40}
+              className="h-8 w-auto"
+              priority
+            />
             <span className="text-[11px] text-slate-500">管理コンソール</span>
           </Link>
         </div>

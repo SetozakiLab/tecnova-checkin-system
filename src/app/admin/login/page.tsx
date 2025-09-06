@@ -25,6 +25,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 const loginSchema = z.object({
   username: z.string().min(1, "ユーザー名は必須です"),
@@ -202,10 +203,15 @@ export default function AdminLoginPage() {
         {/* ヘッダー */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-block mb-6">
-            <h1 className="text-4xl font-bold text-slate-800">tec-nova</h1>
-            <p className="text-lg text-slate-600">入退場管理システム</p>
+            <Image
+              src="/logo.png"
+              alt="Tec-nova ロゴ"
+              width={400}
+              height={160}
+              className="mx-auto mb-4 bg-white rounded-lg p-8"
+            />
           </Link>
-          <h2 className="text-2xl font-bold text-slate-800">管理者ログイン</h2>
+          <h2 className="text-2xl font-bold text-slate-800">管理コンソール</h2>
         </div>
 
         <Card>
