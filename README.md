@@ -243,3 +243,198 @@ npx prisma studio
 - 本システムは小学生から高校生が利用することを前提としており、UI/UX は直感的で分かりやすい設計を心がけています
 - セキュリティを考慮し、管理者機能は認証必須となっています
 - 将来的な拡張（QR コード対応、統計機能など）を考慮した設計となっています
+
+---
+
+## 📌 現在のプロジェクト状況サマリ（2025-09-06 時点）
+
+最新主要バージョン:
+
+- Next.js: 15.3.4
+- React: 19.0.0
+- TypeScript: 5 系
+- Prisma: 6.11.0
+- PostgreSQL: 15（Alpine イメージ）
+
+直近のスキーマ変更（`prisma/migrations`）:
+
+1. `20250906022240_add_role_to_user`: `Role` ENUM（`SUPER` / `MANAGER`）追加と `users.role` カラム追加（デフォルト `SUPER`）
+2. `20250906090000_add_audit_log`: 監査ログ追加予定（フォルダは存在するが `migration.sql` が未作成のため未適用。デプロイ前に SQL を作成するか、空フォルダを削除してください）
+
+運用上の留意点:
+
+- 役割ベース権限機能を段階的導入予定（現在は全管理者 `SUPER` 初期化）
+- 監査ログ（チェックイン/アウト操作・管理画面操作）の導入準備中
+- 本番 `docker-compose` では `web` コンテナ起動時に `prisma migrate deploy` を自動実行するため、未検証のマイグレーションが存在する場合は起動前に要確認
+
+---
+
+## 🛡️ 本番環境（オンプレ/セルフホスト）アップグレード & マイグレーション手順
+
+目的: 既存データを保持しつつ、アプリケーションと DB スキーマを安全に更新する。
+
+### 更新シナリオ別早見表
+
+| シナリオ                       | 判定条件                                                              | 推奨コマンド / 手順概要                                                                                                        | 備考                                                   |
+| ------------------------------ | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------ |
+| A. アプリコードのみ更新        | `prisma/schema.prisma` 変更なし & 新規 `migrations/` 追加なし         | 1) `git pull` 2) `docker compose -f compose.prod.yaml up -d --build` 3) 動作確認                                               | `prisma migrate deploy` は実行されるが差分なしで即終了 |
+| B. 軽微な DB スキーマ追加/変更 | 新しいマイグレーションフォルダあり（追加カラム / ENUM 追加等 非破壊） | 1) バックアップ取得 2) `docker compose -f compose.prod.yaml run --rm web npx prisma migrate deploy` 3) `up -d --build` 4) 確認 | エラー時はロールバック（バックアップ必須）             |
+| C. 破壊的 / 大規模変更         | カラム削除 / 型変更 / インデックス再作成 / 大量データ移行             | 1) メンテウィンドウ確保 2) バックアップ二重化 3) リハーサル環境で所要時間計測 4) 本番 `migrate deploy` 5) 再起動               | 必要なら一時的にメンテ表示                             |
+| D. 手動 SQL 併用               | Prisma 生成不可（複雑リライト等）                                     | 1) バックアップ 2) 手動 SQL 実行 3) Prisma マイグレーション（空ダミー / drift 回避）                                           | 手動操作ログを残す                                     |
+
+簡易判定フロー:
+
+1. `git diff --name-only <旧タグ>..<新タグ> prisma/schema.prisma` で差分無 → シナリオ A
+2. 新規 `prisma/migrations/<timestamp>_*` の SQL が CREATE/ALTER ADD のみ → シナリオ B
+3. DROP / ALTER TYPE 変更 / 既存列型変更 / データ移行（UPDATE で大量行）→ シナリオ C
+4. マイグレーションフォルダ未整備で手動 SQL 予定 → シナリオ D（先に正規マイグレーション作成を検討）
+
+各シナリオで最低限: バージョンタグ or コミットハッシュを操作記録に残すこと。
+
+### フロー概観
+
+1. 変更確認 & メンテ計画
+2. 事前バックアップ（必須 / 推奨 2 系列）
+3. 新コード取得 & イメージ再ビルド
+4. マイグレーション適用（ドライラン検証 → 本番適用）
+5. アプリ再起動 & 動作確認
+6. ロールバック手順確認（実行せずシミュレーション）
+
+### 0. 前提
+
+- `.env.prod` が最新（特に DB 接続値 / 認証秘密鍵）
+- DB ボリューム: `postgres-prod-data`（compose.prod.yaml 定義）
+- バックアップ出力用ディレクトリ: `./backups`（すでにマウント設定済）
+
+### 1. 変更内容の確認
+
+```
+git fetch --all --prune
+git log --oneline origin/main..origin/agent-dev
+git diff --name-status origin/main..origin/agent-dev prisma/schema.prisma
+```
+
+### 2. バックアップ（必須）
+
+2 系列（論理 + ボリュームスナップショット）を取得し、少なくとも直近 1 つをオフホスト保管。
+
+論理バックアップ（リストア粒度細かい・推奨）:
+
+```
+docker compose -f compose.prod.yaml exec -T db pg_dump -Fc -U "$POSTGRES_USER" -d "$POSTGRES_DB" \
+	> backups/`date +%Y%m%d_%H%M%S`_tecnova.dump
+```
+
+ボリュームスナップショット（高速ロールバック用 / 容量大）:
+
+```
+docker run --rm --volumes-from $(docker compose -f compose.prod.yaml ps -q db) \
+	-v $(pwd)/backups:/backup busybox \
+	tar czf /backup/`date +%Y%m%d_%H%M%S`_postgres-volume.tgz /var/lib/postgresql/data
+```
+
+整合性簡易チェック:
+
+```
+pg_restore -l backups/<取得した>.dump | head
+```
+
+### 3. メンテナンスモード（任意 / 推奨）
+
+アプリ側で未実装の場合: 一時的に管理 UI ログインを制限（例: `NEXT_PUBLIC_MAINTENANCE=1` を導入予定、現状は Basic 認証やリバースプロキシでブロックで代替）。
+
+### 4. コード更新 & イメージ再ビルド
+
+```
+git checkout main
+git pull origin main
+# あるいは対象リリースタグへ checkout
+docker compose -f compose.prod.yaml build --no-cache web
+```
+
+### 5. マイグレーションの事前検証（任意）
+
+本番 DB をコピーした一時コンテナ/別環境で `prisma migrate deploy` を実行し破壊的変更が無いか確認。
+
+### 6. マイグレーション適用（本番）
+
+アプリ起動時に自動実行されるが、明示的に先行適用してエラーを早期検知することを推奨。
+
+```
+docker compose -f compose.prod.yaml run --rm web npx prisma migrate deploy
+```
+
+成功後に本番再起動:
+
+```
+docker compose -f compose.prod.yaml up -d web
+```
+
+### 7. 動作確認チェックリスト
+
+- /admin ログイン可
+- 既存ユーザーの `role` カラムが `SUPER` で埋まっている
+- チェックイン / チェックアウト処理成功
+- `prisma migrate status` で未適用なし
+
+```
+docker compose -f compose.prod.yaml exec -T web npx prisma migrate status
+docker compose -f compose.prod.yaml logs -f web | tail
+```
+
+### 8. 監査ログマイグレーション（未完成フォルダ対応）
+
+`20250906090000_add_audit_log/` が空の場合:
+
+- a) 実装がまだ: フォルダ削除して再度 `prisma migrate dev --name add_audit_log` を開発環境で実行し、生成後に再デプロイ
+- b) 本番適用を延期: 空フォルダを一旦削除し、リポジトリ更新
+
+### 9. ロールバック手順（シミュレーション）
+
+障害発生時:
+
+```
+# 停止
+docker compose -f compose.prod.yaml down web
+
+# DB を初期化（破壊操作: バックアップがあることを必ず確認）
+docker compose -f compose.prod.yaml exec -T db psql -U $POSTGRES_USER -d postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname='$POSTGRES_DB';"
+docker compose -f compose.prod.yaml exec -T db dropdb -U $POSTGRES_USER $POSTGRES_DB
+docker compose -f compose.prod.yaml exec -T db createdb -U $POSTGRES_USER $POSTGRES_DB
+
+# 復元（論理バックアップ）
+cat backups/<対象>.dump | docker compose -f compose.prod.yaml exec -T db pg_restore -U $POSTGRES_USER -d $POSTGRES_DB --clean --if-exists
+
+# 旧バージョンイメージ再起動（タグ管理している場合）
+docker compose -f compose.prod.yaml up -d web
+```
+
+---
+
+## 🧪 推奨運用タスク（定期）
+
+- 日次: `pg_dump -Fc` 取得 & オフサイト転送
+- 週次: ボリュームスナップショット
+- 月次: 復元テスト（空 DB へリハーサル）
+- 障害訓練: ロールバック 3 分以内を目標
+
+---
+
+## ❓ トラブルシューティング早見
+
+- `web` 起動直後に落ちる: 環境変数 / Prisma マイグレーション失敗 (`docker compose logs web`)
+- `prisma migrate deploy` がハング: DB ロック（`pg_locks` 確認）、長時間トランザクションを強制終了
+- 役割 ENUM 追加で失敗: 既存で ENUM 名変更している場合、`ALTER TYPE ... ADD VALUE` の手動適用が必要
+
+---
+
+## 🔒 セキュリティ短期 TODO（優先度順）
+
+1. 監査ログテーブル実装 & 管理画面表示
+2. `role` ベースの API / UI ガード実装
+3. メンテナンスモード簡易フラグ導入
+4. 管理者パスワード初回強制変更ワークフロー
+
+---
+
+（本節はアップグレード運用指針のため適宜更新してください）
