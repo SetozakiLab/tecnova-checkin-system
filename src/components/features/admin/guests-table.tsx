@@ -114,6 +114,33 @@ export function GuestsTable({ guests, onUpdate }: GuestsTableProps) {
                   >
                     編集
                   </Button>
+                  {guest.isCurrentlyCheckedIn ? (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={async () => {
+                        await execute(`/api/guests/${guest.id}/checkout`, {
+                          method: "POST",
+                        });
+                        onUpdate();
+                      }}
+                    >
+                      退場
+                    </Button>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={async () => {
+                        await execute(`/api/guests/${guest.id}/checkin`, {
+                          method: "POST",
+                        });
+                        onUpdate();
+                      }}
+                    >
+                      入場
+                    </Button>
+                  )}
                   {!isManager && (
                     <Button
                       size="sm"

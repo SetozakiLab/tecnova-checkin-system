@@ -85,7 +85,15 @@ export default function AdminHistoryPage() {
               <LoadingState message="データを読み込み中..." size="md" />
             ) : (
               <>
-                <HistoryTable records={data?.records || []} />
+                <HistoryTable
+                  records={data?.records || []}
+                  onUpdated={() =>
+                    fetchData(
+                      currentPage,
+                      convertFiltersToParams(searchFilters)
+                    )
+                  }
+                />
 
                 {pagination && pagination.totalPages > 1 && (
                   <div className="mt-6">
