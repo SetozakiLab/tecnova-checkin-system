@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,6 +29,8 @@ interface GuestsTableProps {
 }
 
 export function GuestsTable({ guests, onUpdate }: GuestsTableProps) {
+  const { data: session } = useSession();
+  const isManager = (session?.user as any)?.role === "MANAGER";
   const [editingGuest, setEditingGuest] = useState<GuestData | null>(null);
   const [editForm, setEditForm] = useState({ name: "", contact: "" });
   const { loading: editLoading, error: editError, execute } = useApi();
@@ -111,15 +114,17 @@ export function GuestsTable({ guests, onUpdate }: GuestsTableProps) {
                   >
                     編集
                   </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleDeleteClick(guest)}
-                    disabled={guest.isCurrentlyCheckedIn}
-                    className="text-red-600 hover:text-red-700"
-                  >
-                    削除
-                  </Button>
+                  {!isManager && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleDeleteClick(guest)}
+                      disabled={guest.isCurrentlyCheckedIn}
+                      className="text-red-600 hover:text-red-700"
+                    >
+                      削除
+                    </Button>
+                  )}
                 </div>
               </TableCell>
             </TableRow>

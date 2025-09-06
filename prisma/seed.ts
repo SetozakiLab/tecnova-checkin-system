@@ -16,7 +16,8 @@ async function main() {
     create: {
       username: "superuser",
       hashedPassword,
-    },
+      role: "SUPER",
+    } as any,
   });
 
   console.log({ admin });

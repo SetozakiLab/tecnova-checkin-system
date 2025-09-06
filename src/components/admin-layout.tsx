@@ -78,8 +78,15 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
             </nav>
 
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-slate-600">
-                ログイン中: {session.user.username}
+              <span className="text-sm text-slate-600 flex items-center space-x-2">
+                <span>ログイン中: {session.user.username}</span>
+                {(session.user as any).role && (
+                  <span className="px-2 py-0.5 text-xs rounded bg-slate-200 text-slate-700">
+                    {(session.user as any).role === "SUPER"
+                      ? "SUPER"
+                      : "MANAGER"}
+                  </span>
+                )}
               </span>
               <Button variant="outline" size="sm" onClick={handleSignOut}>
                 ログアウト

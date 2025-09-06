@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { signIn, getSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 const loginSchema = z.object({
   username: z.string().min(1, "ユーザー名は必須です"),
   password: z.string().min(1, "パスワードは必須です"),
+  mode: z.enum(["select", "create"]),
 });
 
 type LoginForm = z.infer<typeof loginSchema>;
@@ -22,6 +23,8 @@ type LoginForm = z.infer<typeof loginSchema>;
 export default function AdminLoginPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [users, setUsers] = useState<string[]>([]);
+  const [mode, setMode] = useState<"select" | "create">("select");
   const [error, setError] = useState("");
 
   const {
@@ -30,6 +33,7 @@ export default function AdminLoginPage() {
     formState: { errors },
   } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
+    defaultValues: { mode: "select" } as any,
   });
 
   const onSubmit = async (data: LoginForm) => {
@@ -61,6 +65,24 @@ export default function AdminLoginPage() {
     }
   };
 
+  // 既存ユーザー取得
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch("/api/admin/users");
+        if (res.ok) {
+          const json = await res.json();
+          const names = (json.data?.users || json.users || []).map(
+            (u: any) => u.username
+          );
+          setUsers(names);
+        }
+      } catch (e) {
+        console.warn("ユーザー一覧取得に失敗", e);
+      }
+    })();
+  }, []);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -88,30 +110,62 @@ export default function AdminLoginPage() {
                 </div>
               )}
 
-              {/* ユーザー名 */}
+              {/* ユーザー選択 / 新規作成 */}
               <div className="space-y-2">
-                <Label htmlFor="username">ユーザー名</Label>
-                <Input
-                  id="username"
-                  {...register("username")}
-                  placeholder="admin"
-                  disabled={loading}
-                />
+                <Label htmlFor="username">ユーザー</Label>
+                {mode === "select" ? (
+                  <select
+                    id="username"
+                    className="w-full border rounded px-3 py-2 text-sm"
+                    {...register("username")}
+                    disabled={loading || users.length === 0}
+                  >
+                    {users.length === 0 && (
+                      <option value="">ユーザーなし</option>
+                    )}
+                    {users.map((u) => (
+                      <option key={u} value={u}>
+                        {u}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <Input
+                    id="username"
+                    {...register("username")}
+                    placeholder="新規ユーザー名"
+                    disabled={loading}
+                  />
+                )}
                 {errors.username && (
                   <p className="text-red-500 text-sm">
                     {errors.username.message}
                   </p>
                 )}
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    className="text-xs text-blue-600 hover:underline"
+                    onClick={() => {
+                      const next = mode === "select" ? "create" : "select";
+                      setMode(next);
+                    }}
+                  >
+                    {mode === "select"
+                      ? "新規ユーザー作成"
+                      : "既存ユーザー選択に戻る"}
+                  </button>
+                </div>
               </div>
 
               {/* パスワード */}
               <div className="space-y-2">
-                <Label htmlFor="password">パスワード</Label>
+                <Label htmlFor="password">共通パスワード</Label>
                 <Input
                   id="password"
                   type="password"
                   {...register("password")}
-                  placeholder="••••••••"
+                  placeholder="共通パスワード"
                   disabled={loading}
                 />
                 {errors.password && (
@@ -119,6 +173,10 @@ export default function AdminLoginPage() {
                     {errors.password.message}
                   </p>
                 )}
+                <p className="text-xs text-slate-500">
+                  既存SUPERユーザーは従来パスワードを使用 /
+                  新規はMANAGERとして作成されます
+                </p>
               </div>
 
               {/* ログインボタン */}

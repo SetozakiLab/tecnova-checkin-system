@@ -1,4 +1,6 @@
 import { NextRequest } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import {
   withApiHandler,
   validateRequest,
@@ -17,6 +19,16 @@ export const PUT = withApiHandler(
     { params }: { params: Promise<{ id: string }> }
   ) => {
     const { id } = await params;
+
+    // 権限チェック: MANAGER は削除禁止
+    const session = await getServerSession(authOptions);
+    if (session?.user?.role === "MANAGER") {
+      return createErrorResponse(
+        "FORBIDDEN",
+        "この操作を行う権限がありません",
+        403
+      );
+    }
 
     // リクエストボディのバリデーション
     const validation = await validateRequest(updateGuestSchema)(request);
