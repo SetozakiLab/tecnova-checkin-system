@@ -21,6 +21,25 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useApi } from "@/hooks/use-api";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
+import { MoreHorizontal } from "lucide-react";
 
 interface HistoryTableProps {
   records: CheckinRecord[];
@@ -96,32 +115,70 @@ export function HistoryTable({ records, onUpdated }: HistoryTableProps) {
                 <StatusBadge isActive={!!record.isActive} />
               </TableCell>
               <TableCell>
-                <div className="flex space-x-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => openEdit(record)}
-                  >
-                    編集
-                  </Button>
-                  {isSuper && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
                     <Button
-                      size="sm"
                       variant="outline"
-                      className="text-red-600 hover:text-red-700"
-                      onClick={async () => {
-                        if (!confirm("この記録を削除しますか？")) return;
-                        await execute(
-                          `/api/admin/checkin-records/${record.id}`,
-                          { method: "DELETE" }
-                        );
-                        onUpdated && onUpdated();
-                      }}
+                      size="icon"
+                      className="h-8 w-8"
+                      aria-label="操作メニュー"
                     >
-                      削除
+                      <MoreHorizontal className="h-4 w-4" />
                     </Button>
-                  )}
-                </div>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-40">
+                    <DropdownMenuItem
+                      className="cursor-pointer"
+                      onClick={() => openEdit(record)}
+                    >
+                      編集
+                    </DropdownMenuItem>
+                    {isSuper && (
+                      <>
+                        <DropdownMenuSeparator />
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <DropdownMenuItem className="text-red-600 focus:text-red-600 cursor-pointer">
+                              削除
+                            </DropdownMenuItem>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>
+                                この記録を削除しますか？
+                              </AlertDialogTitle>
+                              <AlertDialogDescription>
+                                削除すると元に戻せません。レポートからも除外されます。
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel asChild>
+                                <Button variant="outline" size="sm">
+                                  キャンセル
+                                </Button>
+                              </AlertDialogCancel>
+                              <AlertDialogAction asChild>
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={async () => {
+                                    await execute(
+                                      `/api/admin/checkin-records/${record.id}`,
+                                      { method: "DELETE" }
+                                    );
+                                    onUpdated && onUpdated();
+                                  }}
+                                >
+                                  削除する
+                                </Button>
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </TableCell>
             </TableRow>
           ))}

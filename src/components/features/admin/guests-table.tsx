@@ -18,6 +18,25 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { StatusBadge } from "@/components/shared/status-badge";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
+import { MoreHorizontal } from "lucide-react";
 import { formatDateTime } from "@/lib/date-utils";
 import { useApi } from "@/hooks/use-api";
 import { ErrorState } from "@/components/shared/error-state";
@@ -106,53 +125,86 @@ export function GuestsTable({ guests, onUpdate }: GuestsTableProps) {
                 <StatusBadge isActive={!!guest.isCurrentlyCheckedIn} />
               </TableCell>
               <TableCell>
-                <div className="flex space-x-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleEditClick(guest)}
-                  >
-                    編集
-                  </Button>
-                  {guest.isCurrentlyCheckedIn ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
                     <Button
-                      size="sm"
                       variant="outline"
+                      size="icon"
+                      className="h-8 w-8"
+                      aria-label="操作メニュー"
+                    >
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-40">
+                    <DropdownMenuItem
+                      className="cursor-pointer"
+                      onClick={() => handleEditClick(guest)}
+                    >
+                      編集
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="cursor-pointer"
                       onClick={async () => {
-                        await execute(`/api/guests/${guest.id}/checkout`, {
-                          method: "POST",
-                        });
+                        if (guest.isCurrentlyCheckedIn) {
+                          await execute(`/api/guests/${guest.id}/checkout`, {
+                            method: "POST",
+                          });
+                        } else {
+                          await execute(`/api/guests/${guest.id}/checkin`, {
+                            method: "POST",
+                          });
+                        }
                         onUpdate();
                       }}
                     >
-                      退場
-                    </Button>
-                  ) : (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={async () => {
-                        await execute(`/api/guests/${guest.id}/checkin`, {
-                          method: "POST",
-                        });
-                        onUpdate();
-                      }}
-                    >
-                      入場
-                    </Button>
-                  )}
-                  {!isManager && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleDeleteClick(guest)}
-                      disabled={guest.isCurrentlyCheckedIn}
-                      className="text-red-600 hover:text-red-700"
-                    >
-                      削除
-                    </Button>
-                  )}
-                </div>
+                      {guest.isCurrentlyCheckedIn ? "退場" : "入場"}
+                    </DropdownMenuItem>
+                    {!isManager && (
+                      <>
+                        <DropdownMenuSeparator />
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <DropdownMenuItem
+                              className="text-red-600 focus:text-red-600 cursor-pointer"
+                              disabled={guest.isCurrentlyCheckedIn}
+                            >
+                              削除
+                            </DropdownMenuItem>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>
+                                ゲストを削除しますか？
+                              </AlertDialogTitle>
+                              <AlertDialogDescription>
+                                この操作は取り消せません。「{guest.name}
+                                」の全ての関連データが削除されます。
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel asChild>
+                                <Button variant="outline" size="sm">
+                                  キャンセル
+                                </Button>
+                              </AlertDialogCancel>
+                              <AlertDialogAction asChild>
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={() => handleDeleteClick(guest)}
+                                  disabled={guest.isCurrentlyCheckedIn}
+                                >
+                                  削除する
+                                </Button>
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </TableCell>
             </TableRow>
           ))}
