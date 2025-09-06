@@ -87,103 +87,107 @@ export function HistoryTable({ records, onUpdated }: HistoryTableProps) {
 
   return (
     <>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>ゲスト名</TableHead>
-            <TableHead>ID</TableHead>
-            <TableHead>チェックイン</TableHead>
-            <TableHead>チェックアウト</TableHead>
-            <TableHead>滞在時間</TableHead>
-            <TableHead>状態</TableHead>
-            <TableHead>操作</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {records.map((record) => (
-            <TableRow key={record.id}>
-              <TableCell className="font-medium">{record.guestName}</TableCell>
-              <TableCell>{record.guestDisplayId}</TableCell>
-              <TableCell>{formatDateTime(record.checkinAt)}</TableCell>
-              <TableCell>
-                {record.checkoutAt ? formatDateTime(record.checkoutAt) : "-"}
-              </TableCell>
-              <TableCell>
-                {record.duration ? `${record.duration}分` : "-"}
-              </TableCell>
-              <TableCell>
-                <StatusBadge isActive={!!record.isActive} />
-              </TableCell>
-              <TableCell>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="h-8 w-8"
-                      aria-label="操作メニュー"
-                    >
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-40">
-                    <DropdownMenuItem
-                      className="cursor-pointer"
-                      onClick={() => openEdit(record)}
-                    >
-                      編集
-                    </DropdownMenuItem>
-                    {isSuper && (
-                      <>
-                        <DropdownMenuSeparator />
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <DropdownMenuItem className="text-red-600 focus:text-red-600 cursor-pointer">
-                              削除
-                            </DropdownMenuItem>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>
-                                この記録を削除しますか？
-                              </AlertDialogTitle>
-                              <AlertDialogDescription>
-                                削除すると元に戻せません。レポートからも除外されます。
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel asChild>
-                                <Button variant="outline" size="sm">
-                                  キャンセル
-                                </Button>
-                              </AlertDialogCancel>
-                              <AlertDialogAction asChild>
-                                <Button
-                                  size="sm"
-                                  variant="destructive"
-                                  onClick={async () => {
-                                    await execute(
-                                      `/api/admin/checkin-records/${record.id}`,
-                                      { method: "DELETE" }
-                                    );
-                                    onUpdated && onUpdated();
-                                  }}
-                                >
-                                  削除する
-                                </Button>
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </>
-                    )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </TableCell>
+      <div className="overflow-x-auto rounded-md border bg-white">
+        <Table className="relative">
+          <TableHeader>
+            <TableRow className="bg-slate-50 hover:bg-slate-50 sticky top-0 z-10">
+              <TableHead>ゲスト名</TableHead>
+              <TableHead>ID</TableHead>
+              <TableHead>チェックイン</TableHead>
+              <TableHead>チェックアウト</TableHead>
+              <TableHead>滞在時間</TableHead>
+              <TableHead>状態</TableHead>
+              <TableHead>操作</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {records.map((record) => (
+              <TableRow key={record.id} className="hover:bg-slate-50">
+                <TableCell className="font-medium">
+                  {record.guestName}
+                </TableCell>
+                <TableCell>{record.guestDisplayId}</TableCell>
+                <TableCell>{formatDateTime(record.checkinAt)}</TableCell>
+                <TableCell>
+                  {record.checkoutAt ? formatDateTime(record.checkoutAt) : "-"}
+                </TableCell>
+                <TableCell>
+                  {record.duration ? `${record.duration}分` : "-"}
+                </TableCell>
+                <TableCell>
+                  <StatusBadge isActive={!!record.isActive} />
+                </TableCell>
+                <TableCell>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8"
+                        aria-label="操作メニュー"
+                      >
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-40">
+                      <DropdownMenuItem
+                        className="cursor-pointer"
+                        onClick={() => openEdit(record)}
+                      >
+                        編集
+                      </DropdownMenuItem>
+                      {isSuper && (
+                        <>
+                          <DropdownMenuSeparator />
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <DropdownMenuItem className="text-red-600 focus:text-red-600 cursor-pointer">
+                                削除
+                              </DropdownMenuItem>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                  この記録を削除しますか？
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  削除すると元に戻せません。レポートからも除外されます。
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel asChild>
+                                  <Button variant="outline" size="sm">
+                                    キャンセル
+                                  </Button>
+                                </AlertDialogCancel>
+                                <AlertDialogAction asChild>
+                                  <Button
+                                    size="sm"
+                                    variant="destructive"
+                                    onClick={async () => {
+                                      await execute(
+                                        `/api/admin/checkin-records/${record.id}`,
+                                        { method: "DELETE" }
+                                      );
+                                      onUpdated && onUpdated();
+                                    }}
+                                  >
+                                    削除する
+                                  </Button>
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
       {editing && (
         <Dialog open={!!editing} onOpenChange={() => setEditing(null)}>
           <DialogContent>

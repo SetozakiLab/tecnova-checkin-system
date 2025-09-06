@@ -66,33 +66,15 @@ export function GuestsTable({ guests, onUpdate }: GuestsTableProps) {
     if (!editingGuest) return;
 
     const result = await execute(`/api/admin/guests/${editingGuest.id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        name: editForm.name,
-        contact: editForm.contact || undefined,
-      }),
-    });
-
-    if (result) {
-      setEditingGuest(null);
-      onUpdate();
-    }
-  };
-
-  const handleDeleteClick = async (guest: GuestData) => {
-    if (!confirm(`「${guest.name}」を削除しますか？`)) return;
-
-    await execute(`/api/admin/guests/${guest.id}`, {
       method: "DELETE",
     });
+    if (result) onUpdate();
+  };
 
-    // エラーがない場合は削除成功とみなして更新
-    if (!editError) {
-      onUpdate();
-    }
+  // 削除 (AlertDialog から呼び出し)
+  const deleteGuest = async (guest: GuestData) => {
+    await execute(`/api/admin/guests/${guest.id}`, { method: "DELETE" });
+    if (!editError) onUpdate();
   };
 
   if (guests.length === 0) {
@@ -103,113 +85,115 @@ export function GuestsTable({ guests, onUpdate }: GuestsTableProps) {
 
   return (
     <>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>名前</TableHead>
-            <TableHead>ID</TableHead>
-            <TableHead>連絡先</TableHead>
-            <TableHead>登録日時</TableHead>
-            <TableHead>状態</TableHead>
-            <TableHead>操作</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {guests.map((guest) => (
-            <TableRow key={guest.id}>
-              <TableCell className="font-medium">{guest.name}</TableCell>
-              <TableCell>{guest.displayId}</TableCell>
-              <TableCell>{guest.contact || "-"}</TableCell>
-              <TableCell>{formatDateTime(guest.createdAt)}</TableCell>
-              <TableCell>
-                <StatusBadge isActive={!!guest.isCurrentlyCheckedIn} />
-              </TableCell>
-              <TableCell>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="h-8 w-8"
-                      aria-label="操作メニュー"
-                    >
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-40">
-                    <DropdownMenuItem
-                      className="cursor-pointer"
-                      onClick={() => handleEditClick(guest)}
-                    >
-                      編集
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="cursor-pointer"
-                      onClick={async () => {
-                        if (guest.isCurrentlyCheckedIn) {
-                          await execute(`/api/guests/${guest.id}/checkout`, {
-                            method: "POST",
-                          });
-                        } else {
-                          await execute(`/api/guests/${guest.id}/checkin`, {
-                            method: "POST",
-                          });
-                        }
-                        onUpdate();
-                      }}
-                    >
-                      {guest.isCurrentlyCheckedIn ? "退場" : "入場"}
-                    </DropdownMenuItem>
-                    {!isManager && (
-                      <>
-                        <DropdownMenuSeparator />
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <DropdownMenuItem
-                              className="text-red-600 focus:text-red-600 cursor-pointer"
-                              disabled={guest.isCurrentlyCheckedIn}
-                            >
-                              削除
-                            </DropdownMenuItem>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>
-                                ゲストを削除しますか？
-                              </AlertDialogTitle>
-                              <AlertDialogDescription>
-                                この操作は取り消せません。「{guest.name}
-                                」の全ての関連データが削除されます。
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel asChild>
-                                <Button variant="outline" size="sm">
-                                  キャンセル
-                                </Button>
-                              </AlertDialogCancel>
-                              <AlertDialogAction asChild>
-                                <Button
-                                  size="sm"
-                                  variant="destructive"
-                                  onClick={() => handleDeleteClick(guest)}
-                                  disabled={guest.isCurrentlyCheckedIn}
-                                >
-                                  削除する
-                                </Button>
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </>
-                    )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </TableCell>
+      <div className="overflow-x-auto rounded-md border bg-white">
+        <Table className="relative">
+          <TableHeader>
+            <TableRow className="bg-slate-50 hover:bg-slate-50 sticky top-0 z-10">
+              <TableHead>名前</TableHead>
+              <TableHead>ID</TableHead>
+              <TableHead>連絡先</TableHead>
+              <TableHead>登録日時</TableHead>
+              <TableHead>状態</TableHead>
+              <TableHead>操作</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {guests.map((guest) => (
+              <TableRow key={guest.id} className="hover:bg-slate-50">
+                <TableCell className="font-medium">{guest.name}</TableCell>
+                <TableCell>{guest.displayId}</TableCell>
+                <TableCell>{guest.contact || "-"}</TableCell>
+                <TableCell>{formatDateTime(guest.createdAt)}</TableCell>
+                <TableCell>
+                  <StatusBadge isActive={!!guest.isCurrentlyCheckedIn} />
+                </TableCell>
+                <TableCell>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8"
+                        aria-label="操作メニュー"
+                      >
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-40">
+                      <DropdownMenuItem
+                        className="cursor-pointer"
+                        onClick={() => handleEditClick(guest)}
+                      >
+                        編集
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="cursor-pointer"
+                        onClick={async () => {
+                          if (guest.isCurrentlyCheckedIn) {
+                            await execute(`/api/guests/${guest.id}/checkout`, {
+                              method: "POST",
+                            });
+                          } else {
+                            await execute(`/api/guests/${guest.id}/checkin`, {
+                              method: "POST",
+                            });
+                          }
+                          onUpdate();
+                        }}
+                      >
+                        {guest.isCurrentlyCheckedIn ? "退場" : "入場"}
+                      </DropdownMenuItem>
+                      {!isManager && (
+                        <>
+                          <DropdownMenuSeparator />
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <DropdownMenuItem
+                                className="text-red-600 focus:text-red-600 cursor-pointer"
+                                disabled={guest.isCurrentlyCheckedIn}
+                              >
+                                削除
+                              </DropdownMenuItem>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                  ゲストを削除しますか？
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  この操作は取り消せません。「{guest.name}
+                                  」の全ての関連データが削除されます。
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel asChild>
+                                  <Button variant="outline" size="sm">
+                                    キャンセル
+                                  </Button>
+                                </AlertDialogCancel>
+                                <AlertDialogAction asChild>
+                                  <Button
+                                    size="sm"
+                                    variant="destructive"
+                                    onClick={() => deleteGuest(guest)}
+                                    disabled={guest.isCurrentlyCheckedIn}
+                                  >
+                                    削除する
+                                  </Button>
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
 
       {/* 編集モーダル */}
       {editingGuest && (

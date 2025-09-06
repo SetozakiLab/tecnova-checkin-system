@@ -5,7 +5,6 @@ import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import {
   LayoutDashboard,
   Users,
