@@ -1,6 +1,6 @@
 # データベース設計書
 
-**最終更新日:** 2025 年 7 月 3 日
+**最終更新日:** 2025 年 9 月 6 日
 
 ---
 
@@ -65,11 +65,13 @@ erDiagram
 | createdAt | TIMESTAMP    | NOT NULL, DEFAULT NOW() | 登録日時                |
 | updatedAt | TIMESTAMP    | NOT NULL, DEFAULT NOW() | 更新日時                |
 
-**インデックス:**
+**インデックス（設計）:**
 
 - PRIMARY KEY (id)
 - UNIQUE INDEX (displayId)
 - INDEX (name) - 検索用
+
+**実装状況差分:** Prisma schema では `displayId` の UNIQUE のみ明示。`name` インデックスは未定義（必要性とクエリ頻度を踏まえ追加検討）。
 
 **備考:**
 
@@ -77,6 +79,7 @@ erDiagram
 - YY: 年（2025 → 25）
 - XXX: 年内の連番（001 から 999 まで）
 - name はニックネーム可
+- contact カラムは存在するが現行 UI では入力欄を非表示（将来 保護者通知機能対応時に再表示予定）
 
 ### 2.3. CheckinRecord（入退場記録）テーブル
 
@@ -94,7 +97,7 @@ erDiagram
 
 - guestId REFERENCES Guest(id) ON DELETE CASCADE
 
-**インデックス:**
+**インデックス（設計）:**
 
 - PRIMARY KEY (id)
 - INDEX (guestId)
@@ -102,11 +105,14 @@ erDiagram
 - INDEX (isActive)
 - INDEX (guestId, isActive) - 複合インデックス
 
+**実装状況差分:** 現行 Prisma schema にこれらのインデックス定義は未追加。高頻度クエリ（`isActive`、`guestId+isActive`、`checkinAt`）に最適化余地あり。次回マイグレーション候補。
+
 **備考:**
 
 - isActive = TRUE: 現在滞在中
 - isActive = FALSE: 退場済み
 - checkoutAt = NULL: 滞在中
+- 同一 guestId で isActive=TRUE は 1 件だけであるべき。現在アプリケーションロジックで保証（DB 制約は未付与 / 将来部分 UNIQUE インデックス検討）
 
 ## 3. ビジネスルール
 
@@ -174,7 +180,7 @@ const getNextSequenceForYear = async (year: number): Promise<number> => {
 
 **頻繁に実行されるクエリ:**
 
-1. **現在の滞在者一覧取得**
+1. **現在の滞在者一覧取得**（`isActive = true` フィルタ + `checkinAt` ソート。インデックス未整備のため今後 `isActive, checkinAt` 追加を推奨）
 
 ```sql
 SELECT g.name, cr.checkinAt
@@ -184,7 +190,7 @@ WHERE cr.isActive = TRUE
 ORDER BY cr.checkinAt DESC;
 ```
 
-2. **ゲスト検索（名前）**
+2. **ゲスト検索（名前）**（`ILIKE` 部分一致。`name` インデックス未定義のため件数増加時にパフォーマンス懸念）
 
 ```sql
 SELECT id, displayId, name
@@ -193,7 +199,23 @@ WHERE name LIKE '%検索語%'
 ORDER BY name;
 ```
 
-3. **入退場履歴検索**
+3. **入退場履歴検索**（`checkinAt` 範囲検索。`checkinAt` インデックス未定義のため追加予定）
+
+### 4.3. 今後のマイグレーション提案
+
+| 対象          | 追加インデックス                    | 目的                     |
+| ------------- | ----------------------------------- | ------------------------ |
+| Guest         | name                                | 部分一致検索高速化       |
+| CheckinRecord | isActive                            | 現在滞在者一覧           |
+| CheckinRecord | guestId,isActive                    | 重複チェックイン防止判定 |
+| CheckinRecord | checkinAt                           | 日次範囲集計             |
+| CheckinRecord | (部分)UNIQUE guestId WHERE isActive | アプリ側制約の DB 移行   |
+
+### 4.4. リスクと対応
+
+- インデックス追加による書き込みオーバーヘッドは許容範囲（想定書き込み 200/日）
+- 既存データ量が少ない段階で早期適用を推奨
+- 重複アクティブチェックイン防止は現行ロジック依存のため、将来 DB 制約導入で整合性強化
 
 ```sql
 SELECT g.name, cr.checkinAt, cr.checkoutAt

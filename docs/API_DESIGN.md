@@ -1,6 +1,6 @@
 # API 設計書
 
-**最終更新日:** 2025 年 7 月 3 日
+**最終更新日:** 2025 年 9 月 6 日
 
 ---
 
@@ -9,33 +9,31 @@
 ### 1.1. アーキテクチャ
 
 - **フレームワーク**: Next.js App Router
-- **API タイプ**: RESTful API
-- **認証方式**: NextAuth.js (セッションベース)
+- **API タイプ**: RESTful API (Next.js Route Handlers)
+- **認証方式**: NextAuth.js (Credentials / セッションベース)
 - **データ形式**: JSON
-- **エラーハンドリング**: 標準 HTTP ステータスコード
+- **エラーハンドリング**: 共通ハンドラー（`api-handler.ts`）+ HTTP ステータス
 
 ### 1.2. ベース URL
 
 ```
-本番: https://checkin.tecnova.local
+本番: https://checkin.tecnova.local (予定)
 開発: http://localhost:3000
 ```
 
 ### 1.3. 共通レスポンス形式
 
-#### 成功レスポンス
+成功:
 
 ```json
 {
   "success": true,
-  "data": {
-    // レスポンスデータ
-  },
-  "message": "操作が成功しました"
+  "data": {},
+  "message": "任意のメッセージ"
 }
 ```
 
-#### エラーレスポンス
+エラー:
 
 ```json
 {
@@ -43,38 +41,34 @@
   "error": {
     "code": "VALIDATION_ERROR",
     "message": "入力内容に誤りがあります",
-    "details": [
-      {
-        "field": "name",
-        "message": "名前は必須です"
-      }
-    ]
+    "details": [{ "field": "name", "message": "名前は必須です" }]
   }
 }
 ```
+
+---
 
 ## 2. ゲスト向け API
 
 ### 2.1. 新規ゲスト登録
 
-**エンドポイント**: `POST /api/guests`
+`POST /api/guests`
 
-**リクエスト**:
+リクエスト:
 
 ```json
-{
-  "name": "田中太郎",
-  "contact": "taro@example.com"
-}
+{ "name": "田中太郎", "contact": "taro@example.com" }
 ```
 
-**レスポンス**:
+備考: 登録直後にサーバー側で自動チェックインを試行（失敗しても登録は成功扱い）。レスポンスにはチェックイン情報は含まれない。
+
+レスポンス（実装）:
 
 ```json
 {
   "success": true,
   "data": {
-    "id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+    "id": "uuid",
     "displayId": 25001,
     "name": "田中太郎",
     "contact": "taro@example.com",
@@ -84,41 +78,30 @@
 }
 ```
 
-**エラーケース**:
+主なエラー: 400 VALIDATION_ERROR / 500 INTERNAL_SERVER_ERROR
 
-- 400: バリデーションエラー
-- 409: 既に同名のゲストが存在
+### 2.2. ゲスト検索（公開）
 
-### 2.2. ゲスト検索
+`GET /api/guests/search?q=...`
 
-**エンドポイント**: `GET /api/guests/search`
+クエリ:
 
-**クエリパラメータ**:
+- `q`: 名前部分一致 または displayId 数値完全一致
 
-- `q`: 検索語（名前または displayId）
-- `limit`: 最大取得件数（デフォルト: 10）
+備考: `limit` パラメータは未実装（常に最大 10 件）。
 
-**例**: `/api/guests/search?q=田中&limit=5`
-
-**レスポンス**:
+レスポンス例:
 
 ```json
 {
   "success": true,
   "data": [
     {
-      "id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+      "id": "uuid",
       "displayId": 25001,
       "name": "田中太郎",
       "isCurrentlyCheckedIn": false,
       "lastCheckinAt": "2025-07-02T14:30:00Z"
-    },
-    {
-      "id": "b2c3d4e5-f6g7-8901-2345-678901bcdefg",
-      "displayId": 25002,
-      "name": "田中花子",
-      "isCurrentlyCheckedIn": true,
-      "lastCheckinAt": "2025-07-03T09:15:00Z"
     }
   ]
 }
@@ -126,19 +109,15 @@
 
 ### 2.3. ゲスト詳細取得
 
-**エンドポイント**: `GET /api/guests/[id]`
+`GET /api/guests/{id}`
 
-**パスパラメータ**:
-
-- `id`: ゲスト ID（UUID）
-
-**レスポンス**:
+レスポンス例:
 
 ```json
 {
   "success": true,
   "data": {
-    "id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+    "id": "uuid",
     "displayId": 25001,
     "name": "田中太郎",
     "contact": "taro@example.com",
@@ -152,199 +131,142 @@
 
 ### 2.4. チェックイン
 
-**エンドポイント**: `POST /api/guests/[id]/checkin`
+`POST /api/guests/{id}/checkin`
 
-**パスパラメータ**:
+リクエストボディ: なし
 
-- `id`: ゲスト ID（UUID）
-
-**リクエスト**:
-
-```json
-{
-  "timestamp": "2025-07-03T10:30:00Z"
-}
-```
-
-**レスポンス**:
+レスポンス（実装）:
 
 ```json
 {
   "success": true,
   "data": {
-    "checkinRecordId": "c3d4e5f6-g7h8-9012-3456-789012cdefgh",
-    "guestId": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+    "id": "checkin-record-uuid",
+    "guestId": "uuid",
     "guestName": "田中太郎",
+    "guestDisplayId": 25001,
     "checkinAt": "2025-07-03T10:30:00Z",
+    "checkoutAt": null,
     "isActive": true
   },
   "message": "チェックインしました"
 }
 ```
 
-**エラーケース**:
-
-- 400: 既にチェックイン済み
-- 404: ゲストが見つからない
+エラー: 404 NOT_FOUND / 409 CONFLICT (既にチェックイン)
 
 ### 2.5. チェックアウト
 
-**エンドポイント**: `POST /api/guests/[id]/checkout`
+`POST /api/guests/{id}/checkout`
 
-**パスパラメータ**:
+リクエストボディ: なし
 
-- `id`: ゲスト ID（UUID）
-
-**リクエスト**:
-
-```json
-{
-  "timestamp": "2025-07-03T15:30:00Z"
-}
-```
-
-**レスポンス**:
+レスポンス（実装）:
 
 ```json
 {
   "success": true,
   "data": {
-    "checkinRecordId": "c3d4e5f6-g7h8-9012-3456-789012cdefgh",
-    "guestId": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+    "id": "checkin-record-uuid",
+    "guestId": "uuid",
     "guestName": "田中太郎",
+    "guestDisplayId": 25001,
     "checkinAt": "2025-07-03T10:30:00Z",
     "checkoutAt": "2025-07-03T15:30:00Z",
-    "isActive": false,
-    "stayDuration": "5時間0分"
+    "isActive": false
   },
   "message": "チェックアウトしました"
 }
 ```
 
-**エラーケース**:
+エラー: 400 BAD_REQUEST (未チェックイン)
 
-- 400: チェックインしていない
-- 404: ゲストが見つからない
+---
 
-## 3. 管理者向け API
+## 3. 管理者向け API（要認証）
 
-### 3.1. 認証関連
+### 3.1. 認証
 
-#### ログイン
+#### サインイン
 
-**エンドポイント**: `POST /api/auth/signin`
-
-**リクエスト**:
+`POST /api/auth/signin`
 
 ```json
-{
-  "username": "admin",
-  "password": "password123"
-}
+{ "username": "admin", "password": "password123" }
 ```
 
-**レスポンス**:
+レスポンス（実装）:
 
 ```json
-{
-  "success": true,
-  "data": {
-    "user": {
-      "id": "admin-uuid",
-      "username": "admin"
-    },
-    "sessionToken": "session-token-here"
-  },
-  "message": "ログインしました"
-}
+{ "success": true, "message": "ログインしました" }
 ```
 
-#### ログアウト
+失敗: 401 UNAUTHORIZED
 
-**エンドポイント**: `POST /api/auth/signout`
+#### サインアウト
 
-**レスポンス**:
+`POST /api/auth/signout`
 
 ```json
-{
-  "success": true,
-  "message": "ログアウトしました"
-}
+{ "success": true, "message": "ログアウトしました" }
 ```
 
 ### 3.2. ダッシュボード
 
-#### 現在の滞在者一覧
+#### 現在の滞在者
 
-**エンドポイント**: `GET /api/admin/dashboard/current-guests`
-
-**レスポンス**:
+`GET /api/admin/dashboard/current-guests`
+レスポンス（実装）:
 
 ```json
 {
   "success": true,
-  "data": {
-    "totalCount": 5,
-    "guests": [
-      {
-        "id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
-        "displayId": 25001,
-        "name": "田中太郎",
-        "checkinAt": "2025-07-03T10:30:00Z",
-        "stayDuration": "2時間15分"
-      },
-      {
-        "id": "b2c3d4e5-f6g7-8901-2345-678901bcdefg",
-        "displayId": 25002,
-        "name": "田中花子",
-        "checkinAt": "2025-07-03T09:15:00Z",
-        "stayDuration": "3時間30分"
-      }
-    ]
-  }
+  "data": [
+    {
+      "id": "checkin-record-uuid",
+      "guestId": "guest-uuid",
+      "guestName": "田中太郎",
+      "guestDisplayId": 25001,
+      "checkinAt": "2025-07-03T10:30:00Z",
+      "checkoutAt": null,
+      "isActive": true,
+      "duration": 135
+    }
+  ]
 }
 ```
 
-#### 今日の統計情報
+備考: `duration` = 分。総数フィールドは未実装。
 
-**エンドポイント**: `GET /api/admin/dashboard/today-stats`
+#### 今日の統計
 
-**レスポンス**:
+`GET /api/admin/dashboard/today-stats`
+レスポンス（実装）:
 
 ```json
 {
   "success": true,
   "data": {
-    "date": "2025-07-03",
-    "totalVisitors": 12,
-    "currentGuests": 5,
     "totalCheckins": 12,
-    "totalCheckouts": 7,
-    "averageStayTime": "3時間45分",
-    "peakTime": "14:00-15:00",
-    "peakCount": 8
+    "currentGuests": 5,
+    "averageStayTime": 225
   }
 }
 ```
+
+備考: `averageStayTime` = 分。旧設計の追加指標は未実装。
 
 ### 3.3. 入退場履歴
 
-#### 履歴検索
+`GET /api/admin/checkin-records`
 
-**エンドポイント**: `GET /api/admin/checkin-records`
+クエリ:
 
-**クエリパラメータ**:
+- `page` / `limit`
+- `startDate` / `endDate`
+- `guestId` / `guestName`
 
-- `startDate`: 開始日（YYYY-MM-DD）
-- `endDate`: 終了日（YYYY-MM-DD）
-- `guestName`: ゲスト名（部分一致）
-- `type`: 種別（checkin/checkout）
-- `page`: ページ番号（デフォルト: 1）
-- `limit`: 1 ページあたりの件数（デフォルト: 50）
-
-**例**: `/api/admin/checkin-records?startDate=2025-07-01&endDate=2025-07-03&page=1&limit=20`
-
-**レスポンス**:
+レスポンス（実装）:
 
 ```json
 {
@@ -352,41 +274,29 @@
   "data": {
     "records": [
       {
-        "id": "c3d4e5f6-g7h8-9012-3456-789012cdefgh",
-        "guest": {
-          "id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
-          "displayId": 25001,
-          "name": "田中太郎"
-        },
+        "id": "record-uuid",
+        "guestId": "guest-uuid",
+        "guestName": "田中太郎",
+        "guestDisplayId": 25001,
         "checkinAt": "2025-07-03T10:30:00Z",
         "checkoutAt": "2025-07-03T15:30:00Z",
-        "stayDuration": "5時間0分",
-        "isActive": false
+        "isActive": false,
+        "duration": 300
       }
     ],
-    "pagination": {
-      "page": 1,
-      "limit": 20,
-      "totalCount": 150,
-      "totalPages": 8
-    }
+    "pagination": { "page": 1, "limit": 20, "totalCount": 150, "totalPages": 8 }
   }
 }
 ```
 
+備考: `duration` = 分。文字列表現（例: "5 時間 0 分"）は未実装。
+
 ### 3.4. ゲスト管理
 
-#### ゲスト一覧
+#### 一覧
 
-**エンドポイント**: `GET /api/admin/guests`
-
-**クエリパラメータ**:
-
-- `search`: 検索語（名前または displayId）
-- `page`: ページ番号（デフォルト: 1）
-- `limit`: 1 ページあたりの件数（デフォルト: 50）
-
-**レスポンス**:
+`GET /api/admin/guests?search=&page=1&limit=50`
+レスポンス例:
 
 ```json
 {
@@ -394,7 +304,7 @@
   "data": {
     "guests": [
       {
-        "id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+        "id": "guest-uuid",
         "displayId": 25001,
         "name": "田中太郎",
         "contact": "taro@example.com",
@@ -404,157 +314,127 @@
         "createdAt": "2025-06-15T10:30:00Z"
       }
     ],
-    "pagination": {
-      "page": 1,
-      "limit": 50,
-      "totalCount": 125,
-      "totalPages": 3
-    }
+    "pagination": { "page": 1, "limit": 50, "totalCount": 125, "totalPages": 3 }
   }
 }
 ```
 
-#### ゲスト更新
+#### 更新
 
-**エンドポイント**: `PUT /api/admin/guests/[id]`
-
-**パスパラメータ**:
-
-- `id`: ゲスト ID（UUID）
-
-**リクエスト**:
+`PUT /api/admin/guests/{id}`
 
 ```json
-{
-  "name": "田中太郎（更新）",
-  "contact": "taro@example.com"
-}
+{ "name": "田中太郎（更新）", "contact": "taro@example.com" }
 ```
 
-**レスポンス**:
+レスポンス（実装）:
 
 ```json
 {
   "success": true,
   "data": {
-    "id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+    "id": "guest-uuid",
     "displayId": 25001,
     "name": "田中太郎（更新）",
     "contact": "taro@example.com",
-    "updatedAt": "2025-07-03T16:00:00Z"
+    "createdAt": "2025-06-15T10:30:00Z"
   },
   "message": "ゲスト情報を更新しました"
 }
 ```
 
-#### ゲスト削除
+備考: `updatedAt` はレスポンス未含有。
 
-**エンドポイント**: `DELETE /api/admin/guests/[id]`
+#### 削除
 
-**パスパラメータ**:
+`DELETE /api/admin/guests/{id}`
+成功: 200 （チェックイン中は 409 CONFLICT）
 
-- `id`: ゲスト ID（UUID）
+---
 
-**レスポンス**:
+## 4. リアルタイム更新（WebSocket）
 
-```json
-{
-  "success": true,
-  "message": "ゲストを削除しました"
-}
-```
+現行コードには WebSocket 実装なし。予定イベント案:
 
-**エラーケース**:
+- `GUEST_CHECKED_IN`
+- `GUEST_CHECKED_OUT`
+- `CURRENT_GUESTS_UPDATE`
 
-- 404: ゲストが見つからない
-- 409: 現在チェックイン中のため削除不可
+---
 
-## 4. WebSocket API（リアルタイム更新）
+## 5. エラーコード
 
-### 4.1. 接続
+| HTTP | コード                | 説明                                   |
+| ---- | --------------------- | -------------------------------------- |
+| 400  | VALIDATION_ERROR      | バリデーションエラー                   |
+| 400  | BAD_REQUEST           | 不正リクエスト（汎用）                 |
+| 401  | UNAUTHORIZED          | 認証が必要                             |
+| 403  | FORBIDDEN             | 権限なし（現状未使用）                 |
+| 404  | NOT_FOUND             | リソース未存在                         |
+| 405  | METHOD_NOT_ALLOWED    | 許可されていないメソッド               |
+| 409  | CONFLICT              | 競合（既にチェックイン / 削除不可 等） |
+| 500  | INTERNAL_SERVER_ERROR | サーバー内部エラー                     |
 
-**エンドポイント**: `ws://localhost:3000/api/websocket`
+内部サービス例外: `GUEST_NOT_FOUND`, `ALREADY_CHECKED_IN`, `NOT_CHECKED_IN`, `GUEST_CURRENTLY_CHECKED_IN`, `DISPLAY_ID_GENERATION_FAILED`, `SEQUENCE_LIMIT_EXCEEDED` など。
 
-**認証**: 管理者のみ（セッション確認）
-
-### 4.2. イベント
-
-#### 入場通知
-
-```json
-{
-  "type": "GUEST_CHECKED_IN",
-  "data": {
-    "guestId": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
-    "guestName": "田中太郎",
-    "checkinAt": "2025-07-03T10:30:00Z"
-  }
-}
-```
-
-#### 退場通知
-
-```json
-{
-  "type": "GUEST_CHECKED_OUT",
-  "data": {
-    "guestId": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
-    "guestName": "田中太郎",
-    "checkoutAt": "2025-07-03T15:30:00Z",
-    "stayDuration": "5時間0分"
-  }
-}
-```
-
-#### 滞在者数更新
-
-```json
-{
-  "type": "CURRENT_GUESTS_UPDATE",
-  "data": {
-    "totalCount": 5,
-    "guests": [
-      // 現在の滞在者一覧
-    ]
-  }
-}
-```
-
-## 5. エラーコード一覧
-
-| HTTP ステータス | エラーコード          | 説明                   |
-| --------------- | --------------------- | ---------------------- |
-| 400             | VALIDATION_ERROR      | バリデーションエラー   |
-| 400             | ALREADY_CHECKED_IN    | 既にチェックイン済み   |
-| 400             | NOT_CHECKED_IN        | チェックインしていない |
-| 401             | UNAUTHORIZED          | 認証が必要             |
-| 403             | FORBIDDEN             | 権限がない             |
-| 404             | NOT_FOUND             | リソースが見つからない |
-| 409             | CONFLICT              | データの競合           |
-| 500             | INTERNAL_SERVER_ERROR | サーバー内部エラー     |
+---
 
 ## 6. レート制限
 
-- **ゲスト向け API**: 1IP あたり 100 リクエスト/分
-- **管理者向け API**: 1 セッション あたり 500 リクエスト/分
-- **WebSocket**: 1 セッション あたり 1 接続
+現行: 未導入。導入予定（案）
 
-## 7. セキュリティ考慮事項
+- 公開 API: 1 IP / 100 req / 分
+- 管理 API: 1 セッション / 500 req / 分
+- リアルタイム: 1 セッション 1 接続
+  候補: @upstash/ratelimit + Redis
 
-### 7.1. 認証・認可
+---
 
-- 管理者機能は全て認証必須
-- セッション有効期限: 8 時間
-- CSRF 保護: Next.js 標準機能
+## 7. セキュリティ
+
+### 7.1. 認証 / 認可
+
+- 管理ルートは `requireAuth` でセッション検証
+- セッション有効期限: NextAuth デフォルト（明示設定なし）
+- CSRF: NextAuth 標準
 
 ### 7.2. データ保護
 
-- 個人情報の暗号化
-- SQL インジェクション対策（Prisma ORM）
-- XSS 対策（Next.js 標準機能）
+- SQL インジェクション: Prisma ORM
+- XSS: Next.js デフォルトのエスケープ
+- 個人情報暗号化: 未実装（必要性次第で検討）
 
-### 7.3. ログ・監査
+### 7.3. ログ / 監査
 
-- 全 API 呼び出しのログ記録
-- 管理者操作の監査ログ
-- 異常なアクセスパターンの検知
+- アクセスログ（構造化）: 未実装
+- 監査ログ: 未実装
+- 異常検知: 未実装
+
+---
+
+## 8. 変更履歴（差分要約）
+
+| 項目                | 旧記述                                   | 現行実装                            | 備考                    |
+| ------------------- | ---------------------------------------- | ----------------------------------- | ----------------------- |
+| ゲスト検索          | limit 対応                               | limit 未実装                        | 固定 10 件              |
+| チェックイン/アウト | timestamp フィールド                     | ボディ不要                          | サーバー時刻使用        |
+| 現在滞在者          | totalCount + guests オブジェクト         | 配列のみ                            | duration 分単位         |
+| 今日統計            | 多項目 (peak 等)                         | 3 項目のみ                          | 拡張予定                |
+| 履歴 API            | guest オブジェクト + stayDuration 文字列 | フラット + duration(分)             | 文字列整形未実装        |
+| 更新レスポンス      | updatedAt 返却                           | 未返却                              | 返却統一検討            |
+| サインイン          | user / sessionToken 返却                 | message のみ                        | NextAuth セッション管理 |
+| WebSocket           | 実装前提                                 | 未実装                              | 設計のみ保持            |
+| レート制限          | 実装記述あり                             | 未実装                              | 導入予定                |
+| エラー              | NOT_CHECKED_IN 等のみ                    | BAD_REQUEST/METHOD_NOT_ALLOWED 追加 | 共通化                  |
+
+---
+
+## 9. 今後の改善候補
+
+1. レート制限導入
+2. WebSocket / SSE による push 更新
+3. 滞在時間文字列表現フォーマッタ追加
+4. 統計指標（ピーク時間/総訪問者）拡張
+5. 監査ログ + エラートラッキング (Sentry)
+6. `updatedAt` や完全 DTO の返却統一
+7. エラーコード列挙型化 & ドキュメント自動生成
