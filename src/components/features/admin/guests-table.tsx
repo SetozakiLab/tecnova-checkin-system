@@ -64,11 +64,21 @@ export function GuestsTable({ guests, onUpdate }: GuestsTableProps) {
 
   const handleEditSubmit = async () => {
     if (!editingGuest) return;
-
+    // 本来は更新API(PUT)を呼ぶべきところがDELETEになっていたため修正
+    const payload = {
+      name: editForm.name.trim(),
+      // 空文字はスキーマで許容されるためそのまま送信（undefinedにすると項目未更新になる）
+      contact: editForm.contact.trim(),
+    };
     const result = await execute(`/api/admin/guests/${editingGuest.id}`, {
-      method: "DELETE",
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
     });
-    if (result) onUpdate();
+    if (result) {
+      onUpdate();
+      setEditingGuest(null);
+    }
   };
 
   // 削除 (AlertDialog から呼び出し)
