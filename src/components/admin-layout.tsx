@@ -11,6 +11,7 @@ import {
   History as HistoryIcon,
   LogOut,
   Menu,
+  User2Icon,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -139,6 +140,7 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="sm" className="gap-2">
+                    <User2Icon className="h-4 w-4" />
                     <span className="max-w-[120px] truncate text-left text-xs leading-tight">
                       {session.user.username}
                     </span>
