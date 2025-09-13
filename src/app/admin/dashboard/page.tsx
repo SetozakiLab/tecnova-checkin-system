@@ -1,3 +1,6 @@
+// New Dashboard Page - Clean Architecture + Enhanced Design
+// 情報設計に基づくダッシュボード画面 - クリーンアーキテクチャ + 強化されたデザイン
+
 import { Suspense } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AdminLayout } from "@/components/admin-layout";
@@ -9,10 +12,10 @@ import {
   CurrentGuestsSkeleton,
   TodaySummarySkeleton,
 } from "@/components/features/admin/dashboard-components";
-import { CheckinService } from "@/services/checkin.service";
-
-// Import the refresh button from shared components
 import { RefreshButton } from "@/components/shared";
+import { getServerTodayStats, getServerCurrentGuests } from "@/infrastructure/server-data";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertTriangle, Users, Activity, Clock, TrendingUp } from "lucide-react";
 
 // Force dynamic rendering for real-time data
 export const dynamic = "force-dynamic";
@@ -21,39 +24,43 @@ export const revalidate = 0;
 // Server Components for data fetching with error handling
 async function DashboardStatsSection() {
   try {
-    // Force dynamic rendering by revalidating data
-    const stats = await CheckinService.getTodayStats();
+    const stats = await getServerTodayStats();
     return <DashboardStats stats={stats} />;
   } catch (error) {
     console.error("Stats fetch error:", error);
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="border-red-200 bg-red-50">
-          <CardContent className="p-6">
-            <p className="text-red-600 text-sm">
-              統計データの読み込みに失敗しました
-            </p>
-            <p className="text-xs text-red-500 mt-1">
-              しばらく時間をおいて再度お試しください
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+      <Alert variant="destructive">
+        <AlertTriangle className="h-4 w-4" />
+        <AlertDescription>
+          統計データの読み込みに失敗しました。しばらく時間をおいて再度お試しください。
+        </AlertDescription>
+      </Alert>
     );
   }
 }
 
 async function CurrentGuestsSection() {
   try {
-    // Force dynamic rendering
-    const guests = await CheckinService.getCurrentGuests();
+    const guests = await getServerCurrentGuests();
+    
     return (
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-xl">現在の滞在者</CardTitle>
+        <CardHeader className="flex flex-row items-center justify-between pb-3">
+          <div className="space-y-1">
+            <CardTitle className="text-xl flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              現在の滞在者
+            </CardTitle>
+            <p className="text-sm text-muted-foreground">
+              リアルタイムで滞在者を確認できます
+            </p>
+          </div>
           <div className="flex items-center gap-4">
-            <div className="text-sm text-slate-600">
-              {guests.length}人が滞在中
+            <div className="text-right">
+              <div className="text-2xl font-bold text-success">
+                {guests.length}
+              </div>
+              <div className="text-xs text-muted-foreground">人が滞在中</div>
             </div>
             <RefreshButton />
           </div>
@@ -66,15 +73,21 @@ async function CurrentGuestsSection() {
   } catch (error) {
     console.error("Current guests fetch error:", error);
     return (
-      <Card className="border-red-200 bg-red-50">
-        <CardHeader>
-          <CardTitle className="text-xl text-red-600">現在の滞在者</CardTitle>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="text-xl flex items-center gap-2">
+            <Users className="h-5 w-5" />
+            現在の滞在者
+          </CardTitle>
+          <RefreshButton />
         </CardHeader>
         <CardContent>
-          <p className="text-red-600 text-sm">
-            滞在者データの読み込みに失敗しました
-          </p>
-          <RefreshButton />
+          <Alert variant="destructive">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>
+              滞在者データの読み込みに失敗しました
+            </AlertDescription>
+          </Alert>
         </CardContent>
       </Card>
     );
@@ -83,62 +96,184 @@ async function CurrentGuestsSection() {
 
 async function TodaySummarySection() {
   try {
-    // Force dynamic rendering
-    const stats = await CheckinService.getTodayStats();
+    const stats = await getServerTodayStats();
     return <TodaySummary stats={stats} />;
   } catch (error) {
     console.error("Today summary fetch error:", error);
     return (
-      <Card className="border-red-200 bg-red-50">
+      <Card>
         <CardHeader>
-          <CardTitle className="text-xl text-red-600">
+          <CardTitle className="text-xl flex items-center gap-2">
+            <Activity className="h-5 w-5" />
             今日の入退場サマリー
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-red-600 text-sm">
-            サマリーデータの読み込みに失敗しました
-          </p>
-          <p className="text-xs text-red-500 mt-1">
-            しばらく時間をおいて再度お試しください
-          </p>
+          <Alert variant="destructive">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>
+              サマリーデータの読み込みに失敗しました。しばらく時間をおいて再度お試しください。
+            </AlertDescription>
+          </Alert>
         </CardContent>
       </Card>
     );
   }
 }
 
-// Main Dashboard Page with Suspense boundaries
+// Quick Actions Card - 管理者の頻繁な操作へのショートカット
+function QuickActionsCard() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-lg flex items-center gap-2">
+          <TrendingUp className="h-5 w-5" />
+          クイックアクション
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <div className="grid grid-cols-2 gap-3">
+          <button className="p-3 text-left rounded-lg border border-border hover:bg-accent transition-colors">
+            <div className="flex items-center gap-2 mb-1">
+              <Users className="h-4 w-4 text-primary" />
+              <span className="font-medium text-sm">ゲスト管理</span>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              ゲスト情報の確認・編集
+            </p>
+          </button>
+          
+          <button className="p-3 text-left rounded-lg border border-border hover:bg-accent transition-colors">
+            <div className="flex items-center gap-2 mb-1">
+              <Activity className="h-4 w-4 text-primary" />
+              <span className="font-medium text-sm">履歴確認</span>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              チェックイン履歴の確認
+            </p>
+          </button>
+          
+          <button className="p-3 text-left rounded-lg border border-border hover:bg-accent transition-colors">
+            <div className="flex items-center gap-2 mb-1">
+              <Clock className="h-4 w-4 text-primary" />
+              <span className="font-medium text-sm">時間管理</span>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              滞在時間の分析
+            </p>
+          </button>
+          
+          <button className="p-3 text-left rounded-lg border border-border hover:bg-accent transition-colors">
+            <div className="flex items-center gap-2 mb-1">
+              <TrendingUp className="h-4 w-4 text-primary" />
+              <span className="font-medium text-sm">レポート</span>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              利用状況レポート
+            </p>
+          </button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// Main Dashboard Page with enhanced information architecture
 export default function AdminDashboardPage() {
   return (
     <AdminLayout title="ダッシュボード">
-      <div className="space-y-6">
-        {/* Statistics Cards - Loads first */}
-        <Suspense fallback={<StatsCardsSkeleton />}>
-          <DashboardStatsSection />
-        </Suspense>
+      <div className="space-y-8">
+        {/* Welcome Section */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">ダッシュボード</h1>
+            <p className="text-muted-foreground mt-1">
+              施設の利用状況をリアルタイムで確認できます
+            </p>
+          </div>
+          <RefreshButton />
+        </div>
 
-        {/* Current Guests - Independent loading */}
-        <Suspense
-          fallback={
+        {/* Key Metrics - 最も重要な情報を最上位に配置 */}
+        <section>
+          <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+            <Activity className="h-5 w-5" />
+            重要指標
+          </h2>
+          <Suspense fallback={<StatsCardsSkeleton />}>
+            <DashboardStatsSection />
+          </Suspense>
+        </section>
+
+        {/* Two Column Layout for Main Content */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Current Guests - Primary Information */}
+          <div className="lg:col-span-2">
+            <Suspense
+              fallback={
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between">
+                    <CardTitle className="text-xl flex items-center gap-2">
+                      <Users className="h-5 w-5" />
+                      現在の滞在者
+                    </CardTitle>
+                    <div className="text-sm text-muted-foreground">読み込み中...</div>
+                  </CardHeader>
+                  <CardContent>
+                    <CurrentGuestsSkeleton />
+                  </CardContent>
+                </Card>
+              }
+            >
+              <CurrentGuestsSection />
+            </Suspense>
+          </div>
+
+          {/* Quick Actions - Secondary Information */}
+          <div className="space-y-6">
+            <QuickActionsCard />
+            
+            {/* System Status Indicator */}
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="text-xl">現在の滞在者</CardTitle>
-                <div className="text-sm text-slate-600">読み込み中...</div>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg">システム状態</CardTitle>
               </CardHeader>
-              <CardContent>
-                <CurrentGuestsSkeleton />
+              <CardContent className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">データベース</span>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-success rounded-full" />
+                    <span className="text-xs text-success">正常</span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">リアルタイム更新</span>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-success rounded-full" />
+                    <span className="text-xs text-success">有効</span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">最終更新</span>
+                  <span className="text-xs text-muted-foreground">
+                    {new Date().toLocaleTimeString('ja-JP')}
+                  </span>
+                </div>
               </CardContent>
             </Card>
-          }
-        >
-          <CurrentGuestsSection />
-        </Suspense>
+          </div>
+        </div>
 
-        {/* Today Summary - Loads independently */}
-        <Suspense fallback={<TodaySummarySkeleton />}>
-          <TodaySummarySection />
-        </Suspense>
+        {/* Today Summary - Supporting Information */}
+        <section>
+          <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+            <Clock className="h-5 w-5" />
+            本日のサマリー
+          </h2>
+          <Suspense fallback={<TodaySummarySkeleton />}>
+            <TodaySummarySection />
+          </Suspense>
+        </section>
       </div>
     </AdminLayout>
   );

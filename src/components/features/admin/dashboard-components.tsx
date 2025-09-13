@@ -1,13 +1,14 @@
+// Updated Dashboard Components using Clean Architecture and Design System
+// 新しいデザインシステムを使用したダッシュボードコンポーネント
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { MetricCard, UserAvatarWithStatus } from "@/components/common";
 import { formatTime } from "@/lib/date-utils";
-import { CheckinRecord } from "@/types/api";
-
-interface TodayStats {
-  totalCheckins: number;
-  currentGuests: number;
-  averageStayTime: number;
-}
+import { CheckinRecordWithGuest } from "@/domain/entities/checkin-record";
+import { TodayStats } from "@/domain/repositories/checkin-record-repository";
+import { CheckinRecordDomainService } from "@/domain/entities/checkin-record";
+import { Users, Clock, Activity, TrendingUp } from "lucide-react";
 
 // Loading components for Suspense fallbacks
 export function StatsCardsSkeleton() {
@@ -34,17 +35,18 @@ export function CurrentGuestsSkeleton() {
       {Array.from({ length: 3 }).map((_, i) => (
         <div
           key={i}
-          className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border"
+          className="flex items-center gap-3 p-4 bg-muted/30 rounded-lg border"
         >
-          <div className="flex-1">
-            <div className="space-y-2">
-              <Skeleton className="h-6 w-32" />
-              <Skeleton className="h-4 w-24" />
+          <Skeleton className="w-10 h-10 rounded-full" />
+          <div className="flex-1 space-y-2">
+            <Skeleton className="h-4 w-32" />
+            <div className="flex gap-2">
+              <Skeleton className="h-5 w-16" />
+              <Skeleton className="h-5 w-12" />
             </div>
           </div>
           <div className="text-right space-y-2">
             <Skeleton className="h-4 w-16" />
-            <Skeleton className="h-5 w-20" />
             <Skeleton className="h-4 w-24" />
           </div>
         </div>
@@ -62,7 +64,7 @@ export function TodaySummarySkeleton() {
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="text-center p-4 bg-gray-50 rounded-lg">
+            <div key={i} className="text-center p-4 bg-muted/30 rounded-lg">
               <Skeleton className="h-4 w-24 mx-auto mb-2" />
               <Skeleton className="h-8 w-16 mx-auto mb-1" />
               <Skeleton className="h-4 w-8 mx-auto" />
@@ -74,7 +76,7 @@ export function TodaySummarySkeleton() {
   );
 }
 
-// Type definitions
+// Updated Dashboard Stats using new design system
 interface DashboardStatsProps {
   stats: TodayStats;
 }
@@ -82,127 +84,180 @@ interface DashboardStatsProps {
 export function DashboardStats({ stats }: DashboardStatsProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium text-slate-600">
-            現在の滞在者数
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-3xl font-bold text-green-600">
-            {stats.currentGuests}
-          </div>
-          <p className="text-sm text-slate-600">人</p>
-        </CardContent>
-      </Card>
+      {/* Current Guests - Most important metric */}
+      <MetricCard
+        title="現在の滞在者数"
+        value={stats.currentGuests}
+        subtitle="人が滞在中"
+        icon={Users}
+        variant="success"
+      />
 
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium text-slate-600">
-            今日のチェックイン数
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-3xl font-bold text-blue-600">
-            {stats.totalCheckins}
-          </div>
-          <p className="text-sm text-slate-600">回</p>
-        </CardContent>
-      </Card>
+      {/* Today's Checkins */}
+      <MetricCard
+        title="今日のチェックイン数"
+        value={stats.totalCheckins}
+        subtitle="回"
+        icon={Activity}
+        variant="info"
+      />
 
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium text-slate-600">
-            平均滞在時間
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold text-purple-600">
-            {stats.averageStayTime}
-          </div>
-          <p className="text-sm text-slate-600">分</p>
-        </CardContent>
-      </Card>
+      {/* Average Stay Time */}
+      <MetricCard
+        title="平均滞在時間"
+        value={CheckinRecordDomainService.formatStayDuration(
+          stats.averageStayTime
+        )}
+        icon={Clock}
+        variant="default"
+      />
+
+      {/* 混雑状況 */}
+      <MetricCard
+        title="混雑状況"
+        value={
+          stats.currentGuests >= 10
+            ? "混雑"
+            : stats.currentGuests >= 5
+            ? "やや混雑"
+            : "空いている"
+        }
+        subtitle={stats.currentGuests > 0 ? "滞在中" : "待機中"}
+        icon={TrendingUp}
+        variant={
+          stats.currentGuests >= 10
+            ? "success"
+            : stats.currentGuests >= 5
+            ? "warning"
+            : "default"
+        }
+      />
     </div>
   );
 }
 
+// Updated Current Guests List using new design system
 interface CurrentGuestsListProps {
-  guests: CheckinRecord[];
+  guests: CheckinRecordWithGuest[];
 }
 
 export function CurrentGuestsList({ guests }: CurrentGuestsListProps) {
   if (guests.length === 0) {
     return (
-      <div className="text-center py-8 text-gray-500">
-        現在滞在中のゲストはいません
+      <div className="text-center py-12">
+        <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+        <h3 className="text-lg font-medium text-foreground mb-2">
+          現在滞在中のゲストはいません
+        </h3>
+        <p className="text-sm text-muted-foreground">
+          新しいゲストがチェックインすると、ここに表示されます
+        </p>
       </div>
     );
   }
 
   return (
     <div className="space-y-3">
-      {guests.map((guest) => (
-        <div
-          key={guest.id}
-          className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border"
-        >
-          <div className="flex-1">
-            <div className="flex items-center space-x-3">
-              <div>
-                <p className="font-semibold text-lg">{guest.guestName}</p>
-                <p className="text-sm text-slate-600">
-                  ID: {guest.guestDisplayId}
-                </p>
+      {guests.map((guest) => {
+        const stayDuration = CheckinRecordDomainService.getCurrentStayDuration({
+          id: guest.id,
+          guestId: guest.guestId,
+          checkinAt: guest.checkinAt,
+          checkoutAt: guest.checkoutAt,
+          isActive: guest.isActive,
+        });
+
+        return (
+          <div
+            key={guest.id}
+            className="flex items-center justify-between p-4 bg-accent/50 rounded-lg border border-border/50 hover:bg-accent/70 transition-colors"
+          >
+            <UserAvatarWithStatus
+              name={guest.guestName}
+              displayId={guest.guestDisplayId}
+              isActive={guest.isActive}
+              showStatus={false}
+              className="flex-1"
+            />
+
+            <div className="text-right space-y-1">
+              <div className="text-sm font-medium text-foreground">
+                {formatTime(guest.checkinAt)}
+              </div>
+              <div className="text-xs text-muted-foreground">
+                滞在時間:{" "}
+                {CheckinRecordDomainService.formatStayDuration(stayDuration)}
               </div>
             </div>
           </div>
-          <div className="text-right">
-            <p className="text-sm text-slate-600">入場時刻</p>
-            <p className="font-semibold">{formatTime(guest.checkinAt)}</p>
-            <p className="text-sm text-slate-600 mt-1">
-              滞在時間: {guest.duration ? `${guest.duration}分` : "-"}
-            </p>
-          </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
 
+// Updated Today Summary using new design system
 interface TodaySummaryProps {
   stats: TodayStats;
 }
 
 export function TodaySummary({ stats }: TodaySummaryProps) {
+  const summaryItems = [
+    {
+      label: "総チェックイン数",
+      value: stats.totalCheckins,
+      unit: "回",
+      description: "今日の累計来場者数",
+    },
+    {
+      label: "現在の滞在者",
+      value: stats.currentGuests,
+      unit: "人",
+      description: "現在施設内にいる人数",
+    },
+    {
+      label: "平均滞在時間",
+      value: CheckinRecordDomainService.formatStayDuration(
+        stats.averageStayTime
+      ),
+      unit: "",
+      description: "平均的な利用時間",
+    },
+  ];
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-xl">今日の入退場サマリー</CardTitle>
+        <CardTitle className="text-xl flex items-center gap-2">
+          <Activity className="h-5 w-5" />
+          今日の入退場サマリー
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="text-center p-4 bg-blue-50 rounded-lg">
-            <p className="text-sm text-blue-600 font-medium">チェックイン</p>
-            <p className="text-2xl font-bold text-blue-700">
-              {stats.totalCheckins}
-            </p>
-            <p className="text-sm text-blue-600">回</p>
-          </div>
-          <div className="text-center p-4 bg-green-50 rounded-lg">
-            <p className="text-sm text-green-600 font-medium">滞在中</p>
-            <p className="text-2xl font-bold text-green-700">
-              {stats.currentGuests}
-            </p>
-            <p className="text-sm text-green-600">人</p>
-          </div>
-          <div className="text-center p-4 bg-purple-50 rounded-lg">
-            <p className="text-sm text-purple-600 font-medium">平均滞在時間</p>
-            <p className="text-2xl font-bold text-purple-700">
-              {stats.averageStayTime}
-            </p>
-            <p className="text-sm text-purple-600">分</p>
-          </div>
+          {summaryItems.map((item, index) => (
+            <div
+              key={index}
+              className="text-center p-6 bg-muted/30 rounded-lg border"
+            >
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-muted-foreground">
+                  {item.label}
+                </p>
+                <div className="text-3xl font-bold text-foreground">
+                  {item.value}
+                  {item.unit && (
+                    <span className="text-base text-muted-foreground ml-1">
+                      {item.unit}
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {item.description}
+                </p>
+              </div>
+            </div>
+          ))}
         </div>
       </CardContent>
     </Card>
