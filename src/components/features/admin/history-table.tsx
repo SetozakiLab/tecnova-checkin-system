@@ -21,6 +21,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useApi } from "@/hooks/use-api";
+import { useConfirmDelete } from "@/hooks/use-confirm-delete";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -52,6 +53,21 @@ export function HistoryTable({ records, onUpdated }: HistoryTableProps) {
   const [editing, setEditing] = useState<CheckinRecord | null>(null);
   const [form, setForm] = useState({ checkinAt: "", checkoutAt: "" });
   const { execute, loading } = useApi();
+  const deleteConfirm = useConfirmDelete<CheckinRecord>({
+    action: async (rec) => {
+      const res = await fetch(`/api/admin/checkin-records/${rec.id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        const json = await res.json().catch(() => null);
+        throw new Error(json?.error?.message || "削除に失敗しました");
+      }
+    },
+    successMessage: () => "記録を削除しました",
+    onSuccess: () => {
+      if (onUpdated) onUpdated();
+    },
+  });
 
   const openEdit = (r: CheckinRecord) => {
     setEditing(r);
@@ -140,9 +156,25 @@ export function HistoryTable({ records, onUpdated }: HistoryTableProps) {
                       {isSuper && (
                         <>
                           <DropdownMenuSeparator />
-                          <AlertDialog>
+                          <AlertDialog
+                            open={
+                              deleteConfirm.open &&
+                              deleteConfirm.target?.id === record.id
+                            }
+                            onOpenChange={(open) => {
+                              if (open) deleteConfirm.openDialog(record);
+                              else if (!deleteConfirm.loading)
+                                deleteConfirm.closeDialog();
+                            }}
+                          >
                             <AlertDialogTrigger asChild>
-                              <DropdownMenuItem className="text-red-600 focus:text-red-600 cursor-pointer">
+                              <DropdownMenuItem
+                                className="text-red-600 focus:text-red-600 cursor-pointer"
+                                onSelect={(e) => {
+                                  e.preventDefault();
+                                  deleteConfirm.openDialog(record);
+                                }}
+                              >
                                 削除
                               </DropdownMenuItem>
                             </AlertDialogTrigger>
@@ -155,9 +187,18 @@ export function HistoryTable({ records, onUpdated }: HistoryTableProps) {
                                   削除すると元に戻せません。レポートからも除外されます。
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
+                              {deleteConfirm.error && (
+                                <div className="text-sm text-red-600 border border-red-200 rounded p-2 bg-red-50">
+                                  {deleteConfirm.error}
+                                </div>
+                              )}
                               <AlertDialogFooter>
                                 <AlertDialogCancel asChild>
-                                  <Button variant="outline" size="sm">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={deleteConfirm.loading}
+                                  >
                                     キャンセル
                                   </Button>
                                 </AlertDialogCancel>
@@ -165,15 +206,15 @@ export function HistoryTable({ records, onUpdated }: HistoryTableProps) {
                                   <Button
                                     size="sm"
                                     variant="destructive"
-                                    onClick={async () => {
-                                      await execute(
-                                        `/api/admin/checkin-records/${record.id}`,
-                                        { method: "DELETE" }
-                                      );
-                                      if (onUpdated) onUpdated();
+                                    disabled={deleteConfirm.loading}
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      void deleteConfirm.confirm();
                                     }}
                                   >
-                                    削除する
+                                    {deleteConfirm.loading
+                                      ? "削除中..."
+                                      : "削除する"}
                                   </Button>
                                 </AlertDialogAction>
                               </AlertDialogFooter>

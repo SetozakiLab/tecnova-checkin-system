@@ -39,8 +39,9 @@ import {
 import { MoreHorizontal } from "lucide-react";
 import { formatDateTime } from "@/lib/date-utils";
 import { useApi } from "@/hooks/use-api";
+import { useConfirmDelete } from "@/hooks/use-confirm-delete";
 import { ErrorState } from "@/components/shared/error-state";
-import { GuestData } from "@/types/api";
+import { GuestData, GradeValue } from "@/types/api";
 import { GradeSelect, formatGrade } from "@/components/ui/grade-select";
 
 interface GuestsTableProps {
@@ -50,21 +51,44 @@ interface GuestsTableProps {
 
 export function GuestsTable({ guests, onUpdate }: GuestsTableProps) {
   const { data: session } = useSession();
-  const isManager = (session?.user as any)?.role === "MANAGER";
+  interface SessionUser {
+    role?: string;
+  }
+  const isManager =
+    (session?.user as SessionUser | undefined)?.role === "MANAGER";
   const [editingGuest, setEditingGuest] = useState<GuestData | null>(null);
-  const [editForm, setEditForm] = useState({
+  // 汎用削除ダイアログフック
+  const deleteConfirm = useConfirmDelete<GuestData>({
+    action: async (guest) => {
+      const res = await fetch(`/api/admin/guests/${guest.id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        const json = await res.json().catch(() => null);
+        throw new Error(json?.error?.message || "削除に失敗しました");
+      }
+    },
+    successMessage: (g) => `「${g.name}」を削除しました`,
+    onSuccess: () => onUpdate(),
+  });
+  const [editForm, setEditForm] = useState<{
+    name: string;
+    contact: string;
+    grade: GradeValue | null;
+  }>({
     name: "",
     contact: "",
-    grade: null as string | null,
+    grade: null,
   });
   const { loading: editLoading, error: editError, execute } = useApi();
+  // 旧個別 useApi 削除ロジック不要
 
   const handleEditClick = (guest: GuestData) => {
     setEditingGuest(guest);
     setEditForm({
       name: guest.name,
       contact: guest.contact || "",
-      grade: guest.grade || null,
+      grade: (guest.grade as GradeValue) || null,
     });
   };
 
@@ -87,11 +111,7 @@ export function GuestsTable({ guests, onUpdate }: GuestsTableProps) {
     }
   };
 
-  // 削除 (AlertDialog から呼び出し)
-  const deleteGuest = async (guest: GuestData) => {
-    await execute(`/api/admin/guests/${guest.id}`, { method: "DELETE" });
-    if (!editError) onUpdate();
-  };
+  // confirmDelete 不要（useConfirmDelete 利用）
 
   if (guests.length === 0) {
     return (
@@ -164,11 +184,26 @@ export function GuestsTable({ guests, onUpdate }: GuestsTableProps) {
                       {!isManager && (
                         <>
                           <DropdownMenuSeparator />
-                          <AlertDialog>
+                          <AlertDialog
+                            open={
+                              deleteConfirm.open &&
+                              deleteConfirm.target?.id === guest.id
+                            }
+                            onOpenChange={(open) => {
+                              if (open) deleteConfirm.openDialog(guest);
+                              else if (!deleteConfirm.loading)
+                                deleteConfirm.closeDialog();
+                            }}
+                          >
                             <AlertDialogTrigger asChild>
                               <DropdownMenuItem
                                 className="text-red-600 focus:text-red-600 cursor-pointer"
                                 disabled={guest.isCurrentlyCheckedIn}
+                                onSelect={(e) => {
+                                  // Radix onSelect -> prevent menu close flicker until dialog mounts
+                                  e.preventDefault();
+                                  deleteConfirm.openDialog(guest);
+                                }}
                               >
                                 削除
                               </DropdownMenuItem>
@@ -183,9 +218,18 @@ export function GuestsTable({ guests, onUpdate }: GuestsTableProps) {
                                   」の全ての関連データが削除されます。
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
+                              {deleteConfirm.error && (
+                                <div className="text-sm text-red-600 border border-red-200 rounded p-2 bg-red-50">
+                                  {deleteConfirm.error}
+                                </div>
+                              )}
                               <AlertDialogFooter>
                                 <AlertDialogCancel asChild>
-                                  <Button variant="outline" size="sm">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={deleteConfirm.loading}
+                                  >
                                     キャンセル
                                   </Button>
                                 </AlertDialogCancel>
@@ -193,10 +237,18 @@ export function GuestsTable({ guests, onUpdate }: GuestsTableProps) {
                                   <Button
                                     size="sm"
                                     variant="destructive"
-                                    onClick={() => deleteGuest(guest)}
-                                    disabled={guest.isCurrentlyCheckedIn}
+                                    disabled={
+                                      guest.isCurrentlyCheckedIn ||
+                                      deleteConfirm.loading
+                                    }
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      void deleteConfirm.confirm();
+                                    }}
                                   >
-                                    削除する
+                                    {deleteConfirm.loading
+                                      ? "削除中..."
+                                      : "削除する"}
                                   </Button>
                                 </AlertDialogAction>
                               </AlertDialogFooter>
@@ -255,7 +307,7 @@ export function GuestsTable({ guests, onUpdate }: GuestsTableProps) {
 
               <div>
                 <GradeSelect
-                  value={editForm.grade as any}
+                  value={editForm.grade}
                   onChange={(v) => setEditForm({ ...editForm, grade: v })}
                   disabled={editLoading}
                 />
