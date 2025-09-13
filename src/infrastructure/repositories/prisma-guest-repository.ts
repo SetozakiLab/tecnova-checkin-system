@@ -2,14 +2,15 @@
 // Prismaを使用したゲストリポジトリの実装
 
 import { prisma } from "@/lib/prisma";
-import { generateDisplayId } from "@/lib/date-utils";
+import { generateDisplayId, getNextSequenceForYear } from "@/lib/date-utils";
+import { Prisma } from "@/generated/prisma";
 import { GuestEntity, GuestWithStatus } from "@/domain/entities/guest";
-import { 
-  IGuestRepository, 
-  GuestSearchParams, 
-  GuestSearchResult, 
-  CreateGuestParams, 
-  UpdateGuestParams 
+import {
+  IGuestRepository,
+  GuestSearchParams,
+  GuestSearchResult,
+  CreateGuestParams,
+  UpdateGuestParams,
 } from "@/domain/repositories/guest-repository";
 import { GradeValue } from "@/domain/value-objects/grade";
 
@@ -30,7 +31,7 @@ export class PrismaGuestRepository implements IGuestRepository {
       include: {
         checkins: {
           where: { isActive: true },
-          orderBy: { checkinAt: 'desc' },
+          orderBy: { checkinAt: "desc" },
           take: 1,
         },
         _count: {
@@ -44,7 +45,7 @@ export class PrismaGuestRepository implements IGuestRepository {
     // 最後の来場日時を取得
     const lastCheckin = await prisma.checkinRecord.findFirst({
       where: { guestId: id },
-      orderBy: { checkinAt: 'desc' },
+      orderBy: { checkinAt: "desc" },
     });
 
     const isCurrentlyCheckedIn = guest.checkins.length > 0;
@@ -75,14 +76,14 @@ export class PrismaGuestRepository implements IGuestRepository {
       where: {
         name: {
           contains: name,
-          mode: 'insensitive',
+          mode: "insensitive",
         },
       },
-      orderBy: { displayId: 'desc' },
+      orderBy: { displayId: "desc" },
       take: 10, // 検索結果を制限
     });
 
-    return guests.map(guest => this.mapToEntity(guest));
+    return guests.map((guest) => this.mapToEntity(guest));
   }
 
   async search(params: GuestSearchParams): Promise<GuestSearchResult> {
@@ -90,12 +91,12 @@ export class PrismaGuestRepository implements IGuestRepository {
     const skip = (page - 1) * limit;
 
     // WHERE条件を構築
-    const where: any = {};
-    
+    const where: Prisma.GuestWhereInput = {};
+
     if (name) {
       where.name = {
         contains: name,
-        mode: 'insensitive',
+        mode: "insensitive",
       };
     }
 
@@ -131,7 +132,7 @@ export class PrismaGuestRepository implements IGuestRepository {
             select: { checkins: true },
           },
         },
-        orderBy: { displayId: 'desc' },
+        orderBy: { displayId: "desc" },
         skip,
         take: limit,
       }),
@@ -141,11 +142,13 @@ export class PrismaGuestRepository implements IGuestRepository {
       guests.map(async (guest) => {
         const lastCheckin = await prisma.checkinRecord.findFirst({
           where: { guestId: guest.id },
-          orderBy: { checkinAt: 'desc' },
+          orderBy: { checkinAt: "desc" },
         });
 
         const isCurrentlyCheckedIn = guest.checkins.length > 0;
-        const currentCheckinId = isCurrentlyCheckedIn ? guest.checkins[0].id : null;
+        const currentCheckinId = isCurrentlyCheckedIn
+          ? guest.checkins[0].id
+          : null;
 
         return {
           ...this.mapToEntity(guest),
@@ -178,20 +181,20 @@ export class PrismaGuestRepository implements IGuestRepository {
         checkins: {
           where: { isActive: true },
           take: 1,
-          orderBy: { checkinAt: 'desc' },
+          orderBy: { checkinAt: "desc" },
         },
         _count: {
           select: { checkins: true },
         },
       },
-      orderBy: { displayId: 'desc' },
+      orderBy: { displayId: "desc" },
     });
 
     return await Promise.all(
       guests.map(async (guest) => {
         const lastCheckin = await prisma.checkinRecord.findFirst({
           where: { guestId: guest.id },
-          orderBy: { checkinAt: 'desc' },
+          orderBy: { checkinAt: "desc" },
         });
 
         return {
@@ -208,7 +211,7 @@ export class PrismaGuestRepository implements IGuestRepository {
 
   async create(params: CreateGuestParams): Promise<GuestEntity> {
     const displayId = await this.getNextDisplayId();
-    
+
     const guest = await prisma.guest.create({
       data: {
         displayId,
@@ -241,22 +244,39 @@ export class PrismaGuestRepository implements IGuestRepository {
   }
 
   async getNextDisplayId(): Promise<number> {
-    return generateDisplayId();
+    const seq = await getNextSequenceForYear();
+    return generateDisplayId(seq);
   }
 
   async getTotalCount(): Promise<number> {
     return prisma.guest.count();
   }
 
-  private mapToEntity(guest: any): GuestEntity {
+  private mapToEntity(guest: {
+    id: string;
+    displayId: number;
+    name: string;
+    contact: string | null;
+    grade: string | null;
+    createdAt: Date | string;
+    updatedAt: Date | string;
+  }): GuestEntity {
+    const createdAt =
+      typeof guest.createdAt === "string"
+        ? new Date(guest.createdAt)
+        : guest.createdAt;
+    const updatedAt =
+      typeof guest.updatedAt === "string"
+        ? new Date(guest.updatedAt)
+        : guest.updatedAt;
     return {
       id: guest.id,
       displayId: guest.displayId,
       name: guest.name,
       contact: guest.contact,
       grade: guest.grade as GradeValue | null,
-      createdAt: guest.createdAt,
-      updatedAt: guest.updatedAt,
+      createdAt,
+      updatedAt,
     };
   }
 }

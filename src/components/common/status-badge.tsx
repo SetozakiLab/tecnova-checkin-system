@@ -1,8 +1,8 @@
 // Common Components: Status Badge
 // アプリケーション固有のステータス表示バッジ
 
+import React, { type HTMLAttributes, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
 import { cva, type VariantProps } from "class-variance-authority";
 
 const statusBadgeVariants = cva(
@@ -30,10 +30,10 @@ const statusBadgeVariants = cva(
 );
 
 export interface StatusBadgeProps
-  extends React.HTMLAttributes<HTMLDivElement>,
+  extends HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof statusBadgeVariants> {
   status: "active" | "inactive" | "pending" | "error" | "info";
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 export function StatusBadge({
@@ -84,9 +84,9 @@ export function GradeStatusBadge({ grade }: { grade?: string | null }) {
 
   // 学年レベルに応じてスタイルを変更
   const getGradeStatus = (grade: string): "info" | "pending" | "active" => {
-    if (grade.startsWith("ES")) return "info";      // 小学生
-    if (grade.startsWith("JH")) return "pending";   // 中学生
-    return "active";                                 // 高校生
+    if (grade.startsWith("ES")) return "info"; // 小学生
+    if (grade.startsWith("JH")) return "pending"; // 中学生
+    return "active"; // 高校生
   };
 
   return (

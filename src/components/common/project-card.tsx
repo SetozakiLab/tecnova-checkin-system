@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { UserAvatarWithStatus } from "./user-avatar-with-status";
 import { StatusBadge } from "./status-badge";
-import { formatTime } from "@/lib/date-utils";
 import { cn } from "@/lib/utils";
 import { Clock, User, Calendar } from "lucide-react";
 
@@ -37,7 +36,7 @@ export function ProjectCard({
   onQuickAction,
   className,
 }: ProjectCardProps) {
-  const activeGuests = guests.filter(guest => guest.isActive);
+  const activeGuests = guests.filter((guest) => guest.isActive);
   const totalGuests = guests.length;
 
   return (
@@ -55,7 +54,7 @@ export function ProjectCard({
           </StatusBadge>
         </div>
       </CardHeader>
-      
+
       <CardContent className="space-y-4">
         {/* Project Stats */}
         <div className="grid grid-cols-3 gap-4 text-center">
@@ -66,7 +65,7 @@ export function ProjectCard({
             </div>
             <p className="text-xs text-muted-foreground">現在参加</p>
           </div>
-          
+
           <div className="space-y-1">
             <div className="flex items-center justify-center gap-1">
               <Calendar className="h-3 w-3 text-muted-foreground" />
@@ -74,7 +73,7 @@ export function ProjectCard({
             </div>
             <p className="text-xs text-muted-foreground">総参加</p>
           </div>
-          
+
           <div className="space-y-1">
             <div className="flex items-center justify-center gap-1">
               <Clock className="h-3 w-3 text-muted-foreground" />
@@ -126,7 +125,7 @@ export function ProjectCard({
               詳細を見る
             </Button>
           )}
-          
+
           {onQuickAction && status === "active" && (
             <Button
               size="sm"

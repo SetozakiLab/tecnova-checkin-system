@@ -1,10 +1,19 @@
 // Application Use Case: Guest Management
 // ゲスト管理に関するアプリケーションロジック
 
-import { GuestEntity, GuestWithStatus, GuestDomainService } from "@/domain/entities/guest";
-import { IGuestRepository, CreateGuestParams, UpdateGuestParams, GuestSearchParams } from "@/domain/repositories/guest-repository";
+import {
+  GuestEntity,
+  GuestWithStatus,
+  GuestDomainService,
+} from "@/domain/entities/guest";
+import {
+  IGuestRepository,
+  CreateGuestParams,
+  UpdateGuestParams,
+  GuestSearchParams,
+} from "@/domain/repositories/guest-repository";
 import { ICheckinRecordRepository } from "@/domain/repositories/checkin-record-repository";
-import { Grade, GradeValue } from "@/domain/value-objects/grade";
+import { Grade } from "@/domain/value-objects/grade";
 
 export class GuestManagementUseCase {
   constructor(
@@ -15,14 +24,18 @@ export class GuestManagementUseCase {
   /**
    * ゲストを作成
    */
-  async createGuest(params: CreateGuestParams): Promise<{ success: boolean; guest?: GuestEntity; error?: string }> {
+  async createGuest(
+    params: CreateGuestParams
+  ): Promise<{ success: boolean; guest?: GuestEntity; error?: string }> {
     // ドメインバリデーション
     const nameValidation = GuestDomainService.validateName(params.name);
     if (!nameValidation.isValid) {
       return { success: false, error: nameValidation.error };
     }
 
-    const contactValidation = GuestDomainService.validateContact(params.contact);
+    const contactValidation = GuestDomainService.validateContact(
+      params.contact
+    );
     if (!contactValidation.isValid) {
       return { success: false, error: contactValidation.error };
     }
@@ -44,7 +57,10 @@ export class GuestManagementUseCase {
   /**
    * ゲストを更新
    */
-  async updateGuest(id: string, params: UpdateGuestParams): Promise<{ success: boolean; guest?: GuestEntity; error?: string }> {
+  async updateGuest(
+    id: string,
+    params: UpdateGuestParams
+  ): Promise<{ success: boolean; guest?: GuestEntity; error?: string }> {
     // 既存ゲストの確認
     const existingGuest = await this.guestRepository.findById(id);
     if (!existingGuest) {
@@ -60,7 +76,9 @@ export class GuestManagementUseCase {
     }
 
     if (params.contact !== undefined) {
-      const contactValidation = GuestDomainService.validateContact(params.contact);
+      const contactValidation = GuestDomainService.validateContact(
+        params.contact
+      );
       if (!contactValidation.isValid) {
         return { success: false, error: contactValidation.error };
       }
@@ -91,7 +109,10 @@ export class GuestManagementUseCase {
 
     // チェックイン中の場合は削除不可
     if (existingGuest.isCurrentlyCheckedIn) {
-      return { success: false, error: "チェックイン中のゲストは削除できません" };
+      return {
+        success: false,
+        error: "チェックイン中のゲストは削除できません",
+      };
     }
 
     try {

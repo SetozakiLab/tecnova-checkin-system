@@ -2,6 +2,7 @@
 // サーバーサイドでの使用に適したデータアクセス関数
 
 import { container } from "@/infrastructure/container";
+import { GradeValue } from "@/domain/value-objects/grade";
 
 /**
  * サーバーコンポーネント用のデータ取得関数
@@ -22,7 +23,7 @@ export async function getServerGuestSearch(params: {
   page: number;
   limit: number;
   name?: string;
-  grade?: string;
+  grade?: GradeValue;
 }) {
   const guestManagement = container.guestManagementUseCase;
   return await guestManagement.searchGuests(params);

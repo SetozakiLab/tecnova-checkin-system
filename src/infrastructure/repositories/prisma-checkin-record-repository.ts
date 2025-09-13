@@ -2,13 +2,21 @@
 // Prismaを使用したチェックイン記録リポジトリの実装
 
 import { prisma } from "@/lib/prisma";
-import { nowInJST, getTodayStartJST, getTomorrowStartJST } from "@/lib/timezone";
-import { CheckinRecordEntity, CheckinRecordWithGuest } from "@/domain/entities/checkin-record";
-import { 
-  ICheckinRecordRepository, 
-  CheckinSearchParams, 
-  CheckinSearchResult, 
-  TodayStats 
+import { Prisma } from "@/generated/prisma";
+import {
+  nowInJST,
+  getTodayStartJST,
+  getTomorrowStartJST,
+} from "@/lib/timezone";
+import {
+  CheckinRecordEntity,
+  CheckinRecordWithGuest,
+} from "@/domain/entities/checkin-record";
+import {
+  ICheckinRecordRepository,
+  CheckinSearchParams,
+  CheckinSearchResult,
+  TodayStats,
 } from "@/domain/repositories/checkin-record-repository";
 
 export class PrismaCheckinRecordRepository implements ICheckinRecordRepository {
@@ -22,13 +30,15 @@ export class PrismaCheckinRecordRepository implements ICheckinRecordRepository {
     return this.mapToEntity(record);
   }
 
-  async findActiveByGuestId(guestId: string): Promise<CheckinRecordEntity | null> {
+  async findActiveByGuestId(
+    guestId: string
+  ): Promise<CheckinRecordEntity | null> {
     const record = await prisma.checkinRecord.findFirst({
       where: {
         guestId,
         isActive: true,
       },
-      orderBy: { checkinAt: 'desc' },
+      orderBy: { checkinAt: "desc" },
     });
 
     if (!record) return null;
@@ -42,18 +52,19 @@ export class PrismaCheckinRecordRepository implements ICheckinRecordRepository {
       include: {
         guest: true,
       },
-      orderBy: { checkinAt: 'desc' },
+      orderBy: { checkinAt: "desc" },
     });
 
-    return records.map(record => this.mapToEntityWithGuest(record));
+    return records.map((record) => this.mapToEntityWithGuest(record));
   }
 
   async search(params: CheckinSearchParams): Promise<CheckinSearchResult> {
-    const { page, limit, startDate, endDate, guestId, guestName, isActive } = params;
+    const { page, limit, startDate, endDate, guestId, guestName, isActive } =
+      params;
     const skip = (page - 1) * limit;
 
     // WHERE条件を構築
-    const where: any = {};
+    const where: Prisma.CheckinRecordWhereInput = {};
 
     if (startDate && endDate) {
       where.checkinAt = {
@@ -78,7 +89,7 @@ export class PrismaCheckinRecordRepository implements ICheckinRecordRepository {
       where.guest = {
         name: {
           contains: guestName,
-          mode: 'insensitive',
+          mode: "insensitive",
         },
       };
     }
@@ -89,25 +100,23 @@ export class PrismaCheckinRecordRepository implements ICheckinRecordRepository {
 
     // 総数とデータを並行取得
     const [totalCount, records] = await Promise.all([
-      prisma.checkinRecord.count({ 
+      // count では include は使用できないため単純に where のみ
+      prisma.checkinRecord.count({
         where,
-        ...(guestName && {
-          include: { guest: true },
-        }),
       }),
       prisma.checkinRecord.findMany({
         where,
         include: {
           guest: true,
         },
-        orderBy: { checkinAt: 'desc' },
+        orderBy: { checkinAt: "desc" },
         skip,
         take: limit,
       }),
     ]);
 
     return {
-      records: records.map(record => this.mapToEntityWithGuest(record)),
+      records: records.map((record) => this.mapToEntityWithGuest(record)),
       totalCount,
       page,
       limit,
@@ -119,48 +128,54 @@ export class PrismaCheckinRecordRepository implements ICheckinRecordRepository {
     const todayStart = getTodayStartJST();
     const tomorrowStart = getTomorrowStartJST();
 
-    const [totalCheckins, currentGuests, completedCheckins] = await Promise.all([
-      // 今日のチェックイン総数
-      prisma.checkinRecord.count({
-        where: {
-          checkinAt: {
-            gte: todayStart,
-            lt: tomorrowStart,
+    const [totalCheckins, currentGuests, completedCheckins] = await Promise.all(
+      [
+        // 今日のチェックイン総数
+        prisma.checkinRecord.count({
+          where: {
+            checkinAt: {
+              gte: todayStart,
+              lt: tomorrowStart,
+            },
           },
-        },
-      }),
-      // 現在の滞在者数
-      prisma.checkinRecord.count({
-        where: { isActive: true },
-      }),
-      // 今日の完了したチェックイン記録（平均滞在時間計算用）
-      prisma.checkinRecord.findMany({
-        where: {
-          checkinAt: {
-            gte: todayStart,
-            lt: tomorrowStart,
+        }),
+        // 現在の滞在者数
+        prisma.checkinRecord.count({
+          where: { isActive: true },
+        }),
+        // 今日の完了したチェックイン記録（平均滞在時間計算用）
+        prisma.checkinRecord.findMany({
+          where: {
+            checkinAt: {
+              gte: todayStart,
+              lt: tomorrowStart,
+            },
+            checkoutAt: {
+              not: null,
+            },
           },
-          checkoutAt: {
-            not: null,
+          select: {
+            checkinAt: true,
+            checkoutAt: true,
           },
-        },
-        select: {
-          checkinAt: true,
-          checkoutAt: true,
-        },
-      }),
-    ]);
+        }),
+      ]
+    );
 
     // 平均滞在時間を計算（分単位）
     let averageStayTime = 0;
     if (completedCheckins.length > 0) {
       const totalStayTime = completedCheckins.reduce((total, record) => {
         if (record.checkoutAt) {
-          return total + (record.checkoutAt.getTime() - record.checkinAt.getTime());
+          return (
+            total + (record.checkoutAt.getTime() - record.checkinAt.getTime())
+          );
         }
         return total;
       }, 0);
-      averageStayTime = Math.floor(totalStayTime / completedCheckins.length / (1000 * 60));
+      averageStayTime = Math.floor(
+        totalStayTime / completedCheckins.length / (1000 * 60)
+      );
     }
 
     return {
@@ -171,48 +186,54 @@ export class PrismaCheckinRecordRepository implements ICheckinRecordRepository {
   }
 
   async getStatsForPeriod(startDate: Date, endDate: Date): Promise<TodayStats> {
-    const [totalCheckins, currentGuests, completedCheckins] = await Promise.all([
-      // 期間内のチェックイン総数
-      prisma.checkinRecord.count({
-        where: {
-          checkinAt: {
-            gte: startDate,
-            lt: endDate,
+    const [totalCheckins, currentGuests, completedCheckins] = await Promise.all(
+      [
+        // 期間内のチェックイン総数
+        prisma.checkinRecord.count({
+          where: {
+            checkinAt: {
+              gte: startDate,
+              lt: endDate,
+            },
           },
-        },
-      }),
-      // 現在の滞在者数（期間に関係なく）
-      prisma.checkinRecord.count({
-        where: { isActive: true },
-      }),
-      // 期間内の完了したチェックイン記録
-      prisma.checkinRecord.findMany({
-        where: {
-          checkinAt: {
-            gte: startDate,
-            lt: endDate,
+        }),
+        // 現在の滞在者数（期間に関係なく）
+        prisma.checkinRecord.count({
+          where: { isActive: true },
+        }),
+        // 期間内の完了したチェックイン記録
+        prisma.checkinRecord.findMany({
+          where: {
+            checkinAt: {
+              gte: startDate,
+              lt: endDate,
+            },
+            checkoutAt: {
+              not: null,
+            },
           },
-          checkoutAt: {
-            not: null,
+          select: {
+            checkinAt: true,
+            checkoutAt: true,
           },
-        },
-        select: {
-          checkinAt: true,
-          checkoutAt: true,
-        },
-      }),
-    ]);
+        }),
+      ]
+    );
 
     // 平均滞在時間を計算（分単位）
     let averageStayTime = 0;
     if (completedCheckins.length > 0) {
       const totalStayTime = completedCheckins.reduce((total, record) => {
         if (record.checkoutAt) {
-          return total + (record.checkoutAt.getTime() - record.checkinAt.getTime());
+          return (
+            total + (record.checkoutAt.getTime() - record.checkinAt.getTime())
+          );
         }
         return total;
       }, 0);
-      averageStayTime = Math.floor(totalStayTime / completedCheckins.length / (1000 * 60));
+      averageStayTime = Math.floor(
+        totalStayTime / completedCheckins.length / (1000 * 60)
+      );
     }
 
     return {
@@ -261,32 +282,59 @@ export class PrismaCheckinRecordRepository implements ICheckinRecordRepository {
   async getLastVisitByGuestId(guestId: string): Promise<Date | null> {
     const lastRecord = await prisma.checkinRecord.findFirst({
       where: { guestId },
-      orderBy: { checkinAt: 'desc' },
+      orderBy: { checkinAt: "desc" },
       select: { checkinAt: true },
     });
 
     return lastRecord?.checkinAt || null;
   }
 
-  private mapToEntity(record: any): CheckinRecordEntity {
+  private mapToEntity(
+    record: Prisma.CheckinRecordUncheckedCreateInput & { id: string }
+  ): CheckinRecordEntity {
+    const checkinAt =
+      typeof record.checkinAt === "string"
+        ? new Date(record.checkinAt)
+        : record.checkinAt;
+    const checkoutAt = record.checkoutAt
+      ? typeof record.checkoutAt === "string"
+        ? new Date(record.checkoutAt)
+        : record.checkoutAt
+      : null;
     return {
       id: record.id,
       guestId: record.guestId,
-      checkinAt: record.checkinAt,
-      checkoutAt: record.checkoutAt,
-      isActive: record.isActive,
+      checkinAt,
+      checkoutAt,
+      isActive: record.isActive ?? false,
     };
   }
 
-  private mapToEntityWithGuest(record: any): CheckinRecordWithGuest {
+  private mapToEntityWithGuest(record: {
+    id: string;
+    guestId: string;
+    checkinAt: Date | string;
+    checkoutAt: Date | string | null;
+    isActive: boolean | undefined;
+    guest: { name: string; displayId: number };
+  }): CheckinRecordWithGuest {
+    const checkinAt =
+      typeof record.checkinAt === "string"
+        ? new Date(record.checkinAt)
+        : record.checkinAt;
+    const checkoutAt = record.checkoutAt
+      ? typeof record.checkoutAt === "string"
+        ? new Date(record.checkoutAt)
+        : record.checkoutAt
+      : null;
     return {
       id: record.id,
       guestId: record.guestId,
       guestName: record.guest.name,
       guestDisplayId: record.guest.displayId,
-      checkinAt: record.checkinAt,
-      checkoutAt: record.checkoutAt,
-      isActive: record.isActive,
+      checkinAt,
+      checkoutAt,
+      isActive: record.isActive ?? false,
     };
   }
 }
