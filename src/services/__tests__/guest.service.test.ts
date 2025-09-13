@@ -67,7 +67,7 @@ describe("GuestService.updateGuest", () => {
     mockPrisma.guest.findUnique.mockResolvedValue(null);
     await expect(
       GuestService.updateGuest("nope", { name: "X" })
-    ).rejects.toThrow("GUEST_NOT_FOUND");
+    ).rejects.toThrow(/ゲストが見つかりません/);
   });
 
   it("名前と contact を更新", async () => {

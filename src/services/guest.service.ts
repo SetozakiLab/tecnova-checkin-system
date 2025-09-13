@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { generateDisplayId, getNextSequenceForYear } from "@/lib/date-utils";
 import { GuestData, PaginationData } from "@/types/api";
 import { buildPagination } from "@/lib/pagination";
+import { domain } from "@/lib/errors";
 import { z } from "zod";
 
 // Zodスキーマ
@@ -121,9 +122,7 @@ export class GuestService {
     data: UpdateGuestData
   ): Promise<GuestData> {
     const guest = await prisma.guest.findUnique({ where: { id } });
-    if (!guest) {
-      throw new Error("GUEST_NOT_FOUND");
-    }
+    if (!guest) throw domain("GUEST_NOT_FOUND");
 
     const updatedGuest = await prisma.guest.update({
       where: { id },
@@ -149,13 +148,9 @@ export class GuestService {
       },
     });
 
-    if (!guest) {
-      throw new Error("GUEST_NOT_FOUND");
-    }
+    if (!guest) throw domain("GUEST_NOT_FOUND");
 
-    if (guest.checkins.length > 0) {
-      throw new Error("GUEST_CURRENTLY_CHECKED_IN");
-    }
+    if (guest.checkins.length > 0) throw domain("GUEST_CURRENTLY_CHECKED_IN");
 
     await prisma.guest.delete({ where: { id } });
   }
@@ -168,7 +163,10 @@ export class GuestService {
     const { search, page, limit } = params;
 
     // 検索条件の構築
-    const whereConditions: any = {};
+    const whereConditions: {
+      displayId?: number;
+      name?: { contains: string; mode: "insensitive" };
+    } = {};
 
     if (search) {
       const isNumeric = /^\d+$/.test(search);
@@ -241,7 +239,10 @@ export class GuestService {
   static async searchGuestsPublic(query: string): Promise<GuestData[]> {
     const isNumeric = /^\d+$/.test(query);
 
-    let whereConditions: any = {};
+    let whereConditions: {
+      displayId?: number;
+      name?: { contains: string; mode: "insensitive" };
+    } = {};
 
     if (isNumeric) {
       // 数値の場合はdisplayIdで検索
@@ -297,7 +298,14 @@ export class GuestService {
   }
 
   // ゲストデータのフォーマット
-  private static formatGuestData(guest: any): GuestData {
+  private static formatGuestData(guest: {
+    id: string;
+    displayId: number;
+    name: string;
+    contact: string | null;
+    grade: string | null;
+    createdAt: Date;
+  }): GuestData {
     return {
       id: guest.id,
       displayId: guest.displayId,

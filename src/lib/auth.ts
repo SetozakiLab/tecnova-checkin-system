@@ -4,6 +4,12 @@ import bcrypt from "bcrypt";
 import { PrismaClient } from "@/generated/prisma";
 import { env } from "@/lib/env";
 
+interface AuthUser {
+  id: string;
+  username: string;
+  role: "SUPER" | "MANAGER";
+}
+
 const prisma = new PrismaClient();
 
 export const authOptions: NextAuthOptions = {
@@ -23,12 +29,11 @@ export const authOptions: NextAuthOptions = {
         const inputUsername = credentials.username.trim();
         const inputPassword = credentials.password;
 
-        const existingUser = (await prisma.user.findUnique({
+        const existingUser = await prisma.user.findUnique({
           where: { username: inputUsername },
-        })) as any;
+        });
 
         if (existingUser) {
-          // 既存ユーザー: 従来のハッシュ比較
           const isPasswordValid = await bcrypt.compare(
             inputPassword,
             existingUser.hashedPassword
@@ -38,7 +43,7 @@ export const authOptions: NextAuthOptions = {
             id: existingUser.id,
             username: existingUser.username,
             role: existingUser.role,
-          } as any;
+          } as AuthUser;
         }
 
         // 新規作成フロー: shared password 必須
@@ -51,19 +56,18 @@ export const authOptions: NextAuthOptions = {
 
         // MANAGER を作成（ユーザー名一意保証）
         const hashed = await bcrypt.hash(sharedPassword, 10);
-        const created = (await prisma.user.create({
+        const created = await prisma.user.create({
           data: {
             username: inputUsername,
             hashedPassword: hashed,
-            // role フィールドは新しいマイグレーション後に型へ反映される
-            role: "MANAGER" as any,
-          } as any,
-        })) as any;
+            role: "MANAGER",
+          },
+        });
         return {
           id: created.id,
           username: created.username,
           role: created.role,
-        } as any;
+        } as AuthUser;
       },
     }),
   ],
@@ -77,16 +81,17 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.username = (user as any).username;
-        token.role = (user as any).role;
+        const u = user as AuthUser;
+        token.username = u.username;
+        token.role = u.role;
       }
       return token;
     },
     async session({ session, token }) {
       if (token && session.user) {
-        session.user.id = token.sub!;
-        session.user.username = token.username as string;
-        (session.user as any).role = token.role;
+        (session.user as any).id = token.sub!; // next-auth型拡張が未定義なら any に退避
+        (session.user as any).username = token.username as string;
+        (session.user as any).role = token.role as string;
       }
       return session;
     },

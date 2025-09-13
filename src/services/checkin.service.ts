@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { CheckinData, CheckinRecord, PaginationData } from "@/types/api";
 import { buildPagination } from "@/lib/pagination";
+import { domain } from "@/lib/errors";
 import { z } from "zod";
 import {
   nowInJST,
@@ -37,14 +38,10 @@ export class CheckinService {
       },
     });
 
-    if (!guest) {
-      throw new Error("GUEST_NOT_FOUND");
-    }
+    if (!guest) throw domain("GUEST_NOT_FOUND");
 
     // 既にチェックイン済みかチェック
-    if (guest.checkins.length > 0) {
-      throw new Error("ALREADY_CHECKED_IN");
-    }
+    if (guest.checkins.length > 0) throw domain("ALREADY_CHECKED_IN");
 
     // チェックイン記録作成
     const checkinRecord = await prisma.checkinRecord.create({
@@ -74,9 +71,7 @@ export class CheckinService {
       },
     });
 
-    if (!activeCheckin) {
-      throw new Error("NOT_CHECKED_IN");
-    }
+    if (!activeCheckin) throw domain("NOT_CHECKED_IN");
 
     // チェックアウト処理
     const checkinRecord = await prisma.checkinRecord.update({
@@ -101,7 +96,11 @@ export class CheckinService {
     const { page, limit, startDate, endDate, guestId, guestName } = params;
 
     // 検索条件の構築
-    const whereConditions: any = {};
+    const whereConditions: {
+      guestId?: string;
+      guest?: { name: { contains: string; mode: "insensitive" } };
+      checkinAt?: { gte?: Date; lte?: Date };
+    } = {};
 
     if (guestId) {
       whereConditions.guestId = guestId;
@@ -117,13 +116,10 @@ export class CheckinService {
     }
 
     if (startDate || endDate) {
-      whereConditions.checkinAt = {};
-      if (startDate) {
-        whereConditions.checkinAt.gte = getDateStartJST(startDate);
-      }
-      if (endDate) {
-        whereConditions.checkinAt.lte = getDateEndJST(endDate);
-      }
+      const range: { gte?: Date; lte?: Date } = {};
+      if (startDate) range.gte = getDateStartJST(startDate);
+      if (endDate) range.lte = getDateEndJST(endDate);
+      whereConditions.checkinAt = range;
     }
 
     // 総件数取得
@@ -246,14 +242,21 @@ export class CheckinService {
   }
 
   // チェックインデータのフォーマット
-  private static formatCheckinData(record: any): CheckinData {
+  private static formatCheckinData(record: {
+    id: string;
+    guestId: string;
+    guest: { name: string; displayId: number };
+    checkinAt: Date;
+    checkoutAt?: Date | null;
+    isActive: boolean;
+  }): CheckinData {
     return {
       id: record.id,
       guestId: record.guestId,
       guestName: record.guest.name,
       guestDisplayId: record.guest.displayId,
       checkinAt: record.checkinAt.toISOString(),
-      checkoutAt: record.checkoutAt?.toISOString() || null,
+      checkoutAt: record.checkoutAt ? record.checkoutAt.toISOString() : null,
       isActive: record.isActive,
     };
   }

@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { ApiResponse } from "@/types/api";
 import { z } from "zod";
+import { isDomainError } from "@/lib/errors";
 
 // ドメインエラーコード → HTTPステータス/メッセージマッピング
 const domainErrorMap: Record<string, { status: number; message: string }> = {
@@ -174,9 +175,12 @@ export function handleApiError(
   }
 
   // 文字列メッセージによるドメインエラー判定（サービス層で throw new Error(CODE)）
+  if (isDomainError(error)) {
+    return createErrorResponse(error.code, error.message, error.status);
+  }
   if (error instanceof Error && error.message in domainErrorMap) {
-    const { status, message } = domainErrorMap[error.message];
-    return createErrorResponse(error.message, message, status);
+    const map = domainErrorMap[error.message];
+    return createErrorResponse(error.message, map.message, map.status);
   }
 
   return createErrorResponse(
