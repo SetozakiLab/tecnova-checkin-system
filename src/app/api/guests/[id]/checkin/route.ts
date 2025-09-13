@@ -1,13 +1,17 @@
 import { NextRequest } from "next/server";
-import { withApiHandler, createSuccessResponse } from "@/lib/api-handler";
+import {
+  withApiHandler,
+  createSuccessResponse,
+  createErrorResponse,
+} from "@/lib/api-handler";
 import { CheckinService } from "@/services/checkin.service";
 
 export const POST = withApiHandler(
-  async (
-    request: NextRequest,
-    { params }: { params: Promise<{ id: string }> }
-  ) => {
-    const { id } = await params;
+  async (_request: NextRequest, context) => {
+    const id = context?.params?.id;
+    if (!id) {
+      return createErrorResponse("BAD_REQUEST", "id が指定されていません", 400);
+    }
 
     const checkinData = await CheckinService.checkinGuest(id);
     return createSuccessResponse(checkinData, "チェックインしました", 201);

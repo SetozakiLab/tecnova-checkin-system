@@ -15,13 +15,13 @@ const updateCheckinRecordSchema = z.object({
   checkoutAt: z.string().datetime().nullable().optional(),
 });
 
-export const PATCH = withApiHandler(
-  async (
-    request: NextRequest,
-    { params }: { params: Promise<{ id: string }> }
-  ) => {
-    const { id } = await params;
-    let body: any;
+export const PATCH = withApiHandler<{ id: string }>(
+  async (request: NextRequest, { params }) => {
+    const { id } = params || ({} as { id: string });
+    if (!id) {
+      return createErrorResponse("BAD_REQUEST", "id が指定されていません", 400);
+    }
+    let body: unknown;
     try {
       body = await request.json();
     } catch {
@@ -49,7 +49,11 @@ export const PATCH = withApiHandler(
       return createErrorResponse("NOT_FOUND", "レコードが見つかりません", 404);
     }
 
-    const data: any = {};
+    const data: {
+      checkinAt?: Date;
+      checkoutAt?: Date | null;
+      isActive?: boolean;
+    } = {};
     if (parsed.data.checkinAt) {
       data.checkinAt = new Date(parsed.data.checkinAt);
     }
@@ -99,15 +103,20 @@ export const PATCH = withApiHandler(
   { requireAuth: true, allowedMethods: ["PATCH"] }
 );
 
-export const DELETE = withApiHandler(
-  async (
-    _request: NextRequest,
-    { params }: { params: Promise<{ id: string }> }
-  ) => {
-    const { id } = await params;
+export const DELETE = withApiHandler<{ id: string }>(
+  async (_request: NextRequest, { params }) => {
+    const { id } = params || ({} as { id: string });
+    if (!id) {
+      return createErrorResponse("BAD_REQUEST", "id が指定されていません", 400);
+    }
 
     const session = await getServerSession(authOptions);
-    if ((session?.user as any)?.role !== "SUPER") {
+    interface SessionUser {
+      role?: string;
+    }
+    const userRole = (session?.user as unknown as SessionUser | undefined)
+      ?.role;
+    if (userRole !== "SUPER") {
       return createErrorResponse(
         "FORBIDDEN",
         "この操作を行う権限がありません",

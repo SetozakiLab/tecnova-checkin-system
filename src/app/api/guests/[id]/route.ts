@@ -7,18 +7,17 @@ import {
 import { GuestService } from "@/services/guest.service";
 
 export const GET = withApiHandler(
-  async (
-    request: NextRequest,
-    { params }: { params: Promise<{ id: string }> }
-  ) => {
-    const { id } = await params;
+  async (_request: NextRequest, context) => {
+    const id = context?.params?.id;
+    if (!id) {
+      return createErrorResponse("BAD_REQUEST", "id が指定されていません", 400);
+    }
 
     const guest = await GuestService.getGuestById(id);
 
     if (!guest) {
       return createErrorResponse("NOT_FOUND", "ゲストが見つかりません", 404);
     }
-
     return createSuccessResponse(guest);
   },
   { allowedMethods: ["GET"] }

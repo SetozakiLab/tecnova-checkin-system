@@ -50,7 +50,7 @@ describe("PUT /api/admin/guests/[id] MANAGER grade 更新", () => {
   it("MANAGER が grade を更新できる", async () => {
     const res = await PUT(
       buildRequest({ name: "Alice", contact: "", grade: "JH2" }),
-      { params: Promise.resolve({ id: "g1" }) }
+      { params: { id: "g1" } }
     );
     const json: any = await res.json();
     expect(res.status).toBe(200);

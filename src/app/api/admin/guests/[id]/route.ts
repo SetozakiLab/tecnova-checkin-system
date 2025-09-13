@@ -5,6 +5,7 @@ import {
   withApiHandler,
   validateRequest,
   createSuccessResponse,
+  createErrorResponse,
 } from "@/lib/api-handler";
 import {
   GuestService,
@@ -13,11 +14,11 @@ import {
 } from "@/services/guest.service";
 
 export const PUT = withApiHandler(
-  async (
-    request: NextRequest,
-    { params }: { params: Promise<{ id: string }> }
-  ) => {
-    const { id } = await params;
+  async (request: NextRequest, context) => {
+    const id = context?.params?.id;
+    if (!id) {
+      return createErrorResponse("BAD_REQUEST", "id が指定されていません", 400);
+    }
 
     // 権限チェック: MANAGER も更新(PUT)は許可。削除(DELETE)のみ禁止ポリシー。
     // ここでは明示的な拒否は行わない。
@@ -36,11 +37,11 @@ export const PUT = withApiHandler(
 );
 
 export const DELETE = withApiHandler(
-  async (
-    request: NextRequest,
-    { params }: { params: Promise<{ id: string }> }
-  ) => {
-    const { id } = await params;
+  async (_request: NextRequest, context) => {
+    const id = context?.params?.id;
+    if (!id) {
+      return createErrorResponse("BAD_REQUEST", "id が指定されていません", 400);
+    }
 
     await GuestService.deleteGuest(id);
     return createSuccessResponse(null, "ゲストを削除しました");

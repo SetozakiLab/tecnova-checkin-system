@@ -30,11 +30,23 @@ export interface ApiHandlerOptions {
   allowedMethods?: HTTPMethod[];
 }
 
-// APIハンドラーの型
+// APIハンドラーの型 (第二引数は Next.js RouteContext 互換: 動的セグメント params を含む可能性)
+// Next.js のルートハンドラーは (request, context) で context の型検証が厳しくないため、
+// 公開シグネチャはゆるく any を受け取り、内部で安全に絞り込む。ジェネリック利用時は
+// RouteContext<P> を想定するが、Next.js の型チェック回避のため公開型は緩める。
+export interface RouteContext<
+  P extends Record<string, string> = Record<string, string>
+> {
+  params: P;
+}
+export type StrictApiHandler<P extends Record<string, string>> = (
+  _request: NextRequest,
+  context: RouteContext<P>
+) => Promise<NextResponse>;
 export type ApiHandler = (
   _request: NextRequest,
-  // Next.js route handler context (params など) — Next.js 側の RouteContext 互換確保のため any 緩和
-  context?: any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- framework provided dynamic context shape
+  context: any
 ) => Promise<NextResponse>;
 
 // 認証チェックミドルウェア
@@ -121,19 +133,22 @@ export function validateRequest<T>(schema: z.ZodSchema<T>) {
 }
 
 // エラーレスポンス作成ヘルパー
+type ValidationDetail = { field: string; message: string };
+
 export function createErrorResponse(
   code: string,
   message: string,
   status: number = 500,
-  details?: any
+  details?: ValidationDetail[]
 ): NextResponse {
+  const detailsArray = details && details.length > 0 ? details : undefined;
   return NextResponse.json<ApiResponse>(
     {
       success: false,
       error: {
         code,
         message,
-        ...(details && { details }),
+        ...(detailsArray ? { details: detailsArray } : {}),
       },
     },
     { status }
@@ -191,26 +206,28 @@ export function handleApiError(
 }
 
 // APIハンドラーラッパー
-export function withApiHandler(
-  handler: ApiHandler,
-  options: ApiHandlerOptions = {}
-): ApiHandler {
-  return async (_request: NextRequest, context?: Record<string, unknown>) => {
+export function withApiHandler<
+  P extends Record<string, string> = Record<string, string>
+>(handler: StrictApiHandler<P>, options: ApiHandlerOptions = {}): ApiHandler {
+  return async (
+    _request: NextRequest,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Next.js supplies context dynamically
+    context: any
+  ) => {
     try {
-      // メソッドチェック
       if (options.allowedMethods) {
         const methodCheck = checkMethod(options.allowedMethods)(_request);
         if (methodCheck) return methodCheck;
       }
-
-      // 認証チェック
       if (options.requireAuth) {
         const authCheck = await requireAuth(_request);
         if (authCheck) return authCheck;
       }
-
-      // メインハンドラー実行
-      return await handler(_request, context);
+      const safeContext: RouteContext<P> =
+        context && typeof context === "object" && "params" in context
+          ? (context as RouteContext<P>)
+          : ({ params: {} } as RouteContext<P>);
+      return await handler(_request, safeContext);
     } catch (error) {
       return handleApiError(error, "API Handler");
     }
