@@ -74,13 +74,13 @@ export default async function GuestDetailPage({
                 {stats.lastVisitAt ? formatDateTime(stats.lastVisitAt) : "-"}
               </div>
               <div>
-                <span className="text-muted-foreground">オンライン:</span>{" "}
+                <span className="text-muted-foreground">ステータス:</span>{" "}
                 {stats.isCurrentlyCheckedIn ? (
                   <Badge className="bg-green-500 text-white hover:bg-green-500/90">
                     滞在中
                   </Badge>
                 ) : (
-                  <Badge variant="outline">不在</Badge>
+                  <Badge variant="secondary">不在</Badge>
                 )}
               </div>
             </CardContent>
