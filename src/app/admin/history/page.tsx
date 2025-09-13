@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { AdminLayout } from "@/components/admin-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -44,14 +44,18 @@ export default function AdminHistoryPage() {
     return params;
   };
 
-  // 初回データ取得
-  useEffect(() => {
+  // フィルタ適用時のフェッチをメモ化
+  const runFilterFetch = useCallback(() => {
     fetchData(1, convertFiltersToParams(searchFilters));
-  }, []); // 空の依存配列で初回のみ実行
+  }, [fetchData, searchFilters]);
+
+  // 初回 & フィルタ変更時に再取得 (検索 UI が setSearchFilters を呼ぶため同期)
+  useEffect(() => {
+    runFilterFetch();
+  }, [runFilterFetch]);
 
   const handleSearch = (filters: SearchFilters) => {
-    setSearchFilters(filters);
-    fetchData(1, convertFiltersToParams(filters));
+    setSearchFilters(filters); // 更新後の effect が runFilterFetch を実行
   };
 
   const handleRetry = () => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { AdminLayout } from "@/components/admin-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -43,14 +43,19 @@ export default function AdminGuestsPage() {
     return () => clearTimeout(timer);
   }, [search]);
 
-  // 初回とデバウンス検索時にデータ取得
-  useEffect(() => {
+  // フェッチ関数をメモ化 (fetchData 自体はカスタムフック内で安定想定だが ESLint 警告回避のため明示)
+  const runSearchFetch = useCallback(() => {
     const params: Record<string, string> = {};
     if (debouncedSearch) {
       params.search = debouncedSearch;
     }
     fetchData(1, params);
-  }, [debouncedSearch]); // fetchDataを依存配列から除外
+  }, [debouncedSearch, fetchData]);
+
+  // 初回とデバウンス検索時にデータ取得
+  useEffect(() => {
+    runSearchFetch();
+  }, [runSearchFetch]);
 
   const handleRetry = () => {
     const params: Record<string, string> = {};
