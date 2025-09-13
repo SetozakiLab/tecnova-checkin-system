@@ -2,6 +2,7 @@ import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcrypt";
 import { PrismaClient } from "@/generated/prisma";
+import { env } from "@/lib/env";
 
 const prisma = new PrismaClient();
 
@@ -18,7 +19,7 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        const sharedPassword = process.env.ADMIN_SHARED_PASSWORD;
+        const sharedPassword = env.ADMIN_SHARED_PASSWORD;
         const inputUsername = credentials.username.trim();
         const inputPassword = credentials.password;
 

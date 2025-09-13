@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { generateDisplayId, getNextSequenceForYear } from "@/lib/date-utils";
 import { GuestData, PaginationData } from "@/types/api";
+import { buildPagination } from "@/lib/pagination";
 import { z } from "zod";
 
 // Zodスキーマ
@@ -231,12 +232,7 @@ export class GuestService {
       lastVisitAt: lastVisitMap.get(guest.id)?.toISOString() || null,
     }));
 
-    const pagination: PaginationData = {
-      page,
-      limit,
-      totalCount,
-      totalPages: Math.ceil(totalCount / limit),
-    };
+    const pagination: PaginationData = buildPagination(page, limit, totalCount);
 
     return { guests: guestsData, pagination };
   }

@@ -4,6 +4,22 @@ import { authOptions } from "@/lib/auth";
 import { ApiResponse } from "@/types/api";
 import { z } from "zod";
 
+// ドメインエラーコード → HTTPステータス/メッセージマッピング
+const domainErrorMap: Record<string, { status: number; message: string }> = {
+  GUEST_NOT_FOUND: { status: 404, message: "ゲストが見つかりません" },
+  ALREADY_CHECKED_IN: { status: 400, message: "既にチェックインしています" },
+  NOT_CHECKED_IN: { status: 400, message: "チェックインしていません" },
+  GUEST_CURRENTLY_CHECKED_IN: {
+    status: 400,
+    message: "現在チェックイン中のゲストは削除できません",
+  },
+  SEQUENCE_LIMIT_EXCEEDED: { status: 500, message: "年間登録上限に達しました" },
+  DISPLAY_ID_GENERATION_FAILED: {
+    status: 500,
+    message: "表示ID生成に失敗しました",
+  },
+};
+
 // HTTPメソッドの型定義
 export type HTTPMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 
@@ -155,6 +171,12 @@ export function handleApiError(
         message: err.message,
       }))
     );
+  }
+
+  // 文字列メッセージによるドメインエラー判定（サービス層で throw new Error(CODE)）
+  if (error instanceof Error && error.message in domainErrorMap) {
+    const { status, message } = domainErrorMap[error.message];
+    return createErrorResponse(error.message, message, status);
   }
 
   return createErrorResponse(

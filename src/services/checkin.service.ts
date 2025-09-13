@@ -1,12 +1,13 @@
 import { prisma } from "@/lib/prisma";
 import { CheckinData, CheckinRecord, PaginationData } from "@/types/api";
+import { buildPagination } from "@/lib/pagination";
 import { z } from "zod";
-import { 
-  nowInJST, 
-  getTodayStartJST, 
-  getTomorrowStartJST, 
-  getDateStartJST, 
-  getDateEndJST 
+import {
+  nowInJST,
+  getTodayStartJST,
+  getTomorrowStartJST,
+  getDateStartJST,
+  getDateEndJST,
 } from "@/lib/timezone";
 
 // Zodスキーマ
@@ -157,12 +158,7 @@ export class CheckinService {
         : null,
     }));
 
-    const pagination: PaginationData = {
-      page,
-      limit,
-      totalCount,
-      totalPages: Math.ceil(totalCount / limit),
-    };
+    const pagination: PaginationData = buildPagination(page, limit, totalCount);
 
     return { records: recordsData, pagination };
   }
