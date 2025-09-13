@@ -40,3 +40,11 @@ export async function getServerCheckinHistory(params: {
   const checkinManagement = container.checkinManagementUseCase;
   return await checkinManagement.searchCheckinHistory(params);
 }
+
+export async function getServerGuestDetailStats(
+  guestId: string,
+  days: number = 30
+) {
+  const guestManagement = container.guestManagementUseCase;
+  return await guestManagement.getGuestDetailStats(guestId, days);
+}

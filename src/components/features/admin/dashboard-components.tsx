@@ -10,6 +10,7 @@ import { TodayStats } from "@/domain/repositories/checkin-record-repository";
 import { CheckinRecordDomainService } from "@/domain/entities/checkin-record";
 import { Users, Clock, Activity, TrendingUp } from "lucide-react";
 import { formatGradeDisplay } from "@/domain/value-objects/grade";
+import Link from "next/link";
 
 // Loading components for Suspense fallbacks
 export function StatsCardsSkeleton() {
@@ -173,7 +174,10 @@ export function CurrentGuestsList({ guests }: CurrentGuestsListProps) {
             key={guest.id}
             className="flex items-center justify-between p-4 bg-accent/50 rounded-lg border border-border/50 hover:bg-accent/70 transition-colors"
           >
-            <div className="flex-1 flex items-center gap-4">
+            <Link
+              href={`/admin/guests/${guest.guestId}`}
+              className="flex-1 flex items-center gap-4 group"
+            >
               <UserAvatarWithStatus
                 name={guest.guestName}
                 displayId={guest.guestDisplayId}
@@ -205,7 +209,7 @@ export function CurrentGuestsList({ guests }: CurrentGuestsListProps) {
                     : "-"}
                 </div>
               </div>
-            </div>
+            </Link>
 
             <div className="text-right space-y-1">
               <div className="text-sm font-medium text-foreground">

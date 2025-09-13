@@ -175,4 +175,20 @@ export class GuestManagementUseCase {
       return null;
     }
   }
+
+  /** ゲスト詳細統計 */
+  async getGuestDetailStats(guestId: string, days: number = 30) {
+    try {
+      const guest = await this.guestRepository.findByIdWithStatus(guestId);
+      if (!guest) return null;
+      const stats = await this.checkinRecordRepository.getGuestDetailStats(
+        guestId,
+        days
+      );
+      return { guest, stats };
+    } catch (error) {
+      console.error("Get guest detail stats error:", error);
+      return null;
+    }
+  }
 }

@@ -41,6 +41,7 @@ import {
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 import { MoreHorizontal } from "lucide-react";
+import Link from "next/link";
 
 interface HistoryTableProps {
   records: CheckinRecord[];
@@ -120,8 +121,10 @@ export function HistoryTable({ records, onUpdated }: HistoryTableProps) {
           <TableBody>
             {records.map((record) => (
               <TableRow key={record.id} className="hover:bg-slate-50">
-                <TableCell className="font-medium">
-                  {record.guestName}
+                <TableCell className="font-medium text-primary underline-offset-2 hover:underline">
+                  <Link href={`/admin/guests/${record.guestId}`}>
+                    {record.guestName}
+                  </Link>
                 </TableCell>
                 <TableCell>{record.guestDisplayId}</TableCell>
                 <TableCell>{formatDateTime(record.checkinAt)}</TableCell>

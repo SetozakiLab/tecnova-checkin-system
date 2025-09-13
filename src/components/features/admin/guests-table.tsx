@@ -43,6 +43,7 @@ import { useConfirmDelete } from "@/hooks/use-confirm-delete";
 import { ErrorState } from "@/components/shared/error-state";
 import { GuestData, GradeValue } from "@/types/api";
 import { GradeSelect, formatGrade } from "@/components/ui/grade-select";
+import Link from "next/link";
 
 interface GuestsTableProps {
   guests: GuestData[];
@@ -137,7 +138,9 @@ export function GuestsTable({ guests, onUpdate }: GuestsTableProps) {
           <TableBody>
             {guests.map((guest) => (
               <TableRow key={guest.id} className="hover:bg-slate-50">
-                <TableCell className="font-medium">{guest.name}</TableCell>
+                <TableCell className="font-medium text-primary underline-offset-2 hover:underline">
+                  <Link href={`/admin/guests/${guest.id}`}>{guest.name}</Link>
+                </TableCell>
                 <TableCell>{guest.displayId}</TableCell>
                 <TableCell>{guest.contact || "-"}</TableCell>
                 <TableCell>{formatGrade(guest.grade)}</TableCell>

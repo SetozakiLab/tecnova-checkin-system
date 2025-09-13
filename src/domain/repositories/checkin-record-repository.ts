@@ -1,7 +1,10 @@
 // Domain Repository Interface: CheckinRecord Repository
 // チェックイン記録データアクセスの抽象化インターフェース
 
-import { CheckinRecordEntity, CheckinRecordWithGuest } from "@/domain/entities/checkin-record";
+import {
+  CheckinRecordEntity,
+  CheckinRecordWithGuest,
+} from "@/domain/entities/checkin-record";
 
 export interface CheckinSearchParams {
   page: number;
@@ -25,6 +28,21 @@ export interface TodayStats {
   totalCheckins: number;
   currentGuests: number;
   averageStayTime: number;
+}
+
+export interface GuestDailyStatItem {
+  date: string; // YYYY-MM-DD (JST)
+  visitCount: number;
+  stayMinutes: number; // 合計滞在分
+}
+
+export interface GuestDetailStats {
+  guestId: string;
+  totalVisitCount: number;
+  totalStayMinutes: number;
+  lastVisitAt: Date | null;
+  isCurrentlyCheckedIn: boolean;
+  daily: GuestDailyStatItem[]; // 直近30日
 }
 
 export interface ICheckinRecordRepository {
@@ -82,4 +100,16 @@ export interface ICheckinRecordRepository {
    * ゲストの最後の来場日時を取得
    */
   getLastVisitByGuestId(guestId: string): Promise<Date | null>;
+
+  /** 直近N日 (デフォルト30) の日次集計を取得 */
+  getGuestDailyStats(
+    guestId: string,
+    days?: number
+  ): Promise<GuestDailyStatItem[]>;
+
+  /** 個別ゲスト詳細統計(集約) */
+  getGuestDetailStats(
+    guestId: string,
+    days?: number
+  ): Promise<GuestDetailStats>;
 }

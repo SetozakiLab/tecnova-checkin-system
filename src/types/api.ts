@@ -83,3 +83,18 @@ export interface CheckinRecord {
   totalVisitCount?: number;
   totalStayMinutes?: number;
 }
+
+export interface GuestDailyStatItemDto {
+  date: string; // YYYY-MM-DD
+  visitCount: number;
+  stayMinutes: number;
+}
+
+export interface GuestDetailStatsDto {
+  guestId: string;
+  totalVisitCount: number;
+  totalStayMinutes: number;
+  lastVisitAt: string | null;
+  isCurrentlyCheckedIn: boolean;
+  daily: GuestDailyStatItemDto[];
+}

@@ -17,6 +17,8 @@ import {
   CheckinSearchParams,
   CheckinSearchResult,
   TodayStats,
+  GuestDailyStatItem,
+  GuestDetailStats,
 } from "@/domain/repositories/checkin-record-repository";
 
 export class PrismaCheckinRecordRepository implements ICheckinRecordRepository {
@@ -329,6 +331,104 @@ export class PrismaCheckinRecordRepository implements ICheckinRecordRepository {
     });
 
     return lastRecord?.checkinAt || null;
+  }
+
+  async getGuestDailyStats(
+    guestId: string,
+    days: number = 30
+  ): Promise<GuestDailyStatItem[]> {
+    const end = getTomorrowStartJST();
+    const start = new Date(end.getTime() - days * 24 * 60 * 60 * 1000);
+
+    const records = await prisma.checkinRecord.findMany({
+      where: {
+        guestId,
+        checkinAt: { gte: start, lt: end },
+      },
+      select: {
+        checkinAt: true,
+        checkoutAt: true,
+        isActive: true,
+      },
+      orderBy: { checkinAt: "asc" },
+    });
+
+    // 日付キー => 集計
+    const map = new Map<string, { visitCount: number; stayMinutes: number }>();
+    const now = new Date();
+    for (const r of records) {
+      const dateKey = new Date(r.checkinAt.getTime());
+      // JST日付 (既存 util がJST開始与える前提) → YYYY-MM-DD
+      const yyyy = dateKey.getFullYear();
+      const mm = String(dateKey.getMonth() + 1).padStart(2, "0");
+      const dd = String(dateKey.getDate()).padStart(2, "0");
+      const key = `${yyyy}-${mm}-${dd}`;
+      const item = map.get(key) || { visitCount: 0, stayMinutes: 0 };
+      item.visitCount += 1;
+      const endTime = r.checkoutAt ?? (r.isActive ? now : r.checkinAt);
+      const stay = Math.max(
+        0,
+        Math.floor((endTime.getTime() - r.checkinAt.getTime()) / (1000 * 60))
+      );
+      item.stayMinutes += stay;
+      map.set(key, item);
+    }
+
+    // 期間全日を埋める
+    const daily: GuestDailyStatItem[] = [];
+    for (let i = days - 1; i >= 0; i--) {
+      const d = new Date(end.getTime() - (i + 1) * 24 * 60 * 60 * 1000);
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const dd = String(d.getDate()).padStart(2, "0");
+      const key = `${yyyy}-${mm}-${dd}`;
+      const val = map.get(key) || { visitCount: 0, stayMinutes: 0 };
+      daily.push({
+        date: key,
+        visitCount: val.visitCount,
+        stayMinutes: val.stayMinutes,
+      });
+    }
+    return daily;
+  }
+
+  async getGuestDetailStats(
+    guestId: string,
+    days: number = 30
+  ): Promise<GuestDetailStats> {
+    const [totalVisitCount, lastVisitAt, activeRecord, daily] =
+      await Promise.all([
+        this.getTotalVisitsByGuestId(guestId),
+        this.getLastVisitByGuestId(guestId),
+        this.findActiveByGuestId(guestId),
+        this.getGuestDailyStats(guestId, days),
+      ]);
+
+    // 累計滞在時間算出 (全訪問走査) ※最適化余地: raw SQL 集計
+    const allRecords = await prisma.checkinRecord.findMany({
+      where: { guestId },
+      select: { checkinAt: true, checkoutAt: true, isActive: true },
+    });
+    const now = new Date();
+    const totalStayMinutes = allRecords.reduce((sum, r) => {
+      const end = r.checkoutAt ?? (r.isActive ? now : r.checkinAt);
+      return (
+        sum +
+        Math.max(
+          0,
+          Math.floor((end.getTime() - r.checkinAt.getTime()) / (1000 * 60))
+        )
+      );
+    }, 0);
+
+    return {
+      guestId,
+      totalVisitCount,
+      totalStayMinutes,
+      lastVisitAt,
+      isCurrentlyCheckedIn: !!activeRecord,
+      daily,
+    };
   }
 
   private mapToEntity(
