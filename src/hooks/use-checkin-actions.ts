@@ -1,18 +1,27 @@
 import { useCallback } from "react";
-import { useRouter } from "next/navigation";
-import { useApi } from "./use-api";
+import { useEnhancedApi } from "./use-enhanced-api";
+import { useNavigation } from "./use-navigation";
 import { GuestData, CheckinData } from "@/types/api";
 
 interface UseCheckinActionsReturn {
   loading: boolean;
   error: string;
+  success: boolean;
   handleCheckin: (guest: GuestData) => Promise<void>;
   handleCheckout: (guest: GuestData) => Promise<void>;
+  reset: () => void;
 }
 
 export function useCheckinActions(): UseCheckinActionsReturn {
-  const router = useRouter();
-  const { loading, error, execute } = useApi<CheckinData>();
+  const { navigateToCheckinComplete } = useNavigation();
+  const { loading, error, success, execute, reset } = useEnhancedApi<CheckinData>({
+    onSuccess: () => {
+      // Success callback can be used for analytics or notifications
+    },
+    onError: (error) => {
+      console.error("Checkin/Checkout action failed:", error);
+    },
+  });
 
   const handleCheckin = useCallback(
     async (guest: GuestData) => {
@@ -25,10 +34,10 @@ export function useCheckinActions(): UseCheckinActionsReturn {
       });
 
       if (result) {
-        router.push(`/checkin/complete?type=checkin&guestId=${guest.id}`);
+        navigateToCheckinComplete("checkin", guest.id);
       }
     },
-    [execute, router]
+    [execute, navigateToCheckinComplete]
   );
 
   const handleCheckout = useCallback(
@@ -42,16 +51,18 @@ export function useCheckinActions(): UseCheckinActionsReturn {
       });
 
       if (result) {
-        router.push(`/checkin/complete?type=checkout&guestId=${guest.id}`);
+        navigateToCheckinComplete("checkout", guest.id);
       }
     },
-    [execute, router]
+    [execute, navigateToCheckinComplete]
   );
 
   return {
     loading,
     error,
+    success,
     handleCheckin,
     handleCheckout,
+    reset,
   };
 }

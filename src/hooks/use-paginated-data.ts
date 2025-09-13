@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from "react";
-import { useApi } from "./use-api";
+import { useEnhancedApi } from "./use-enhanced-api";
 
 interface PaginationData {
   page: number;
@@ -17,6 +17,7 @@ interface UsePaginatedDataReturn<T> {
   data: T | null;
   loading: boolean;
   error: string;
+  success: boolean;
   currentPage: number;
   pagination: PaginationData | null;
   fetchData: (
@@ -25,6 +26,7 @@ interface UsePaginatedDataReturn<T> {
   ) => Promise<void>;
   handlePageChange: (page: number) => void;
   refresh: () => Promise<void>;
+  reset: () => void;
 }
 
 export function usePaginatedData<T>(
@@ -33,8 +35,24 @@ export function usePaginatedData<T>(
 ): UsePaginatedDataReturn<T> {
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState<PaginationData | null>(null);
-  const { data, loading, error, execute } = useApi<T>();
   const currentParamsRef = useRef<Record<string, string>>(initialParams);
+
+  const { data, loading, error, success, execute, reset: resetApi } = useEnhancedApi<T>({
+    onSuccess: (result) => {
+      const maybe = result as unknown;
+      if (
+        maybe &&
+        typeof maybe === "object" &&
+        "pagination" in maybe &&
+        (maybe as { pagination: PaginationData }).pagination
+      ) {
+        setPagination((maybe as { pagination: PaginationData }).pagination);
+      }
+    },
+    onError: () => {
+      setPagination(null);
+    },
+  });
 
   const fetchData = useCallback(
     async (page = 1, additionalParams: Record<string, string> = {}) => {
@@ -50,17 +68,7 @@ export function usePaginatedData<T>(
         ...currentParamsRef.current,
       });
 
-      const result = await execute(`${baseUrl}?${queryParams}`);
-      const maybe = result as unknown;
-      if (
-        maybe &&
-        typeof maybe === "object" &&
-        "pagination" in maybe &&
-        (maybe as { pagination: PaginationData }).pagination
-      ) {
-        setPagination((maybe as { pagination: PaginationData }).pagination);
-      }
-
+      await execute(`${baseUrl}?${queryParams}`);
       setCurrentPage(page);
     },
     [baseUrl, limit, execute]
@@ -77,14 +85,23 @@ export function usePaginatedData<T>(
     return fetchData(currentPage);
   }, [fetchData, currentPage]);
 
+  const reset = useCallback(() => {
+    setCurrentPage(1);
+    setPagination(null);
+    currentParamsRef.current = initialParams;
+    resetApi();
+  }, [initialParams, resetApi]);
+
   return {
     data,
     loading,
     error,
+    success,
     currentPage,
     pagination,
     fetchData,
     handlePageChange,
     refresh,
+    reset,
   };
 }
