@@ -3,13 +3,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { 
-  MetricCard, 
-  CurrentGuestsCard, 
-  TodayCheckinsCard, 
-  AverageStayTimeCard,
-  UserAvatarWithStatus 
-} from "@/components/common";
+import { MetricCard, UserAvatarWithStatus } from "@/components/common";
 import { formatTime } from "@/lib/date-utils";
 import { CheckinRecordWithGuest } from "@/domain/entities/checkin-record";
 import { TodayStats } from "@/domain/repositories/checkin-record-repository";
@@ -111,7 +105,9 @@ export function DashboardStats({ stats }: DashboardStatsProps) {
       {/* Average Stay Time */}
       <MetricCard
         title="平均滞在時間"
-        value={CheckinRecordDomainService.formatStayDuration(stats.averageStayTime)}
+        value={CheckinRecordDomainService.formatStayDuration(
+          stats.averageStayTime
+        )}
         icon={Clock}
         variant="default"
       />
@@ -122,7 +118,13 @@ export function DashboardStats({ stats }: DashboardStatsProps) {
         value={stats.currentGuests > 0 ? "活発" : "静か"}
         subtitle={stats.currentGuests > 0 ? "イベント開催中" : "イベント待機中"}
         icon={TrendingUp}
-        variant={stats.currentGuests > 5 ? "success" : stats.currentGuests > 0 ? "warning" : "default"}
+        variant={
+          stats.currentGuests > 5
+            ? "success"
+            : stats.currentGuests > 0
+            ? "warning"
+            : "default"
+        }
       />
     </div>
   );
@@ -171,13 +173,14 @@ export function CurrentGuestsList({ guests }: CurrentGuestsListProps) {
               showStatus={false}
               className="flex-1"
             />
-            
+
             <div className="text-right space-y-1">
               <div className="text-sm font-medium text-foreground">
                 {formatTime(guest.checkinAt)}
               </div>
               <div className="text-xs text-muted-foreground">
-                滞在時間: {CheckinRecordDomainService.formatStayDuration(stayDuration)}
+                滞在時間:{" "}
+                {CheckinRecordDomainService.formatStayDuration(stayDuration)}
               </div>
             </div>
           </div>
@@ -208,7 +211,9 @@ export function TodaySummary({ stats }: TodaySummaryProps) {
     },
     {
       label: "平均滞在時間",
-      value: CheckinRecordDomainService.formatStayDuration(stats.averageStayTime),
+      value: CheckinRecordDomainService.formatStayDuration(
+        stats.averageStayTime
+      ),
       unit: "",
       description: "平均的な利用時間",
     },
