@@ -12,6 +12,12 @@ export interface CheckinRecordEntity {
 export interface CheckinRecordWithGuest extends CheckinRecordEntity {
   readonly guestName: string;
   readonly guestDisplayId: number;
+  // 学年（任意）
+  readonly guestGrade?: string | null;
+  // 累計訪問回数（本レコードを含む）
+  readonly totalVisitCount?: number;
+  // 累計滞在合計(分) ※チェックアウト済み訪問 + 進行中は現在時刻まで加算
+  readonly totalStayMinutes?: number;
 }
 
 // ドメインサービス: チェックイン記録関連のビジネスルール
@@ -22,10 +28,14 @@ export class CheckinRecordDomainService {
   static calculateStayDuration(record: CheckinRecordEntity): number | null {
     if (!record.checkoutAt) {
       // チェックアウトしていない場合は現在時刻との差分
-      return Math.floor((new Date().getTime() - record.checkinAt.getTime()) / (1000 * 60));
+      return Math.floor(
+        (new Date().getTime() - record.checkinAt.getTime()) / (1000 * 60)
+      );
     }
-    
-    return Math.floor((record.checkoutAt.getTime() - record.checkinAt.getTime()) / (1000 * 60));
+
+    return Math.floor(
+      (record.checkoutAt.getTime() - record.checkinAt.getTime()) / (1000 * 60)
+    );
   }
 
   /**
@@ -33,18 +43,18 @@ export class CheckinRecordDomainService {
    */
   static formatStayDuration(durationMinutes: number | null): string {
     if (durationMinutes === null) return "不明";
-    
+
     if (durationMinutes < 60) {
       return `${durationMinutes}分`;
     }
-    
+
     const hours = Math.floor(durationMinutes / 60);
     const minutes = durationMinutes % 60;
-    
+
     if (minutes === 0) {
       return `${hours}時間`;
     }
-    
+
     return `${hours}時間${minutes}分`;
   }
 
@@ -58,15 +68,18 @@ export class CheckinRecordDomainService {
   /**
    * チェックアウト可能かどうかを判定
    */
-  static canCheckout(record: CheckinRecordEntity): { canCheckout: boolean; reason?: string } {
+  static canCheckout(record: CheckinRecordEntity): {
+    canCheckout: boolean;
+    reason?: string;
+  } {
     if (!record.isActive) {
       return { canCheckout: false, reason: "非アクティブな記録です" };
     }
-    
+
     if (record.checkoutAt) {
       return { canCheckout: false, reason: "既にチェックアウト済みです" };
     }
-    
+
     return { canCheckout: true };
   }
 
@@ -75,9 +88,13 @@ export class CheckinRecordDomainService {
    */
   static getCurrentStayDuration(record: CheckinRecordEntity): number {
     if (record.checkoutAt) {
-      return Math.floor((record.checkoutAt.getTime() - record.checkinAt.getTime()) / (1000 * 60));
+      return Math.floor(
+        (record.checkoutAt.getTime() - record.checkinAt.getTime()) / (1000 * 60)
+      );
     }
-    
-    return Math.floor((new Date().getTime() - record.checkinAt.getTime()) / (1000 * 60));
+
+    return Math.floor(
+      (new Date().getTime() - record.checkinAt.getTime()) / (1000 * 60)
+    );
   }
 }

@@ -55,7 +55,49 @@ export class PrismaCheckinRecordRepository implements ICheckinRecordRepository {
       orderBy: { checkinAt: "desc" },
     });
 
-    return records.map((record) => this.mapToEntityWithGuest(record));
+    // 取得したゲストID一覧
+    const guestIds = records.map((r) => r.guestId);
+
+    // 過去含む累計訪問 & 滞在時間をまとめて取得
+    // 全訪問を取得（件数が多くなる場合は期間制限や集計SQL最適化要検討）
+    const allVisits = await prisma.checkinRecord.findMany({
+      where: { guestId: { in: guestIds } },
+      select: {
+        guestId: true,
+        checkinAt: true,
+        checkoutAt: true,
+        isActive: true,
+      },
+    });
+
+    const statsMap = new Map<
+      string,
+      { totalVisitCount: number; totalStayMinutes: number }
+    >();
+    const now = new Date();
+    for (const v of allVisits) {
+      const prev = statsMap.get(v.guestId) || {
+        totalVisitCount: 0,
+        totalStayMinutes: 0,
+      };
+      prev.totalVisitCount += 1;
+      const end = v.checkoutAt ?? now;
+      prev.totalStayMinutes += Math.floor(
+        (end.getTime() - v.checkinAt.getTime()) / (1000 * 60)
+      );
+      statsMap.set(v.guestId, prev);
+    }
+
+    return records.map((record) => {
+      const base = this.mapToEntityWithGuest(record);
+      const stat = statsMap.get(record.guestId);
+      return {
+        ...base,
+        guestGrade: record.guest.grade ?? null,
+        totalVisitCount: stat?.totalVisitCount ?? 1,
+        totalStayMinutes: stat?.totalStayMinutes ?? 0,
+      };
+    });
   }
 
   async search(params: CheckinSearchParams): Promise<CheckinSearchResult> {
@@ -316,7 +358,7 @@ export class PrismaCheckinRecordRepository implements ICheckinRecordRepository {
     checkinAt: Date | string;
     checkoutAt: Date | string | null;
     isActive: boolean | undefined;
-    guest: { name: string; displayId: number };
+    guest: { name: string; displayId: number; grade?: string | null };
   }): CheckinRecordWithGuest {
     const checkinAt =
       typeof record.checkinAt === "string"
@@ -335,6 +377,7 @@ export class PrismaCheckinRecordRepository implements ICheckinRecordRepository {
       checkinAt,
       checkoutAt,
       isActive: record.isActive ?? false,
-    };
+      guestGrade: record.guest.grade ?? null,
+    } as CheckinRecordWithGuest;
   }
 }

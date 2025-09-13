@@ -1,10 +1,18 @@
 // Application Use Case: Checkin Management
 // チェックイン・チェックアウト管理に関するアプリケーションロジック
 
-import { CheckinRecordEntity, CheckinRecordWithGuest, CheckinRecordDomainService } from "@/domain/entities/checkin-record";
+import {
+  CheckinRecordEntity,
+  CheckinRecordWithGuest,
+  CheckinRecordDomainService,
+} from "@/domain/entities/checkin-record";
 import { GuestDomainService } from "@/domain/entities/guest";
 import { IGuestRepository } from "@/domain/repositories/guest-repository";
-import { ICheckinRecordRepository, CheckinSearchParams, TodayStats } from "@/domain/repositories/checkin-record-repository";
+import {
+  ICheckinRecordRepository,
+  CheckinSearchParams,
+  TodayStats,
+} from "@/domain/repositories/checkin-record-repository";
 
 export class CheckinManagementUseCase {
   constructor(
@@ -15,7 +23,13 @@ export class CheckinManagementUseCase {
   /**
    * チェックイン処理
    */
-  async checkinGuest(guestId: string): Promise<{ success: boolean; record?: CheckinRecordEntity; error?: string }> {
+  async checkinGuest(
+    guestId: string
+  ): Promise<{
+    success: boolean;
+    record?: CheckinRecordEntity;
+    error?: string;
+  }> {
     try {
       // ゲストの存在と状態を確認
       const guest = await this.guestRepository.findByIdWithStatus(guestId);
@@ -41,12 +55,22 @@ export class CheckinManagementUseCase {
   /**
    * チェックアウト処理
    */
-  async checkoutGuest(guestId: string): Promise<{ success: boolean; record?: CheckinRecordEntity; error?: string }> {
+  async checkoutGuest(
+    guestId: string
+  ): Promise<{
+    success: boolean;
+    record?: CheckinRecordEntity;
+    error?: string;
+  }> {
     try {
       // アクティブなチェックイン記録を検索
-      const activeRecord = await this.checkinRecordRepository.findActiveByGuestId(guestId);
+      const activeRecord =
+        await this.checkinRecordRepository.findActiveByGuestId(guestId);
       if (!activeRecord) {
-        return { success: false, error: "アクティブなチェックイン記録が見つかりません" };
+        return {
+          success: false,
+          error: "アクティブなチェックイン記録が見つかりません",
+        };
       }
 
       // チェックアウト可能性をドメインロジックで判定
@@ -56,7 +80,9 @@ export class CheckinManagementUseCase {
       }
 
       // チェックアウト処理
-      const updatedRecord = await this.checkinRecordRepository.checkout(activeRecord.id);
+      const updatedRecord = await this.checkinRecordRepository.checkout(
+        activeRecord.id
+      );
       return { success: true, record: updatedRecord };
     } catch (error) {
       console.error("Checkout error:", error);
@@ -67,7 +93,13 @@ export class CheckinManagementUseCase {
   /**
    * 記録IDでチェックアウト処理
    */
-  async checkoutByRecordId(recordId: string): Promise<{ success: boolean; record?: CheckinRecordEntity; error?: string }> {
+  async checkoutByRecordId(
+    recordId: string
+  ): Promise<{
+    success: boolean;
+    record?: CheckinRecordEntity;
+    error?: string;
+  }> {
     try {
       // チェックイン記録を取得
       const record = await this.checkinRecordRepository.findById(recordId);
@@ -82,7 +114,9 @@ export class CheckinManagementUseCase {
       }
 
       // チェックアウト処理
-      const updatedRecord = await this.checkinRecordRepository.checkout(recordId);
+      const updatedRecord = await this.checkinRecordRepository.checkout(
+        recordId
+      );
       return { success: true, record: updatedRecord };
     } catch (error) {
       console.error("Checkout by record ID error:", error);
@@ -95,6 +129,7 @@ export class CheckinManagementUseCase {
    */
   async getCurrentGuests(): Promise<CheckinRecordWithGuest[]> {
     try {
+      // リポジトリで guestGrade / totalVisitCount / totalStayMinutes を拡張済み
       return await this.checkinRecordRepository.findCurrentCheckins();
     } catch (error) {
       console.error("Get current guests error:", error);
@@ -135,7 +170,10 @@ export class CheckinManagementUseCase {
    */
   async getStatsForPeriod(startDate: Date, endDate: Date): Promise<TodayStats> {
     try {
-      return await this.checkinRecordRepository.getStatsForPeriod(startDate, endDate);
+      return await this.checkinRecordRepository.getStatsForPeriod(
+        startDate,
+        endDate
+      );
     } catch (error) {
       console.error("Get stats for period error:", error);
       return {
@@ -149,7 +187,9 @@ export class CheckinManagementUseCase {
   /**
    * チェックイン記録を削除（管理者のみ）
    */
-  async deleteCheckinRecord(recordId: string): Promise<{ success: boolean; error?: string }> {
+  async deleteCheckinRecord(
+    recordId: string
+  ): Promise<{ success: boolean; error?: string }> {
     try {
       const record = await this.checkinRecordRepository.findById(recordId);
       if (!record) {
@@ -167,13 +207,15 @@ export class CheckinManagementUseCase {
   /**
    * ゲストの来場統計を取得
    */
-  async getGuestVisitStats(guestId: string): Promise<{ totalVisits: number; lastVisit: Date | null }> {
+  async getGuestVisitStats(
+    guestId: string
+  ): Promise<{ totalVisits: number; lastVisit: Date | null }> {
     try {
       const [totalVisits, lastVisit] = await Promise.all([
         this.checkinRecordRepository.getTotalVisitsByGuestId(guestId),
         this.checkinRecordRepository.getLastVisitByGuestId(guestId),
       ]);
-      
+
       return { totalVisits, lastVisit };
     } catch (error) {
       console.error("Get guest visit stats error:", error);

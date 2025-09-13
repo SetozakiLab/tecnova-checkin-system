@@ -1,7 +1,11 @@
 "use client";
 import { useState, useId, useMemo } from "react";
 import { Label } from "@/components/ui/label";
-import { GradeValue } from "@/types/api";
+import {
+  GRADE_DEFINITIONS,
+  GradeValue,
+  formatGradeDisplay,
+} from "@/domain/value-objects/grade";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,20 +32,7 @@ export interface GradeSelectProps {
   className?: string;
 }
 
-const OPTIONS: { value: GradeValue; label: string }[] = [
-  { value: "ES1", label: "小学1年" },
-  { value: "ES2", label: "小学2年" },
-  { value: "ES3", label: "小学3年" },
-  { value: "ES4", label: "小学4年" },
-  { value: "ES5", label: "小学5年" },
-  { value: "ES6", label: "小学6年" },
-  { value: "JH1", label: "中学1年" },
-  { value: "JH2", label: "中学2年" },
-  { value: "JH3", label: "中学3年" },
-  { value: "HS1", label: "高校1年" },
-  { value: "HS2", label: "高校2年" },
-  { value: "HS3", label: "高校3年" },
-];
+const OPTIONS = GRADE_DEFINITIONS;
 
 export function GradeSelect({
   value,
@@ -138,7 +129,5 @@ export function GradeSelect({
 }
 
 export function formatGrade(value: string | null | undefined): string {
-  if (!value) return "-";
-  const found = OPTIONS.find((o) => o.value === value);
-  return found ? found.label : value;
+  return formatGradeDisplay(value);
 }

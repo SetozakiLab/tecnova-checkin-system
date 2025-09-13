@@ -79,4 +79,7 @@ export interface CheckinRecord {
   checkoutAt?: string | null;
   isActive: boolean;
   duration?: number | null;
+  guestGrade?: string | null;
+  totalVisitCount?: number;
+  totalStayMinutes?: number;
 }

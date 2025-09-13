@@ -9,6 +9,7 @@ import { CheckinRecordWithGuest } from "@/domain/entities/checkin-record";
 import { TodayStats } from "@/domain/repositories/checkin-record-repository";
 import { CheckinRecordDomainService } from "@/domain/entities/checkin-record";
 import { Users, Clock, Activity, TrendingUp } from "lucide-react";
+import { formatGradeDisplay } from "@/domain/value-objects/grade";
 
 // Loading components for Suspense fallbacks
 export function StatsCardsSkeleton() {
@@ -172,20 +173,46 @@ export function CurrentGuestsList({ guests }: CurrentGuestsListProps) {
             key={guest.id}
             className="flex items-center justify-between p-4 bg-accent/50 rounded-lg border border-border/50 hover:bg-accent/70 transition-colors"
           >
-            <UserAvatarWithStatus
-              name={guest.guestName}
-              displayId={guest.guestDisplayId}
-              isActive={guest.isActive}
-              showStatus={false}
-              className="flex-1"
-            />
+            <div className="flex-1 flex items-center gap-4">
+              <UserAvatarWithStatus
+                name={guest.guestName}
+                displayId={guest.guestDisplayId}
+                isActive={guest.isActive}
+                showStatus={false}
+                className="flex-shrink"
+              />
+              <div className="space-y-1 text-xs text-muted-foreground">
+                {guest.guestGrade && (
+                  <div>
+                    <span className="font-medium text-foreground">学年: </span>
+                    {formatGradeDisplay(guest.guestGrade)}
+                  </div>
+                )}
+                <div>
+                  <span className="font-medium text-foreground">
+                    訪問回数:{" "}
+                  </span>
+                  {guest.totalVisitCount ?? "-"} 回
+                </div>
+                <div>
+                  <span className="font-medium text-foreground">
+                    累計滞在:{" "}
+                  </span>
+                  {guest.totalStayMinutes != null
+                    ? CheckinRecordDomainService.formatStayDuration(
+                        guest.totalStayMinutes
+                      )
+                    : "-"}
+                </div>
+              </div>
+            </div>
 
             <div className="text-right space-y-1">
               <div className="text-sm font-medium text-foreground">
                 {formatTime(guest.checkinAt)}
               </div>
               <div className="text-xs text-muted-foreground">
-                滞在時間:{" "}
+                現在滞在:{" "}
                 {CheckinRecordDomainService.formatStayDuration(stayDuration)}
               </div>
             </div>

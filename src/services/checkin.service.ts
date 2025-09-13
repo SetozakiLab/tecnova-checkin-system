@@ -169,18 +169,49 @@ export class CheckinService {
       orderBy: { checkinAt: "desc" },
     });
 
-    return activeCheckins.map((record) => ({
-      id: record.id,
-      guestId: record.guestId,
-      guestName: record.guest.name,
-      guestDisplayId: record.guest.displayId,
-      checkinAt: record.checkinAt.toISOString(),
-      checkoutAt: null,
-      isActive: true,
-      duration: Math.floor(
-        (Date.now() - record.checkinAt.getTime()) / (1000 * 60)
-      ),
-    }));
+    const guestIds = activeCheckins.map((r) => r.guestId);
+    const allVisits = await prisma.checkinRecord.findMany({
+      where: { guestId: { in: guestIds } },
+      select: { guestId: true, checkinAt: true, checkoutAt: true },
+    });
+
+    const statsMap = new Map<
+      string,
+      { totalVisitCount: number; totalStayMinutes: number }
+    >();
+    const now = new Date();
+    for (const v of allVisits) {
+      const prev = statsMap.get(v.guestId) || {
+        totalVisitCount: 0,
+        totalStayMinutes: 0,
+      };
+      prev.totalVisitCount += 1;
+      const end = v.checkoutAt ?? now;
+      prev.totalStayMinutes += Math.floor(
+        (end.getTime() - v.checkinAt.getTime()) / (1000 * 60)
+      );
+      statsMap.set(v.guestId, prev);
+    }
+
+    return activeCheckins.map((record) => {
+      const stat = statsMap.get(record.guestId);
+      const result: import("@/types/api").CheckinRecord = {
+        id: record.id,
+        guestId: record.guestId,
+        guestName: record.guest.name,
+        guestDisplayId: record.guest.displayId,
+        checkinAt: record.checkinAt.toISOString(),
+        checkoutAt: null,
+        isActive: true,
+        duration: Math.floor(
+          (Date.now() - record.checkinAt.getTime()) / (1000 * 60)
+        ),
+        guestGrade: record.guest.grade ?? null,
+        totalVisitCount: stat?.totalVisitCount ?? 1,
+        totalStayMinutes: stat?.totalStayMinutes ?? 0,
+      };
+      return result;
+    });
   }
 
   // 今日の統計取得
