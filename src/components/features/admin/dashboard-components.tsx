@@ -112,16 +112,22 @@ export function DashboardStats({ stats }: DashboardStatsProps) {
         variant="default"
       />
 
-      {/* Efficiency indicator */}
+      {/* 混雑状況 */}
       <MetricCard
-        title="利用効率"
-        value={stats.currentGuests > 0 ? "活発" : "静か"}
-        subtitle={stats.currentGuests > 0 ? "イベント開催中" : "イベント待機中"}
+        title="混雑状況"
+        value={
+          stats.currentGuests >= 10
+            ? "混雑"
+            : stats.currentGuests >= 5
+            ? "やや混雑"
+            : "空いている"
+        }
+        subtitle={stats.currentGuests > 0 ? "滞在中" : "待機中"}
         icon={TrendingUp}
         variant={
-          stats.currentGuests > 5
+          stats.currentGuests >= 10
             ? "success"
-            : stats.currentGuests > 0
+            : stats.currentGuests >= 5
             ? "warning"
             : "default"
         }
