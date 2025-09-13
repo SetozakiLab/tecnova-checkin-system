@@ -121,10 +121,12 @@ export function HistoryTable({ records, onUpdated }: HistoryTableProps) {
           <TableBody>
             {records.map((record) => (
               <TableRow key={record.id} className="hover:bg-slate-50">
-                <TableCell className="font-medium text-primary underline-offset-2 hover:underline">
-                  <Link href={`/admin/guests/${record.guestId}`}>
-                    {record.guestName}
-                  </Link>
+                <TableCell className="font-medium">
+                  <Button asChild variant={"ghost"}>
+                    <Link href={`/admin/guests/${record.guestId}`}>
+                      {record.guestName}
+                    </Link>
+                  </Button>
                 </TableCell>
                 <TableCell>{record.guestDisplayId}</TableCell>
                 <TableCell>{formatDateTime(record.checkinAt)}</TableCell>

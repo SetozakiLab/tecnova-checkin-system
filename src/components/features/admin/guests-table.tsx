@@ -138,8 +138,10 @@ export function GuestsTable({ guests, onUpdate }: GuestsTableProps) {
           <TableBody>
             {guests.map((guest) => (
               <TableRow key={guest.id} className="hover:bg-slate-50">
-                <TableCell className="font-medium text-primary underline-offset-2 hover:underline">
-                  <Link href={`/admin/guests/${guest.id}`}>{guest.name}</Link>
+                <TableCell className="font-medium">
+                  <Button asChild variant={"ghost"}>
+                    <Link href={`/admin/guests/${guest.id}`}>{guest.name}</Link>
+                  </Button>
                 </TableCell>
                 <TableCell>{guest.displayId}</TableCell>
                 <TableCell>{guest.contact || "-"}</TableCell>
