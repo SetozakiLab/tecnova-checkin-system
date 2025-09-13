@@ -36,6 +36,7 @@ model Guest {
   displayId Int             @unique // アプリケーションロジックで生成
   name      String
   contact   String?
+  grade     Grade?
   createdAt DateTime        @default(now())
   updatedAt DateTime        @updatedAt
   checkins  CheckinRecord[]
@@ -54,4 +55,19 @@ model CheckinRecord {
   guest      Guest     @relation(fields: [guestId], references: [id], onDelete: Cascade)
 
   @@map("checkin_records")
+}
+
+enum Grade {
+  ES1
+  ES2
+  ES3
+  ES4
+  ES5
+  ES6
+  JH1
+  JH2
+  JH3
+  HS1
+  HS2
+  HS3
 }

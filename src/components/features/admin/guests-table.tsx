@@ -41,6 +41,7 @@ import { formatDateTime } from "@/lib/date-utils";
 import { useApi } from "@/hooks/use-api";
 import { ErrorState } from "@/components/shared/error-state";
 import { GuestData } from "@/types/api";
+import { GradeSelect, formatGrade } from "@/components/ui/grade-select";
 
 interface GuestsTableProps {
   guests: GuestData[];
@@ -51,7 +52,11 @@ export function GuestsTable({ guests, onUpdate }: GuestsTableProps) {
   const { data: session } = useSession();
   const isManager = (session?.user as any)?.role === "MANAGER";
   const [editingGuest, setEditingGuest] = useState<GuestData | null>(null);
-  const [editForm, setEditForm] = useState({ name: "", contact: "" });
+  const [editForm, setEditForm] = useState({
+    name: "",
+    contact: "",
+    grade: null as string | null,
+  });
   const { loading: editLoading, error: editError, execute } = useApi();
 
   const handleEditClick = (guest: GuestData) => {
@@ -59,6 +64,7 @@ export function GuestsTable({ guests, onUpdate }: GuestsTableProps) {
     setEditForm({
       name: guest.name,
       contact: guest.contact || "",
+      grade: guest.grade || null,
     });
   };
 
@@ -67,8 +73,8 @@ export function GuestsTable({ guests, onUpdate }: GuestsTableProps) {
     // 本来は更新API(PUT)を呼ぶべきところがDELETEになっていたため修正
     const payload = {
       name: editForm.name.trim(),
-      // 空文字はスキーマで許容されるためそのまま送信（undefinedにすると項目未更新になる）
       contact: editForm.contact.trim(),
+      grade: editForm.grade || null,
     };
     const result = await execute(`/api/admin/guests/${editingGuest.id}`, {
       method: "PUT",
@@ -102,6 +108,7 @@ export function GuestsTable({ guests, onUpdate }: GuestsTableProps) {
               <TableHead>名前</TableHead>
               <TableHead>ID</TableHead>
               <TableHead>連絡先</TableHead>
+              <TableHead>学年</TableHead>
               <TableHead>登録日時</TableHead>
               <TableHead>状態</TableHead>
               <TableHead>操作</TableHead>
@@ -113,6 +120,7 @@ export function GuestsTable({ guests, onUpdate }: GuestsTableProps) {
                 <TableCell className="font-medium">{guest.name}</TableCell>
                 <TableCell>{guest.displayId}</TableCell>
                 <TableCell>{guest.contact || "-"}</TableCell>
+                <TableCell>{formatGrade(guest.grade)}</TableCell>
                 <TableCell>{formatDateTime(guest.createdAt)}</TableCell>
                 <TableCell>
                   <StatusBadge isActive={!!guest.isCurrentlyCheckedIn} />
@@ -242,6 +250,14 @@ export function GuestsTable({ guests, onUpdate }: GuestsTableProps) {
                   }
                   disabled={editLoading}
                   placeholder="メールアドレス（任意）"
+                />
+              </div>
+
+              <div>
+                <GradeSelect
+                  value={editForm.grade as any}
+                  onChange={(v) => setEditForm({ ...editForm, grade: v })}
+                  disabled={editLoading}
                 />
               </div>
 

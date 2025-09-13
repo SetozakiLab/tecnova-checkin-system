@@ -26,6 +26,7 @@ describe("GuestService.createGuest", () => {
       displayId: 25005,
       name: "Alice",
       contact: null,
+      grade: null,
       createdAt: new Date("2025-01-01T00:00:00Z"),
     });
 
@@ -39,11 +40,12 @@ describe("GuestService.createGuest", () => {
       displayId: 25005,
       name: "Alice",
       contact: null,
+      grade: null,
       createdAt: new Date("2025-01-01T00:00:00Z").toISOString(),
     });
 
     expect(mockPrisma.guest.create).toHaveBeenCalledWith({
-      data: { displayId: 25005, name: "Alice", contact: null },
+      data: { displayId: 25005, name: "Alice", contact: null, grade: null },
     });
   });
 
@@ -74,6 +76,7 @@ describe("GuestService.updateGuest", () => {
       displayId: 12345,
       name: "Bob",
       contact: null,
+      grade: null,
       createdAt: new Date("2025-01-01T00:00:00Z"),
     };
 
@@ -90,5 +93,54 @@ describe("GuestService.updateGuest", () => {
     });
     expect(updated.name).toBe("Bobby");
     expect(updated.contact).toBe("a@example.com");
+  });
+});
+
+describe("GuestService grade フィールド", () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+  });
+
+  it("grade を指定して作成", async () => {
+    vi.spyOn(dateUtils, "getNextSequenceForYear").mockResolvedValue(7);
+    vi.spyOn(dateUtils, "generateDisplayId").mockReturnValue(25007);
+
+    mockPrisma.guest.findUnique.mockResolvedValue(null);
+    mockPrisma.guest.create.mockResolvedValue({
+      id: "g3",
+      displayId: 25007,
+      name: "Carol",
+      contact: null,
+      grade: "JH2",
+      createdAt: new Date("2025-01-02T00:00:00Z"),
+    });
+
+    const created = await GuestService.createGuest({
+      name: "Carol",
+      contact: "",
+      grade: "JH2",
+    });
+
+    expect(created.grade).toBe("JH2");
+  });
+
+  it("grade を null に更新", async () => {
+    const base = {
+      id: "g4",
+      displayId: 11111,
+      name: "Dan",
+      contact: null,
+      grade: "ES3",
+      createdAt: new Date("2025-01-03T00:00:00Z"),
+    };
+
+    mockPrisma.guest.findUnique.mockResolvedValue(base);
+    mockPrisma.guest.update.mockResolvedValue({
+      ...base,
+      grade: null,
+    });
+
+    const updated = await GuestService.updateGuest("g4", { grade: null });
+    expect(updated.grade).toBeNull();
   });
 });

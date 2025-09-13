@@ -20,15 +20,9 @@ export const PUT = withApiHandler(
   ) => {
     const { id } = await params;
 
-    // 権限チェック: MANAGER は削除禁止
-    const session = await getServerSession(authOptions);
-    if (session?.user?.role === "MANAGER") {
-      return createErrorResponse(
-        "FORBIDDEN",
-        "この操作を行う権限がありません",
-        403
-      );
-    }
+    // 権限チェック: MANAGER も更新(PUT)は許可。削除(DELETE)のみ禁止ポリシー。
+    // ここでは明示的な拒否は行わない。
+    await getServerSession(authOptions); // セッション利用 (将来ロールごとのフィールド制御を追加する場合に備え保持)
 
     // リクエストボディのバリデーション
     const validation = await validateRequest(updateGuestSchema)(request);

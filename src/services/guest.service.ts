@@ -14,6 +14,23 @@ export const createGuestSchema = z.object({
     .email("有効なメールアドレスを入力してください")
     .optional()
     .or(z.literal("")),
+  grade: z
+    .enum([
+      "ES1",
+      "ES2",
+      "ES3",
+      "ES4",
+      "ES5",
+      "ES6",
+      "JH1",
+      "JH2",
+      "JH3",
+      "HS1",
+      "HS2",
+      "HS3",
+    ] as const)
+    .optional()
+    .nullable(),
 });
 
 export const updateGuestSchema = z.object({
@@ -27,6 +44,23 @@ export const updateGuestSchema = z.object({
     .email("有効なメールアドレスを入力してください")
     .optional()
     .or(z.literal("")),
+  grade: z
+    .enum([
+      "ES1",
+      "ES2",
+      "ES3",
+      "ES4",
+      "ES5",
+      "ES6",
+      "JH1",
+      "JH2",
+      "JH3",
+      "HS1",
+      "HS2",
+      "HS3",
+    ] as const)
+    .optional()
+    .nullable(),
 });
 
 export const guestSearchSchema = z.object({
@@ -51,6 +85,7 @@ export class GuestService {
         displayId,
         name: data.name,
         contact: data.contact || null,
+        grade: data.grade || null,
       },
     });
 
@@ -94,6 +129,7 @@ export class GuestService {
       data: {
         ...(data.name && { name: data.name }),
         ...(data.contact !== undefined && { contact: data.contact || null }),
+        ...(data.grade !== undefined && { grade: data.grade || null }),
       },
     });
 
@@ -271,6 +307,7 @@ export class GuestService {
       displayId: guest.displayId,
       name: guest.name,
       contact: guest.contact,
+      grade: guest.grade ?? null,
       createdAt: guest.createdAt.toISOString(),
     };
   }

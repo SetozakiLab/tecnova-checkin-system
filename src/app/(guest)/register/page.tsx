@@ -11,7 +11,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ApiResponse, GuestData } from "@/types/api";
+import { ApiResponse, GuestData, GradeValue } from "@/types/api";
+import { GradeSelect } from "@/components/ui/grade-select";
 
 const registerSchema = z.object({
   name: z
@@ -23,6 +24,23 @@ const registerSchema = z.object({
     .email("正しいメールアドレスを入力してください")
     .optional()
     .or(z.literal("")),
+  grade: z.enum(
+    [
+      "ES1",
+      "ES2",
+      "ES3",
+      "ES4",
+      "ES5",
+      "ES6",
+      "JH1",
+      "JH2",
+      "JH3",
+      "HS1",
+      "HS2",
+      "HS3",
+    ] as const,
+    { required_error: "学年を選択してください" }
+  ),
   acceptTerms: z.boolean().refine((val) => val === true, {
     message: "利用規約に同意してください",
   }),
@@ -74,6 +92,7 @@ function RegisterForm() {
         body: JSON.stringify({
           name: data.name,
           contact: data.contact || undefined,
+          grade: data.grade,
         }),
       });
 
@@ -90,6 +109,8 @@ function RegisterForm() {
       console.error("Registration error:", err);
       setError("サーバーエラーが発生しました");
     } finally {
+      // no-op
+
       setLoading(false);
     }
   };
@@ -146,6 +167,21 @@ function RegisterForm() {
               </p>
             )}
           </div> */}
+          {/* 学年 */}
+          <div className="space-y-2">
+            <Label htmlFor="grade" className="text-lg">
+              学年 <span className="text-red-500">*</span>
+            </Label>
+            <GradeSelect
+              value={watch("grade") as GradeValue | null | undefined}
+              onChange={(v) => setValue("grade", v as any)}
+              disabled={loading}
+            />
+            {errors.grade && (
+              <p className="text-red-500 text-sm">{errors.grade.message}</p>
+            )}
+          </div>
+
           {/* 利用規約同意 */}
           {!agreedFromTerms && (
             <div className="space-y-4">
@@ -201,7 +237,7 @@ function RegisterForm() {
               type="submit"
               size="lg"
               className="flex-1 bg-green-600 hover:bg-green-700"
-              disabled={loading || !acceptTerms}
+              disabled={loading || !acceptTerms || !watch("grade")}
             >
               {loading ? "登録中..." : "登録する"}
             </Button>

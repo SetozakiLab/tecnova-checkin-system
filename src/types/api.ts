@@ -24,6 +24,7 @@ export interface GuestData {
   displayId: number;
   name: string;
   contact?: string | null;
+  grade?: string | null;
   isCurrentlyCheckedIn?: boolean;
   currentCheckinId?: string | null;
   lastCheckinAt?: string | null;
@@ -32,6 +33,21 @@ export interface GuestData {
   createdAt: string;
   updatedAt?: string;
 }
+
+// Grade Enum 値 (Prisma と同期) - UI/バリデーション用
+export type GradeValue =
+  | "ES1"
+  | "ES2"
+  | "ES3"
+  | "ES4"
+  | "ES5"
+  | "ES6"
+  | "JH1"
+  | "JH2"
+  | "JH3"
+  | "HS1"
+  | "HS2"
+  | "HS3";
 
 export interface CheckinRecordData {
   id: string;
