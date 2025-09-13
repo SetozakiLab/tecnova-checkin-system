@@ -1,59 +1,42 @@
 "use client";
 
 import { useEffect, useState, Suspense } from "react";
-import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ApiResponse, GuestData } from "@/types/api";
+import { Card, CardContent } from "@/components/ui/card";
+import { LoadingButton } from "@/components/common/enhanced-button";
+import { useEnhancedApi, useNavigation } from "@/hooks";
+import { GuestData } from "@/types/api";
 
 function CheckinCompleteContent() {
   const searchParams = useSearchParams();
   const type = searchParams.get("type"); // 'checkin' or 'checkout'
   const guestId = searchParams.get("guestId");
+  const isCheckin = type === "checkin";
+  
+  const { navigateToHome, navigateToCheckin } = useNavigation();
+  
   const [guest, setGuest] = useState<GuestData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const { loading, error, execute } = useEnhancedApi<GuestData>({
+    onSuccess: (guestData) => {
+      setGuest(guestData);
+    },
+  });
 
   useEffect(() => {
-    const fetchGuest = async () => {
-      if (!guestId) {
-        setError("ゲスト情報が見つかりません");
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const response = await fetch(`/api/guests/${guestId}`);
-        const result: ApiResponse<GuestData> = await response.json();
-
-        if (!result.success) {
-          setError("ゲスト情報の取得に失敗しました");
-          return;
-        }
-
-        setGuest(result.data!);
-      } catch (err) {
-        console.error("Fetch guest error:", err);
-        setError("サーバーエラーが発生しました");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchGuest();
-  }, [guestId]);
+    if (!guestId) {
+      return;
+    }
+    execute(`/api/guests/${guestId}`);
+  }, [guestId, execute]);
 
   // 10秒後に自動でホームに戻る
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (typeof window !== "undefined") {
-        window.location.href = "/";
-      }
+      navigateToHome();
     }, 10000);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [navigateToHome]);
 
   if (loading) {
     return (
@@ -70,21 +53,22 @@ function CheckinCompleteContent() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-red-50 to-pink-100 flex items-center justify-center p-4">
         <Card className="max-w-md">
-          <CardHeader>
-            <CardTitle className="text-center text-red-700">エラー</CardTitle>
-          </CardHeader>
-          <CardContent className="text-center">
-            <p className="mb-4">{error}</p>
-            <Link href="/">
-              <Button variant="outline">ホームに戻る</Button>
-            </Link>
+          <CardContent className="pt-6 text-center">
+            <div className="text-red-600 text-4xl mb-4">❌</div>
+            <h1 className="text-xl font-bold text-red-800 mb-2">エラー</h1>
+            <p className="text-red-700 mb-4">{error || "ゲスト情報が見つかりません"}</p>
+            <LoadingButton
+              variant="outline"
+              onClick={navigateToHome}
+              className="w-full"
+            >
+              ホームに戻る
+            </LoadingButton>
           </CardContent>
         </Card>
       </div>
     );
   }
-
-  const isCheckin = type === "checkin";
 
   return (
     <div
@@ -190,20 +174,22 @@ function CheckinCompleteContent() {
 
         {/* ナビゲーション */}
         <div className="flex gap-4">
-          <Link href="/" className="flex-1">
-            <Button variant="outline" size="lg" className="w-full">
-              ホームに戻る
-            </Button>
-          </Link>
+          <LoadingButton 
+            variant="outline" 
+            size="lg" 
+            className="flex-1"
+            onClick={navigateToHome}
+          >
+            ホームに戻る
+          </LoadingButton>
           {isCheckin && (
-            <Link href="/checkin" className="flex-1">
-              <Button
-                size="lg"
-                className="w-full bg-orange-600 hover:bg-orange-700"
-              >
-                チェックアウトする場合
-              </Button>
-            </Link>
+            <LoadingButton
+              size="lg"
+              className="flex-1 bg-orange-600 hover:bg-orange-700"
+              onClick={navigateToCheckin}
+            >
+              チェックアウトする場合
+            </LoadingButton>
           )}
         </div>
 
