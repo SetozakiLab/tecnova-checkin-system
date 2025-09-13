@@ -1,11 +1,22 @@
-import { NextRequest, NextResponse } from "next/server";
-import { signOut } from "next-auth/react";
+import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { ApiResponse } from "@/types/api";
 
-export async function POST(request: NextRequest) {
+// next-auth v4 credentials ではサーバー側 signOut API は特別処理不要: セッションはJWT/DBトークンをクライアント側で破棄
+export async function POST() {
   try {
-    await signOut({ redirect: false });
-
+    const session = await getServerSession(authOptions);
+    if (!session) {
+      return NextResponse.json<ApiResponse>(
+        {
+          success: true,
+          message: "既にサインアウト済みです",
+        },
+        { status: 200 }
+      );
+    }
+    // クライアント側で next-auth signOut() が cookie/state を処理する想定
     return NextResponse.json<ApiResponse>({
       success: true,
       message: "ログアウトしました",

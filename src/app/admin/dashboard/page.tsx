@@ -18,12 +18,6 @@ import { RefreshButton } from "@/components/shared";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-interface TodayStats {
-  totalCheckins: number;
-  currentGuests: number;
-  averageStayTime: number;
-}
-
 // Server Components for data fetching with error handling
 async function DashboardStatsSection() {
   try {

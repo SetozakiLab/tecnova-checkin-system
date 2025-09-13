@@ -47,7 +47,7 @@ export default function CheckoutPage() {
         return;
       }
       setRecords(result.data || []);
-    } catch (e) {
+    } catch {
       setListError("サーバーエラーが発生しました");
     } finally {
       setLoadingList(false);

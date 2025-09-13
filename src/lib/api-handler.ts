@@ -32,7 +32,8 @@ export interface ApiHandlerOptions {
 
 // APIハンドラーの型
 export type ApiHandler = (
-  request: NextRequest,
+  _request: NextRequest,
+  // Next.js route handler context (params など) — Next.js 側の RouteContext 互換確保のため any 緩和
   context?: any
 ) => Promise<NextResponse>;
 
@@ -194,22 +195,22 @@ export function withApiHandler(
   handler: ApiHandler,
   options: ApiHandlerOptions = {}
 ): ApiHandler {
-  return async (request: NextRequest, context?: any) => {
+  return async (_request: NextRequest, context?: Record<string, unknown>) => {
     try {
       // メソッドチェック
       if (options.allowedMethods) {
-        const methodCheck = checkMethod(options.allowedMethods)(request);
+        const methodCheck = checkMethod(options.allowedMethods)(_request);
         if (methodCheck) return methodCheck;
       }
 
       // 認証チェック
       if (options.requireAuth) {
-        const authCheck = await requireAuth(request);
+        const authCheck = await requireAuth(_request);
         if (authCheck) return authCheck;
       }
 
       // メインハンドラー実行
-      return await handler(request, context);
+      return await handler(_request, context);
     } catch (error) {
       return handleApiError(error, "API Handler");
     }

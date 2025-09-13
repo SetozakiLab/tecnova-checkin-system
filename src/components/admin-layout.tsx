@@ -2,7 +2,7 @@
 
 import { useSession, signOut } from "next-auth/react";
 import { useRouter, usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,7 +23,7 @@ import {
 import Image from "next/image";
 
 interface AdminLayoutProps {
-  children: React.ReactNode;
+  children: ReactNode;
   title?: string;
 }
 
@@ -53,6 +53,9 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
   if (!session) {
     return null;
   }
+
+  type SessionUser = typeof session.user & { role?: string };
+  const user = session.user as SessionUser;
 
   const handleSignOut = async () => {
     await signOut({ callbackUrl: "/" });
@@ -119,9 +122,9 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
         </div>
         <div className="p-4 border-t text-xs text-slate-500 space-y-1">
           <div>ログイン中: {session.user.username}</div>
-          {(session.user as any).role && (
+          {user.role && (
             <div className="inline-flex items-center rounded bg-slate-200 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-slate-700">
-              {(session.user as any).role}
+              {user.role}
             </div>
           )}
         </div>
@@ -159,7 +162,7 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
                   <div className="px-2 py-1.5 text-xs text-slate-500">
-                    ロール: {(session.user as any).role || "-"}
+                    ロール: {user.role || "-"}
                   </div>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem

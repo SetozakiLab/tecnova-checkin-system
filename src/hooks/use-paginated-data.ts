@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useApi } from "./use-api";
 
 interface PaginationData {
@@ -51,9 +51,14 @@ export function usePaginatedData<T>(
       });
 
       const result = await execute(`${baseUrl}?${queryParams}`);
-
-      if (result && typeof result === "object" && "pagination" in result) {
-        setPagination((result as any).pagination);
+      const maybe = result as unknown;
+      if (
+        maybe &&
+        typeof maybe === "object" &&
+        "pagination" in maybe &&
+        (maybe as { pagination: PaginationData }).pagination
+      ) {
+        setPagination((maybe as { pagination: PaginationData }).pagination);
       }
 
       setCurrentPage(page);

@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useApi } from "@/hooks/use-api";
 import { CheckinRecord } from "@/types/api";
 
 interface TodayStats {
@@ -23,8 +22,6 @@ export function useDashboardData(): UseDashboardDataReturn {
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState("");
-
-  const { execute } = useApi();
 
   const fetchData = async (isRefresh = false) => {
     try {

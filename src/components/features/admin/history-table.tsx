@@ -47,7 +47,8 @@ interface HistoryTableProps {
 }
 export function HistoryTable({ records, onUpdated }: HistoryTableProps) {
   const { data: session } = useSession();
-  const isSuper = (session?.user as any)?.role === "SUPER";
+  const userRole = (session?.user as { role?: string } | undefined)?.role;
+  const isSuper = userRole === "SUPER";
   const [editing, setEditing] = useState<CheckinRecord | null>(null);
   const [form, setForm] = useState({ checkinAt: "", checkoutAt: "" });
   const { execute, loading } = useApi();
@@ -62,7 +63,7 @@ export function HistoryTable({ records, onUpdated }: HistoryTableProps) {
 
   const submit = async () => {
     if (!editing) return;
-    const payload: any = {};
+    const payload: Record<string, string | null> = {};
     if (form.checkinAt)
       payload.checkinAt = new Date(form.checkinAt).toISOString();
     if (form.checkoutAt !== "")
@@ -75,7 +76,7 @@ export function HistoryTable({ records, onUpdated }: HistoryTableProps) {
     });
     if (res) {
       setEditing(null);
-      onUpdated && onUpdated();
+      if (onUpdated) onUpdated();
     }
   };
 
@@ -169,7 +170,7 @@ export function HistoryTable({ records, onUpdated }: HistoryTableProps) {
                                         `/api/admin/checkin-records/${record.id}`,
                                         { method: "DELETE" }
                                       );
-                                      onUpdated && onUpdated();
+                                      if (onUpdated) onUpdated();
                                     }}
                                   >
                                     削除する
