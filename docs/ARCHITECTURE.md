@@ -1,6 +1,6 @@
 # システムアーキテクチャ設計書
 
-**最終更新日:** 2025 年 9 月 6 日
+**最終更新日:** 2025 年 9 月 13 日
 
 ---
 
@@ -103,7 +103,7 @@ sequenceDiagram
     DB-->>API: Guest
     API->>DB: CheckinRecord INSERT (自動)
     DB-->>API: Record
-    API-->>G: 201 Guest JSON
+    API-->>G: 201 Guest JSON (grade を含む / 未設定時 null)
     Note over G: UI側で checkin 完了画面へ遷移
 ```
 
@@ -156,6 +156,21 @@ sequenceDiagram
 
 - 現状インデックス未整備: `Guest.name`, `CheckinRecord.isActive`, `CheckinRecord.checkinAt`, `(guestId,isActive)`
 - 早期マイグレーション推奨（データ少量の段階）
+- 学年 (`Guest.grade`) は初期はインデックス不要。学年別集計をダッシュボードへ追加する段階で検討。
+
+## 6. ドメインモデル追加属性
+
+| エンティティ | フィールド | 型    | 説明 | 備考                            |
+| ------------ | ---------- | ----- | ---- | ------------------------------- |
+| Guest        | grade      | Enum? | 学年 | ES1..ES6/JH1..JH3/HS1..HS3/NULL |
+
+### 6.1. grade モデル設計メモ
+
+- 目的: 年齢帯ごとの利用状況分析・将来の活動ログ粒度向上。
+- NULL 許容理由: 既存データ移行簡略化 + 任意入力維持 + 卒業後保持ケース。
+- 進級処理（将来）: 年度切替ジョブ (idempotent) で内部マッピング表に基づき更新。HS3→NULL。
+- ロールバック: 非破壊追加のため DROP COLUMN+TYPE で戻せる（他オブジェクト依存なしを前提）。
+- API: `grade` は常にレスポンスに含む（未設定時 `null`）。
 
 ## 6. ログ / オブザーバビリティ
 

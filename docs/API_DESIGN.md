@@ -1,6 +1,6 @@
 # API 設計書
 
-**最終更新日:** 2025 年 9 月 6 日
+**最終更新日:** 2025 年 9 月 13 日
 
 ---
 
@@ -57,8 +57,10 @@
 リクエスト:
 
 ```json
-{ "name": "田中太郎", "contact": "taro@example.com" }
+{ "name": "田中太郎", "contact": "taro@example.com", "grade": "JH2" }
 ```
+
+`grade` は任意。未設定時は省略または `null`。
 
 備考: 登録直後にサーバー側で自動チェックインを試行（失敗しても登録は成功扱い）。レスポンスにはチェックイン情報は含まれない。
 
@@ -72,6 +74,7 @@
     "displayId": 25001,
     "name": "田中太郎",
     "contact": "taro@example.com",
+    "grade": "JH2",
     "createdAt": "2025-07-03T10:30:00Z"
   },
   "message": "ゲストを登録しました"
@@ -100,6 +103,7 @@
       "id": "uuid",
       "displayId": 25001,
       "name": "田中太郎",
+      "grade": "ES4",
       "isCurrentlyCheckedIn": false,
       "lastCheckinAt": "2025-07-02T14:30:00Z"
     }
@@ -121,6 +125,7 @@
     "displayId": 25001,
     "name": "田中太郎",
     "contact": "taro@example.com",
+    "grade": null,
     "isCurrentlyCheckedIn": false,
     "currentCheckinId": null,
     "lastCheckinAt": "2025-07-02T14:30:00Z",
@@ -324,7 +329,7 @@
 `PUT /api/admin/guests/{id}`
 
 ```json
-{ "name": "田中太郎（更新）", "contact": "taro@example.com" }
+{ "name": "田中太郎（更新）", "contact": "taro@example.com", "grade": "HS1" }
 ```
 
 レスポンス（実装）:
@@ -337,6 +342,7 @@
     "displayId": 25001,
     "name": "田中太郎（更新）",
     "contact": "taro@example.com",
+    "grade": "HS1",
     "createdAt": "2025-06-15T10:30:00Z"
   },
   "message": "ゲスト情報を更新しました"
@@ -426,6 +432,7 @@
 | WebSocket           | 実装前提                                 | 未実装                              | 設計のみ保持            |
 | レート制限          | 実装記述あり                             | 未実装                              | 導入予定                |
 | エラー              | NOT_CHECKED_IN 等のみ                    | BAD_REQUEST/METHOD_NOT_ALLOWED 追加 | 共通化                  |
+| 学年フィールド      | 未記載                                   | 追加 (任意: grade)                  | null 可                 |
 
 ---
 
@@ -438,3 +445,26 @@
 5. 監査ログ + エラートラッキング (Sentry)
 6. `updatedAt` や完全 DTO の返却統一
 7. エラーコード列挙型化 & ドキュメント自動生成
+8. 学年別統計 (ダッシュボード/履歴フィルタ) の追加
+
+---
+
+### 付録: `grade` Enum 定義
+
+| 値   | 表示ラベル | 説明          |
+| ---- | ---------- | ------------- |
+| ES1  | 小学 1 年  | Elementary 1  |
+| ES2  | 小学 2 年  | Elementary 2  |
+| ES3  | 小学 3 年  | Elementary 3  |
+| ES4  | 小学 4 年  | Elementary 4  |
+| ES5  | 小学 5 年  | Elementary 5  |
+| ES6  | 小学 6 年  | Elementary 6  |
+| JH1  | 中学 1 年  | Junior High 1 |
+| JH2  | 中学 2 年  | Junior High 2 |
+| JH3  | 中学 3 年  | Junior High 3 |
+| HS1  | 高校 1 年  | High School 1 |
+| HS2  | 高校 2 年  | High School 2 |
+| HS3  | 高校 3 年  | High School 3 |
+| null | 未設定     | 入力なし      |
+
+バリデーション: `grade` が存在する場合は上記いずれか。存在しない/ null の場合は未設定扱い。

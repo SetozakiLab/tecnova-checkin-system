@@ -1,6 +1,6 @@
 # データベース設計書
 
-**最終更新日:** 2025 年 9 月 6 日
+**最終更新日:** 2025 年 9 月 13 日
 
 ---
 
@@ -17,14 +17,15 @@ erDiagram
         datetime updatedAt
     }
 
-    Guest {
-        uuid id PK
-        int displayId UK "表示用ID"
-        string name "氏名・ニックネーム"
-        string contact "メールアドレス（任意）"
-        datetime createdAt
-        datetime updatedAt
-    }
+  Guest {
+    uuid id PK
+    int displayId UK "表示用ID"
+    string name "氏名・ニックネーム"
+    string contact "メールアドレス（任意）"
+    Grade grade NULL "学年 (NULL=未設定)"
+    datetime createdAt
+    datetime updatedAt
+  }
 
     CheckinRecord {
         uuid id PK
@@ -56,14 +57,15 @@ erDiagram
 
 ### 2.2. Guest（ゲスト）テーブル
 
-| カラム名  | データ型     | 制約                    | 説明                    |
-| --------- | ------------ | ----------------------- | ----------------------- |
-| id        | UUID         | PRIMARY KEY             | 主キー（QR コード用）   |
-| displayId | INTEGER      | UNIQUE, NOT NULL        | 表示用 ID（YYXXX 形式） |
-| name      | VARCHAR(100) | NOT NULL                | 氏名・ニックネーム      |
-| contact   | VARCHAR(255) | NULL                    | メールアドレス（任意）  |
-| createdAt | TIMESTAMP    | NOT NULL, DEFAULT NOW() | 登録日時                |
-| updatedAt | TIMESTAMP    | NOT NULL, DEFAULT NOW() | 更新日時                |
+| カラム名  | データ型     | 制約                    | 説明                                        |
+| --------- | ------------ | ----------------------- | ------------------------------------------- |
+| id        | UUID         | PRIMARY KEY             | 主キー（QR コード用）                       |
+| displayId | INTEGER      | UNIQUE, NOT NULL        | 表示用 ID（YYXXX 形式）                     |
+| name      | VARCHAR(100) | NOT NULL                | 氏名・ニックネーム                          |
+| contact   | VARCHAR(255) | NULL                    | メールアドレス（任意）                      |
+| grade     | ENUM Grade   | NULL                    | 学年 (ES1-ES6/JH1-JH3/HS1-HS3, NULL=未設定) |
+| createdAt | TIMESTAMP    | NOT NULL, DEFAULT NOW() | 登録日時                                    |
+| updatedAt | TIMESTAMP    | NOT NULL, DEFAULT NOW() | 更新日時                                    |
 
 **インデックス（設計）:**
 
@@ -80,6 +82,21 @@ erDiagram
 - XXX: 年内の連番（001 から 999 まで）
 - name はニックネーム可
 - contact カラムは存在するが現行 UI では入力欄を非表示（将来 保護者通知機能対応時に再表示予定）
+- grade は任意入力。既存行は Migration 適用後 NULL。Enum 値:
+  - ES1..ES6 (小学 1–6 年)
+  - JH1..JH3 (中学 1–3 年)
+  - HS1..HS3 (高校 1–3 年)
+  - NULL = 未設定（申告なし / 卒業状態用）
+
+**Enum 採用理由:** 単一 ENUM に集約することで:
+
+| 観点   | ENUM 採用効果     | 他案 (数値+区分) / フリーテキスト の課題 |
+| ------ | ----------------- | ---------------------------------------- |
+| 型安全 | Prisma で型生成   | 変換ロジック増 / 入力揺れ                |
+| 一貫性 | 定義値固定        | 表記揺れ / 不正値混入                    |
+| 集計   | GROUP BY しやすい | JOIN/CASE 必要                           |
+
+**進級方針（将来）:** 年度切替時に ES1→ES2...HS2→HS3、HS3→NULL (卒業)。段階跨ぎ（ES6→JH1 等）は初期は手動運用。
 
 ### 2.3. CheckinRecord（入退場記録）テーブル
 
@@ -201,11 +218,24 @@ ORDER BY name;
 
 3. **入退場履歴検索**（`checkinAt` 範囲検索。`checkinAt` インデックス未定義のため追加予定）
 
+4. **学年別現在滞在者集計 (将来予定)**
+
+```sql
+SELECT grade, COUNT(*)
+FROM Guest g
+JOIN CheckinRecord cr ON g.id = cr.guestId AND cr.isActive = TRUE
+GROUP BY grade
+ORDER BY grade;
+```
+
+初期段階ではクエリ頻度が低いため `grade` へのインデックスは不要。ダッシュボード指標拡張時に追加検討。
+
 ### 4.3. 今後のマイグレーション提案
 
 | 対象          | 追加インデックス                    | 目的                     |
 | ------------- | ----------------------------------- | ------------------------ |
 | Guest         | name                                | 部分一致検索高速化       |
+| Guest         | grade                               | 学年別統計需要が顕在化時 |
 | CheckinRecord | isActive                            | 現在滞在者一覧           |
 | CheckinRecord | guestId,isActive                    | 重複チェックイン防止判定 |
 | CheckinRecord | checkinAt                           | 日次範囲集計             |
