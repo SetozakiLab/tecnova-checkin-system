@@ -5,7 +5,6 @@ import {
   withApiHandler,
   validateRequest,
   createSuccessResponse,
-  createErrorResponse,
 } from "@/lib/api-handler";
 import {
   GuestService,
@@ -30,16 +29,8 @@ export const PUT = withApiHandler(
 
     const data = validation.data as UpdateGuestData;
 
-    try {
-      const guest = await GuestService.updateGuest(id, data);
-      return createSuccessResponse(guest, "ゲスト情報を更新しました");
-    } catch (error: any) {
-      if (error.message === "GUEST_NOT_FOUND") {
-        return createErrorResponse("NOT_FOUND", "ゲストが見つかりません", 404);
-      }
-      // 名前重複は許容
-      throw error; // withApiHandlerで共通エラーハンドリング
-    }
+    const guest = await GuestService.updateGuest(id, data);
+    return createSuccessResponse(guest, "ゲスト情報を更新しました");
   },
   { requireAuth: true, allowedMethods: ["PUT"] }
 );
@@ -51,22 +42,8 @@ export const DELETE = withApiHandler(
   ) => {
     const { id } = await params;
 
-    try {
-      await GuestService.deleteGuest(id);
-      return createSuccessResponse(null, "ゲストを削除しました");
-    } catch (error: any) {
-      if (error.message === "GUEST_NOT_FOUND") {
-        return createErrorResponse("NOT_FOUND", "ゲストが見つかりません", 404);
-      }
-      if (error.message === "GUEST_CURRENTLY_CHECKED_IN") {
-        return createErrorResponse(
-          "CONFLICT",
-          "現在チェックイン中のゲストは削除できません",
-          409
-        );
-      }
-      throw error; // withApiHandlerで共通エラーハンドリング
-    }
+    await GuestService.deleteGuest(id);
+    return createSuccessResponse(null, "ゲストを削除しました");
   },
   { requireAuth: true, allowedMethods: ["DELETE"] }
 );

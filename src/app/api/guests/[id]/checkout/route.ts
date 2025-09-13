@@ -1,9 +1,5 @@
 import { NextRequest } from "next/server";
-import {
-  withApiHandler,
-  createSuccessResponse,
-  createErrorResponse,
-} from "@/lib/api-handler";
+import { withApiHandler, createSuccessResponse } from "@/lib/api-handler";
 import { CheckinService } from "@/services/checkin.service";
 
 export const POST = withApiHandler(
@@ -13,19 +9,8 @@ export const POST = withApiHandler(
   ) => {
     const { id } = await params;
 
-    try {
-      const checkinData = await CheckinService.checkoutGuest(id);
-      return createSuccessResponse(checkinData, "チェックアウトしました");
-    } catch (error: any) {
-      if (error.message === "NOT_CHECKED_IN") {
-        return createErrorResponse(
-          "BAD_REQUEST",
-          "チェックインしていません",
-          400
-        );
-      }
-      throw error; // withApiHandlerで共通エラーハンドリング
-    }
+    const checkinData = await CheckinService.checkoutGuest(id);
+    return createSuccessResponse(checkinData, "チェックアウトしました");
   },
   { allowedMethods: ["POST"] }
 );
