@@ -187,24 +187,45 @@
   - 制約: UNIQUE(guestId, timeslotStart)
   - 将来: 在席検証 (該当時間帯にチェックインしていたか) を強制バリデーション化予定
 
-#### 2.4.x. ActivityCategory Enum (案)
+#### 2.4.x. ActivityCategory Enum / 複数カテゴリ仕様 (確定)
 
-| 値              | 表示            | 備考                 |
-| --------------- | --------------- | -------------------- |
-| VR_HMD          | VR（HMD）       |                      |
-| DRONE           | ドローン        |                      |
-| PRINTER_3D      | 3D プリンタ     |                      |
-| PEPPER          | ペッパー        |                      |
-| LEGO            | レゴ            |                      |
-| MBOT2           | mBot2           |                      |
-| LITTLE_BITS     | little Bits     | 表示は空白区切り     |
-| MESH            | MESH            |                      |
-| TOIO            | toio            |                      |
-| MINECRAFT       | マインクラフト  |                      |
-| UNITY           | Unity           |                      |
-| BLENDER         | Blender         |                      |
-| DAVINCI_RESOLVE | DaVinci Resolve |                      |
-| OTHER           | その他          | description で具体化 |
+MVP 実装は「1 スロットに複数カテゴリを付与可能」とする。UI はタグ型複数選択（将来は頻出カテゴリのクイックボタンを検討）。
+
+データモデル上は `ActivityLog.categories: ActivityCategory[]` (Prisma Enum 配列)。
+
+運用指針:
+
+- 同一カテゴリの重複追加は禁止（サービス層で Set 化）
+- 0 件は不可 (必須) / OTHER を含む場合も description に補足を記述
+- 後日の分析用途で順序は意味を持たない → 並びは受信後ソート (ENUM 定義順) 保存を推奨
+
+| 値              | 表示            | 備考                                |
+| --------------- | --------------- | ----------------------------------- |
+| VR_HMD          | VR（HMD）       |                                     |
+| DRONE           | ドローン        |                                     |
+| PRINTER_3D      | 3D プリンタ     |                                     |
+| PEPPER          | ペッパー        |                                     |
+| LEGO            | レゴ            |                                     |
+| MBOT2           | mBot2           |                                     |
+| LITTLE_BITS     | little Bits     | 表示は空白区切り                    |
+| MESH            | MESH            |                                     |
+| TOIO            | toio            |                                     |
+| MINECRAFT       | マインクラフト  |                                     |
+| UNITY           | Unity           |                                     |
+| BLENDER         | Blender         |                                     |
+| DAVINCI_RESOLVE | DaVinci Resolve |                                     |
+| OTHER           | その他          | description で具体化 (必須ではない) |
+
+将来拡張案:
+
+- 需要の少ないデバイス系カテゴリをアーカイブし、学習形態(例: STUDY, PROJECT)を追加する場合は enum 追加マイグレーション (追加のみ) を基本とし、削除は互換性リスクのため避ける。
+- 非表示カテゴリは UI 側でフィルタ制御 (DB からは削除しない)。
+
+マイグレーション戦略メモ:
+
+1. 追加: `ALTER TYPE "ActivityCategory" ADD VALUE 'NEW_VALUE';` (Prisma 生成で対応)
+2. 削除/改名を行いたい場合は: 新 Enum 作成 → キャスト → 旧 Enum 参照列更新 → 旧 Enum 削除 (破壊的 / デプロイ計画必須)
+3. 分析で使用されるため過去レコードの再書換えは極力避け、ビュー層でマッピング (別テーブル/辞書) を検討。
 
 ### 2.4.1. 権限仕様
 
