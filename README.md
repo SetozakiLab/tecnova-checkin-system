@@ -287,7 +287,7 @@ curl -X POST http://localhost:3000/api/admin/activity-logs \
 	}'
 ```
 
-取得（指定JST日付）:
+取得（指定 JST 日付）:
 
 ```bash
 curl -X GET 'http://localhost:3000/api/admin/activity-logs?date=2025-09-14' -b 'your_session_cookie'
@@ -299,7 +299,7 @@ curl -X GET 'http://localhost:3000/api/admin/activity-logs?date=2025-09-14' -b '
 curl -X DELETE http://localhost:3000/api/admin/activity-logs/<logId> -b 'your_session_cookie'
 ```
 
-UI: `/admin/activity-log` 列=現在チェックイン中ゲスト / 行=30分スロット。セルクリックで Sheet による追加/編集。
+UI: `/admin/activity-log` 列=現在チェックイン中ゲスト / 行=30 分スロット。セルクリックで Sheet による追加/編集。
 
 ---
 
