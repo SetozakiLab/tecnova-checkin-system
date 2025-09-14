@@ -16,7 +16,7 @@
 - **リアルタイムダッシュボード**: 現在施設内にいるゲストの一覧と滞在人数を表示
 - **入退場履歴管理**: 過去の入退場記録の検索・閲覧・修正
 - **ゲスト情報管理**: 登録ゲストの情報の参照・編集・削除（CRUD 操作）
-- **活動ログ記入 (MVP 開発中)**: チェックイン中ゲストの 30 分枠活動内容をカテゴリ + 100 文字説明で記録（同枠再送で上書き / 削除は SUPER のみ）
+- **活動ログ記入**: チェックイン中ゲストの 30 分枠活動内容をカテゴリ + 100 文字説明で記録（同枠再送で上書き / 削除は SUPER のみ）グリッド UI & Sheet 編集対応済み
 
 ## 🛠️ 技術スタック
 
@@ -259,16 +259,47 @@ npx prisma studio
 
 直近のスキーマ変更（`prisma/migrations`）:
 
-1. `20250906022240_add_role_to_user`: `Role` ENUM（`SUPER` / `MANAGER`）追加と `users.role` カラム追加（デフォルト `SUPER`）
-2. `20250906090000_add_audit_log`: 監査ログ追加予定（フォルダは存在するが `migration.sql` が未作成のため未適用。デプロイ前に SQL を作成するか、空フォルダを削除してください）
+1. `20250906022240_add_role_to_user`: `Role` ENUM（`SUPER` / `MANAGER`）追加
+2. `20250913005656_add_grade_to_guest`: `Guest.grade` 追加
+3. `20250914011353_add_activity_log`: `ActivityLog` テーブル / `ActivityCategory` ENUM / UNIQUE (guestId,timeslotStart)
 
 運用上の留意点:
 
-- 役割ベース権限機能を段階的導入予定（初期既存ユーザーは `SUPER` で作成、今後 MANAGER 制限強化）
-- 監査ログ（チェックイン/アウト操作・管理画面操作）の導入準備中
-- 学年 (grade) Enum フィールド追加済（UI 反映進行中）
-- 活動ログ (ActivityLog) モデル / API 仕様ドキュメント追加（実装前）
-- 本番 `docker-compose` では `web` コンテナ起動時に `prisma migrate deploy` を自動実行するため、未検証のマイグレーションが存在する場合は起動前に要確認
+- 役割ベース権限: 活動ログ削除は `SUPER` のみ（今後細分化予定）
+- 監査ログ: 未実装（空マイグレーションがあれば整理推奨）
+- 学年 (grade): UI 反映済み
+- 活動ログ: 実装完了。Upsert により同一 30 分枠は冪等更新
+- 本番起動時 `prisma migrate deploy` 実行 → 未検証マイグレーションは事前確認必須
+
+### 活動ログ API 利用例
+
+Upsert (同一キー=guestId+timeslotStart で上書き):
+
+```bash
+curl -X POST http://localhost:3000/api/admin/activity-logs \
+	-H 'Content-Type: application/json' \
+	-b 'your_session_cookie' \
+	-d '{
+		"guestId": "<guest-uuid>",
+		"category": "STUDY",
+		"description": "数学ドリル",
+		"timestamp": "2025-09-14T10:15:00+09:00"
+	}'
+```
+
+取得（指定JST日付）:
+
+```bash
+curl -X GET 'http://localhost:3000/api/admin/activity-logs?date=2025-09-14' -b 'your_session_cookie'
+```
+
+削除（SUPER のみ）:
+
+```bash
+curl -X DELETE http://localhost:3000/api/admin/activity-logs/<logId> -b 'your_session_cookie'
+```
+
+UI: `/admin/activity-log` 列=現在チェックイン中ゲスト / 行=30分スロット。セルクリックで Sheet による追加/編集。
 
 ---
 
