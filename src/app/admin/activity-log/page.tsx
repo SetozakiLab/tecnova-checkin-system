@@ -232,43 +232,51 @@ export default function ActivityLogPage() {
                 className="overflow-x-auto overflow-y-auto max-h-[70vh]"
                 id="activity-log-scroll"
               >
-                <div
-                  className="grid rounded-t-md border bg-muted/60 backdrop-blur supports-[backdrop-filter]:bg-muted/40 sticky top-0 z-30 min-w-max"
-                  style={{
-                    // 列幅調整: 時刻 140px, 各ゲスト 190px
-                    gridTemplateColumns: `140px repeat(${currentGuests.length}, 190px)`,
-                  }}
-                >
-                  <div className="text-[11px] font-semibold p-2 sticky left-0 z-40 bg-muted/70 border-r w-[140px]">
-                    時刻（30分刻み）
-                  </div>
-                  {currentGuests.map((g) => (
-                    <div
-                      key={g.guestId}
-                      className="text-[11px] font-semibold p-2 text-center truncate border-l first:border-l-0 w-[190px]"
-                      title={g.name || String(g.displayId) || g.guestId}
-                    >
-                      <div className="flex flex-col items-center gap-0.5">
-                        <span className="font-mono text-[10px] text-muted-foreground">
-                          #{g.displayId ?? "-"}
-                        </span>
-                        <span className="truncate max-w-full">
-                          {g.name || g.guestId.slice(0, 8)}
-                        </span>
-                        <span className="text-[10px] text-muted-foreground font-mono leading-tight">
-                          {formatGradeDisplay(g.grade)}
-                        </span>
-                      </div>
+                {currentGuests.length > 0 && (
+                  <div
+                    className="grid rounded-t-md border bg-muted/60 backdrop-blur supports-[backdrop-filter]:bg-muted/40 sticky top-0 z-30 min-w-max"
+                    style={{
+                      // 列幅調整: 時刻 140px, 各ゲスト 190px
+                      gridTemplateColumns: `140px repeat(${currentGuests.length}, 190px)`,
+                    }}
+                  >
+                    <div className="text-[11px] font-semibold p-2 sticky left-0 z-40 bg-muted/70 border-r w-[140px]">
+                      時刻（30分刻み）
                     </div>
-                  ))}
-                </div>
-                <div className="border border-t-0 rounded-b-md shadow-sm">
+                    {currentGuests.map((g) => (
+                      <div
+                        key={g.guestId}
+                        className="text-[11px] font-semibold p-2 text-center truncate border-l first:border-l-0 w-[190px]"
+                        title={g.name || String(g.displayId) || g.guestId}
+                      >
+                        <div className="flex flex-col items-center gap-0.5">
+                          <span className="font-mono text-[10px] text-muted-foreground">
+                            #{g.displayId ?? "-"}
+                          </span>
+                          <span className="truncate max-w-full">
+                            {g.name || g.guestId.slice(0, 8)}
+                          </span>
+                          <span className="text-[10px] text-muted-foreground font-mono leading-tight">
+                            {formatGradeDisplay(g.grade)}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <div
+                  className={`border ${
+                    currentGuests.length > 0
+                      ? "border-t-0 rounded-b-md"
+                      : "rounded-md"
+                  } shadow-sm min-h-[320px] flex flex-col`}
+                >
                   {loading && (
                     <div className="p-4 text-sm flex items-center gap-2">
                       <Loader2 className="h-4 w-4 animate-spin" /> 読み込み中...
                     </div>
                   )}
-                  {!loading && (
+                  {!loading && currentGuests.length > 0 && (
                     <div className="divide-y">
                       {timeSlots.map((slot) => (
                         <div
@@ -335,6 +343,18 @@ export default function ActivityLogPage() {
                           })}
                         </div>
                       ))}
+                    </div>
+                  )}
+                  {!loading && currentGuests.length === 0 && (
+                    <div className="flex flex-1 items-center justify-center p-10 text-center text-sm text-muted-foreground">
+                      <div className="space-y-2">
+                        <p className="font-medium">来場者記録がありません</p>
+                        <p className="text-xs leading-relaxed">
+                          {isToday
+                            ? "本日はまだチェックインがありません。"
+                            : "この日付にはチェックイン履歴がありません。"}
+                        </p>
+                      </div>
                     </div>
                   )}
                 </div>
