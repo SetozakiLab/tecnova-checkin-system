@@ -2,15 +2,26 @@ import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { domain } from "@/lib/errors";
 import { floorTo30MinSlotJST } from "@/lib/time-slot";
+import { ACTIVITY_CATEGORIES } from "@/domain/activity-category";
 
 export const upsertActivityLogSchema = z.object({
   guestId: z.string().min(1),
-  category: z.enum(["STUDY", "MEETING", "EVENT", "PROJECT", "OTHER"] as const),
+  categories: z
+    .array(z.enum(ACTIVITY_CATEGORIES))
+    .min(1, "カテゴリを1つ以上選択してください")
+    .max(5, "カテゴリは最大5つまで"),
   description: z
     .string()
-    .min(1, "説明は1文字以上")
-    .max(100, "説明は100文字以内"),
-  // ISO文字列 (任意; 指定なければ現在時刻を利用)
+    .max(100, "説明は100文字以内")
+    .optional()
+    .or(z.literal(""))
+    .transform((v) => (v === "" ? undefined : v)),
+  mentorNote: z
+    .string()
+    .max(200, "メンターノートは200文字以内")
+    .optional()
+    .or(z.literal(""))
+    .transform((v) => (v === "" ? undefined : v)),
   timestamp: z.string().datetime().optional(),
 });
 
@@ -22,7 +33,7 @@ export class ActivityLogService {
    * 同一 (guestId, timeslotStart) が存在すれば更新、それ以外は新規作成。
    */
   static async createOrUpdate(input: UpsertActivityLogInput) {
-    const { guestId, category, description } = input;
+    const { guestId, categories, description, mentorNote } = input;
     const baseDate = input.timestamp ? new Date(input.timestamp) : new Date();
     const timeslotStart = floorTo30MinSlotJST(baseDate);
 
@@ -33,8 +44,16 @@ export class ActivityLogService {
     // upsert: unique (guestId, timeslotStart)
     const log = await prisma.activityLog.upsert({
       where: { guestId_timeslotStart: { guestId, timeslotStart } },
-      update: { category, description },
-      create: { guestId, category, description, timeslotStart },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      update: { categories: categories as any, description, mentorNote },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      create: {
+        guestId,
+        categories: categories as any,
+        description,
+        mentorNote,
+        timeslotStart,
+      },
     });
 
     return this.format(log);
@@ -59,14 +78,31 @@ export class ActivityLogService {
       where: { timeslotStart: { gte: start, lt: end } },
       orderBy: { timeslotStart: "asc" },
     });
-    return logs.map(this.format);
+    // 型が古いクライアントの場合 category フィールドしかないためマッピング
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (logs as any[]).map((raw) => {
+      if (Array.isArray(raw.categories)) return this.format(raw as any);
+      const fallback = {
+        id: raw.id,
+        guestId: raw.guestId,
+        categories: raw.category ? [raw.category] : [],
+        description: raw.description ?? null,
+        mentorNote: raw.mentorNote ?? null,
+        timeslotStart: raw.timeslotStart,
+        createdAt: raw.createdAt,
+        updatedAt: raw.updatedAt,
+      };
+      return this.format(fallback);
+    });
   }
 
+  // prisma generate 前後で型が異なる可能性があるため category は any 許容
   private static format(log: {
     id: string;
     guestId: string;
-    category: string;
-    description: string;
+    categories: string[];
+    description: string | null;
+    mentorNote: string | null;
     timeslotStart: Date;
     createdAt: Date;
     updatedAt: Date;
@@ -74,8 +110,9 @@ export class ActivityLogService {
     return {
       id: log.id,
       guestId: log.guestId,
-      category: log.category,
-      description: log.description,
+      categories: log.categories,
+      description: log.description ?? undefined,
+      mentorNote: log.mentorNote ?? undefined,
       timeslotStart: log.timeslotStart.toISOString(),
       createdAt: log.createdAt.toISOString(),
       updatedAt: log.updatedAt.toISOString(),

@@ -20,20 +20,28 @@ import {
   SheetFooter,
 } from "@/components/ui/sheet";
 import { Loader2 } from "lucide-react";
+import {
+  ACTIVITY_CATEGORIES,
+  activityCategoryLabels,
+  activityCategoryColorClasses,
+  formatActivityCategory,
+} from "@/domain/activity-category";
 
-const categories = ["STUDY", "MEETING", "EVENT", "PROJECT", "OTHER"] as const;
+const categories = ACTIVITY_CATEGORIES;
 
 interface ActivityLogRow {
   id: string;
   guestId: string;
-  category: string;
-  description: string;
-  timeslotStart: string; // ISO
+  categories: string[];
+  description?: string;
+  mentorNote?: string;
+  timeslotStart: string;
 }
-
 interface GuestColumn {
   guestId: string;
   name?: string;
+  displayId?: number;
+  grade?: string | null;
 }
 
 export default function ActivityLogPage() {
@@ -46,17 +54,19 @@ export default function ActivityLogPage() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [editing, setEditing] = useState<ActivityLogRow | null>(null);
   const [formGuestId, setFormGuestId] = useState("");
+  const [formDisplayId, setFormDisplayId] = useState<number | undefined>();
   const [formTime, setFormTime] = useState("00:00");
-  const [formCategory, setFormCategory] = useState<string>("STUDY");
-  const [formDescription, setFormDescription] = useState("");
+  const [formCategories, setFormCategories] = useState<string[]>(["VR_HMD"]);
+  const [formDescription, setFormDescription] = useState<string>("");
+  const [formMentorNote, setFormMentorNote] = useState<string>("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string>("");
 
-  // 00:00 から 23:30 まで 30分刻み
   const timeSlots = useMemo(() => {
     const arr: string[] = [];
-    for (let h = 0; h < 24; h++) {
+    for (let h = 8; h <= 20; h++) {
       for (let m of [0, 30]) {
+        if (h === 20 && m === 30) continue; // 20:30 不要
         arr.push(`${String(h).padStart(2, "0")}:${m === 0 ? "00" : "30"}`);
       }
     }
@@ -68,11 +78,10 @@ export default function ActivityLogPage() {
     try {
       const [logsRes, guestsRes] = await Promise.all([
         fetch(`/api/admin/activity-logs?date=${date}`),
-        fetch(`/api/checkins/current`), // 正しい現在チェックイン中ゲスト API
+        fetch(`/api/checkins/current`),
       ]);
 
-      // 安全なJSONパース (非JSONの場合は空オブジェクト)
-      async function safeJson(res: Response) {
+      const safeJson = async (res: Response): Promise<unknown> => {
         const ct = res.headers.get("content-type") || "";
         if (ct.includes("application/json")) {
           try {
@@ -82,40 +91,61 @@ export default function ActivityLogPage() {
           }
         }
         return {};
-      }
+      };
 
       const logsJson = await safeJson(logsRes);
       const guestsJson = await safeJson(guestsRes);
 
+      // 型ガード
+      const isActivityLogArray = (v: unknown): v is ActivityLogRow[] =>
+        Array.isArray(v) &&
+        v.every(
+          (item) =>
+            typeof item === "object" && item !== null && "guestId" in item
+        );
+      const isGuestArray = (v: unknown): v is Array<Record<string, unknown>> =>
+        Array.isArray(v);
+
       if (logsRes.ok) {
-        const data =
-          logsJson && typeof logsJson === "object" && "data" in logsJson
-            ? ((logsJson as { data?: unknown }).data as ActivityLogRow[])
-            : [];
-        setLogs(Array.isArray(data) ? data : []);
-      } else {
-        console.warn("Failed to load logs", logsRes.status);
+        let data: ActivityLogRow[] = [];
+        if (logsJson && typeof logsJson === "object" && "data" in logsJson) {
+          const candidate = (logsJson as { data: unknown }).data;
+          if (isActivityLogArray(candidate)) data = candidate;
+        }
+        setLogs(data);
       }
       if (guestsRes.ok) {
-        const rawGuests =
-          guestsJson && typeof guestsJson === "object" && "data" in guestsJson
-            ? ((guestsJson as { data?: unknown }).data as unknown[])
-            : [];
-        const mapped = rawGuests.filter(Boolean).map((g) => {
-          const obj = g as {
-            guestId?: string;
-            id?: string;
-            guestName?: string;
-            name?: string;
-          };
-          return {
-            guestId: obj.guestId || obj.id || "",
-            name: obj.guestName || obj.name,
-          };
+        let raw: Array<Record<string, unknown>> = [];
+        if (
+          guestsJson &&
+          typeof guestsJson === "object" &&
+          "data" in guestsJson
+        ) {
+          const candidate = (guestsJson as { data: unknown }).data;
+          if (isGuestArray(candidate)) raw = candidate;
+        }
+        const mapped: GuestColumn[] = raw.filter(Boolean).map((g) => {
+          const guestId =
+            typeof g.guestId === "string"
+              ? g.guestId
+              : typeof g.id === "string"
+              ? g.id
+              : "";
+          const name =
+            typeof g.guestName === "string"
+              ? g.guestName
+              : typeof g.name === "string"
+              ? g.name
+              : undefined;
+          const displayId =
+            typeof g.guestDisplayId === "number"
+              ? g.guestDisplayId
+              : typeof g.displayId === "number"
+              ? g.displayId
+              : undefined;
+          return { guestId, name, displayId };
         });
         setCurrentGuests(mapped);
-      } else {
-        console.warn("Failed to load current guests", guestsRes.status);
       }
     } catch (e) {
       console.error(e);
@@ -131,42 +161,50 @@ export default function ActivityLogPage() {
   function openNew(slot: string, guestId: string) {
     setEditing(null);
     setFormGuestId(guestId);
+    const g = currentGuests.find((c) => c.guestId === guestId);
+    setFormDisplayId(g?.displayId);
     setFormTime(slot);
-    setFormCategory("STUDY");
+    setFormCategories(["VR_HMD"]);
     setFormDescription("");
+    setFormMentorNote("");
     setError("");
     setSheetOpen(true);
   }
-
   function openEdit(log: ActivityLogRow) {
     const d = new Date(log.timeslotStart);
     const hh = String(d.getHours()).padStart(2, "0");
     const mm = String(d.getMinutes()).padStart(2, "0");
     setEditing(log);
     setFormGuestId(log.guestId);
+    const g = currentGuests.find((c) => c.guestId === log.guestId);
+    setFormDisplayId(g?.displayId);
     setFormTime(`${hh}:${mm}`);
-    setFormCategory(log.category);
-    setFormDescription(log.description);
+    setFormCategories(log.categories || []);
+    setFormDescription(log.description || "");
+    setFormMentorNote(log.mentorNote || "");
     setError("");
     setSheetOpen(true);
   }
-
-  function slotIso(dateStr: string, timeHHMM: string) {
-    return new Date(`${dateStr}T${timeHHMM}:00+09:00`).toISOString();
-  }
+  const slotIso = (dateStr: string, timeHHMM: string) =>
+    new Date(`${dateStr}T${timeHHMM}:00+09:00`).toISOString();
 
   async function save() {
     setSaving(true);
     setError("");
     try {
+      if (formDisplayId) {
+        const found = currentGuests.find((g) => g.displayId === formDisplayId);
+        if (found) setFormGuestId(found.guestId);
+      }
       const timestamp = slotIso(date, formTime);
       const res = await fetch("/api/admin/activity-logs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           guestId: formGuestId,
-          category: formCategory,
-          description: formDescription,
+          categories: formCategories,
+          description: formDescription || undefined,
+          mentorNote: formMentorNote || undefined,
           timestamp,
         }),
       });
@@ -183,7 +221,6 @@ export default function ActivityLogPage() {
       setSaving(false);
     }
   }
-
   async function remove() {
     if (!editing) return;
     if (!(typeof window !== "undefined" && window.confirm("削除しますか?")))
@@ -207,8 +244,6 @@ export default function ActivityLogPage() {
       setSaving(false);
     }
   }
-
-  // guestId+time でログ探索
   function findLog(guestId: string, slot: string) {
     return logs.find((l) => {
       const d = new Date(l.timeslotStart);
@@ -235,85 +270,111 @@ export default function ActivityLogPage() {
               </Button>
             </div>
           </CardHeader>
-          <CardContent className="overflow-auto">
-            <div className="min-w-[900px]">
-              {/* ヘッダ行 */}
+          <CardContent className="overflow-hidden">
+            <div className="min-w-[900px] relative">
               <div
-                className="grid"
-                style={{
-                  gridTemplateColumns: `100px repeat(${currentGuests.length}, 1fr)`,
-                }}
+                className="overflow-auto max-h-[70vh]"
+                id="activity-log-scroll"
               >
-                <div className="text-xs font-semibold p-2 bg-muted sticky left-0 z-10">
-                  Time
-                </div>
-                {currentGuests.map((g) => (
-                  <div
-                    key={g.guestId}
-                    className="text-xs font-semibold p-2 bg-muted text-center truncate"
-                    title={g.name || g.guestId}
-                  >
-                    {g.name || g.guestId.slice(0, 8)}
+                <div
+                  className="grid rounded-t-md border bg-muted/60 backdrop-blur supports-[backdrop-filter]:bg-muted/40 sticky top-0 z-30"
+                  style={{
+                    gridTemplateColumns: `120px repeat(${currentGuests.length}, minmax(160px,1fr))`,
+                  }}
+                >
+                  <div className="text-[11px] font-semibold p-2 sticky left-0 z-40 bg-muted/70 border-r w-[120px]">
+                    Time
                   </div>
-                ))}
-              </div>
-              <div className="max-h-[600px] overflow-y-auto border border-t-0 rounded-b-md">
-                {loading && (
-                  <div className="p-4 text-sm flex items-center gap-2">
-                    <Loader2 className="h-4 w-4 animate-spin" /> 読み込み中...
-                  </div>
-                )}
-                {!loading &&
-                  timeSlots.map((slot) => (
+                  {currentGuests.map((g) => (
                     <div
-                      key={slot}
-                      className="grid border-t"
-                      style={{
-                        gridTemplateColumns: `100px repeat(${currentGuests.length}, 1fr)`,
-                      }}
+                      key={g.guestId}
+                      className="text-[11px] font-semibold p-2 text-center truncate border-l first:border-l-0"
+                      title={g.name || String(g.displayId) || g.guestId}
                     >
-                      <div className="text-xs p-1.5 bg-background sticky left-0 z-10 border-r font-mono">
-                        {slot}
+                      <div className="flex flex-col items-center gap-0.5">
+                        <span className="font-mono text-[10px] text-muted-foreground">
+                          #{g.displayId ?? "-"}
+                        </span>
+                        <span className="truncate max-w-full">
+                          {g.name || g.guestId.slice(0, 8)}
+                        </span>
                       </div>
-                      {currentGuests.map((g) => {
-                        const log = findLog(g.guestId, slot);
-                        return (
-                          <button
-                            key={g.guestId + slot}
-                            onClick={() =>
-                              log ? openEdit(log) : openNew(slot, g.guestId)
-                            }
-                            className={
-                              "relative p-1.5 text-left text-[10px] border-r border-l last:border-r-0 min-h-[40px] group hover:bg-accent transition " +
-                              (log ? "bg-primary/10" : "")
-                            }
-                          >
-                            {log && (
-                              <div className="space-y-1">
-                                <div className="font-semibold text-[10px] tracking-tight">
-                                  {log.category}
-                                </div>
-                                <div className="line-clamp-2 leading-snug">
-                                  {log.description}
-                                </div>
-                              </div>
-                            )}
-                            {!log && (
-                              <span className="opacity-40 group-hover:opacity-70">
-                                ＋
-                              </span>
-                            )}
-                          </button>
-                        );
-                      })}
                     </div>
                   ))}
+                </div>
+                <div className="border border-t-0 rounded-b-md shadow-sm">
+                  {loading && (
+                    <div className="p-4 text-sm flex items-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin" /> 読み込み中...
+                    </div>
+                  )}
+                  {!loading && (
+                    <div className="divide-y">
+                      {timeSlots.map((slot) => (
+                        <div
+                          key={slot}
+                          className="grid group/time-row odd:bg-background even:bg-muted/20"
+                          style={{
+                            gridTemplateColumns: `120px repeat(${currentGuests.length}, minmax(160px,1fr))`,
+                          }}
+                        >
+                          <div className="text-[10px] sm:text-xs px-2 py-2 sticky left-0 z-20 bg-background/95 font-mono border-r border-dashed group-hover/time-row:bg-accent/40 w-[120px]">
+                            {slot}
+                          </div>
+                          {currentGuests.map((g) => {
+                            const log = findLog(g.guestId, slot);
+                            const cats = (log?.categories ||
+                              []) as (keyof typeof activityCategoryLabels)[];
+                            return (
+                              <button
+                                key={g.guestId + slot}
+                                onClick={() =>
+                                  log ? openEdit(log) : openNew(slot, g.guestId)
+                                }
+                                className={`relative text-left min-h-[46px] sm:min-h-[54px] border-l first:border-l-0 px-2 py-1.5 focus:outline-none focus-visible:ring-2 ring-offset-2 ring-primary/40 transition-colors hover:bg-accent/30`}
+                              >
+                                {log ? (
+                                  <div className="h-full flex flex-col gap-1">
+                                    <div className="flex flex-wrap gap-1">
+                                      {cats.map((c) => (
+                                        <span
+                                          key={c}
+                                          className={`inline-flex items-center rounded-md border px-1 py-0.5 text-[9px] font-medium leading-tight ${activityCategoryColorClasses[c]}`}
+                                          title={formatActivityCategory(c)}
+                                        >
+                                          {formatActivityCategory(c)}
+                                        </span>
+                                      ))}
+                                    </div>
+                                    {(log.description || log.mentorNote) && (
+                                      <span className="text-[10px] leading-snug line-clamp-2 break-words text-muted-foreground">
+                                        {(log.description || "") +
+                                          (log.mentorNote
+                                            ? ` / M:${log.mentorNote}`
+                                            : "")}
+                                      </span>
+                                    )}
+                                  </div>
+                                ) : (
+                                  <span className="opacity-30 group-hover/time-row:opacity-60 text-[11px] flex items-center justify-center h-full font-medium">
+                                    ＋
+                                  </span>
+                                )}
+                                <span className="pointer-events-none absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-muted/10 opacity-0 group-hover/time-row:opacity-100 transition" />
+                                <span className="pointer-events-none absolute inset-0 border border-transparent group-hover/time-row:border-border/60 rounded-sm" />
+                              </button>
+                            );
+                          })}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
-
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
         <SheetContent side="right" className="w-[380px] sm:w-[420px]">
           <SheetHeader>
@@ -321,12 +382,37 @@ export default function ActivityLogPage() {
           </SheetHeader>
           <div className="p-4 space-y-4">
             <div>
-              <label className="block text-xs font-medium mb-1">ゲストID</label>
-              <Input
-                value={formGuestId}
-                onChange={(e) => setFormGuestId(e.target.value)}
-                readOnly={!!editing}
-              />
+              <label className="block text-xs font-medium mb-1">
+                ゲスト (表示ID)
+              </label>
+              <Select
+                value={formDisplayId ? String(formDisplayId) : undefined}
+                onValueChange={(v) => {
+                  const num = Number(v);
+                  setFormDisplayId(num);
+                  const g = currentGuests.find((cg) => cg.displayId === num);
+                  if (g) setFormGuestId(g.guestId);
+                }}
+                disabled={!!editing}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="選択" />
+                </SelectTrigger>
+                <SelectContent className="max-h-[300px]">
+                  {currentGuests.map((g) => (
+                    <SelectItem key={g.guestId} value={String(g.displayId)}>
+                      <div className="flex flex-col gap-0.5">
+                        <span className="font-mono text-[11px]">
+                          #{g.displayId}
+                        </span>
+                        <span className="text-[11px] opacity-80 truncate">
+                          {g.name}
+                        </span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <label className="block text-xs font-medium mb-1">
@@ -339,26 +425,44 @@ export default function ActivityLogPage() {
                 step={1800}
               />
             </div>
-            <div>
-              <label className="block text-xs font-medium mb-1">カテゴリ</label>
-              <Select
-                value={formCategory}
-                onValueChange={(v: string) => setFormCategory(v)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((c) => (
-                    <SelectItem key={c} value={c}>
-                      {c}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="space-y-1">
+              <label className="block text-xs font-medium">
+                カテゴリ(複数選択)
+              </label>
+              <div className="flex flex-wrap gap-1">
+                {categories.map((c) => {
+                  const active = formCategories.includes(c);
+                  return (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() =>
+                        setFormCategories((prev) =>
+                          prev.includes(c)
+                            ? prev.filter((x) => x !== c)
+                            : [...prev, c]
+                        )
+                      }
+                      className={`px-2 py-0.5 rounded-md border text-[10px] font-medium transition ${
+                        active
+                          ? activityCategoryColorClasses[
+                              c as keyof typeof activityCategoryColorClasses
+                            ]
+                          : "bg-muted hover:bg-accent/40"
+                      }`}
+                    >
+                      {formatActivityCategory(
+                        c as keyof typeof activityCategoryLabels
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
             <div>
-              <label className="block text-xs font-medium mb-1">説明</label>
+              <label className="block text-xs font-medium mb-1">
+                活動内容(任意)
+              </label>
               <Textarea
                 value={formDescription}
                 onChange={(e) => setFormDescription(e.target.value)}
@@ -366,6 +470,19 @@ export default function ActivityLogPage() {
               />
               <div className="text-[10px] text-muted-foreground text-right">
                 {formDescription.length}/100
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-medium mb-1">
+                メンター対応(任意)
+              </label>
+              <Textarea
+                value={formMentorNote}
+                onChange={(e) => setFormMentorNote(e.target.value)}
+                maxLength={200}
+              />
+              <div className="text-[10px] text-muted-foreground text-right">
+                {formMentorNote.length}/200
               </div>
             </div>
             {error && <div className="text-xs text-destructive">{error}</div>}
