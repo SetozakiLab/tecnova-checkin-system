@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { AdminLayout } from "@/components/admin-layout";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -20,6 +20,8 @@ import {
   SheetFooter,
 } from "@/components/ui/sheet";
 import { Loader2 } from "lucide-react";
+import { formatGradeDisplay } from "@/domain/value-objects/grade";
+import { useActivityLog } from "@/hooks/use-activity-log";
 import {
   ACTIVITY_CATEGORIES,
   activityCategoryLabels,
@@ -37,20 +39,17 @@ interface ActivityLogRow {
   mentorNote?: string;
   timeslotStart: string;
 }
-interface GuestColumn {
-  guestId: string;
-  name?: string;
-  displayId?: number;
-  grade?: string | null;
-}
 
 export default function ActivityLogPage() {
   const [date, setDate] = useState<string>(() =>
     new Date().toISOString().slice(0, 10)
   );
-  const [logs, setLogs] = useState<ActivityLogRow[]>([]);
-  const [currentGuests, setCurrentGuests] = useState<GuestColumn[]>([]);
-  const [loading, setLoading] = useState(false);
+  const {
+    logs,
+    guests: currentGuests,
+    isLoading: loading,
+    refresh,
+  } = useActivityLog(date);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [editing, setEditing] = useState<ActivityLogRow | null>(null);
   const [formGuestId, setFormGuestId] = useState("");
@@ -73,90 +72,7 @@ export default function ActivityLogPage() {
     return arr;
   }, []);
 
-  async function fetchData() {
-    setLoading(true);
-    try {
-      const [logsRes, guestsRes] = await Promise.all([
-        fetch(`/api/admin/activity-logs?date=${date}`),
-        fetch(`/api/checkins/current`),
-      ]);
-
-      const safeJson = async (res: Response): Promise<unknown> => {
-        const ct = res.headers.get("content-type") || "";
-        if (ct.includes("application/json")) {
-          try {
-            return await res.json();
-          } catch {
-            return {};
-          }
-        }
-        return {};
-      };
-
-      const logsJson = await safeJson(logsRes);
-      const guestsJson = await safeJson(guestsRes);
-
-      // 型ガード
-      const isActivityLogArray = (v: unknown): v is ActivityLogRow[] =>
-        Array.isArray(v) &&
-        v.every(
-          (item) =>
-            typeof item === "object" && item !== null && "guestId" in item
-        );
-      const isGuestArray = (v: unknown): v is Array<Record<string, unknown>> =>
-        Array.isArray(v);
-
-      if (logsRes.ok) {
-        let data: ActivityLogRow[] = [];
-        if (logsJson && typeof logsJson === "object" && "data" in logsJson) {
-          const candidate = (logsJson as { data: unknown }).data;
-          if (isActivityLogArray(candidate)) data = candidate;
-        }
-        setLogs(data);
-      }
-      if (guestsRes.ok) {
-        let raw: Array<Record<string, unknown>> = [];
-        if (
-          guestsJson &&
-          typeof guestsJson === "object" &&
-          "data" in guestsJson
-        ) {
-          const candidate = (guestsJson as { data: unknown }).data;
-          if (isGuestArray(candidate)) raw = candidate;
-        }
-        const mapped: GuestColumn[] = raw.filter(Boolean).map((g) => {
-          const guestId =
-            typeof g.guestId === "string"
-              ? g.guestId
-              : typeof g.id === "string"
-              ? g.id
-              : "";
-          const name =
-            typeof g.guestName === "string"
-              ? g.guestName
-              : typeof g.name === "string"
-              ? g.name
-              : undefined;
-          const displayId =
-            typeof g.guestDisplayId === "number"
-              ? g.guestDisplayId
-              : typeof g.displayId === "number"
-              ? g.displayId
-              : undefined;
-          return { guestId, name, displayId };
-        });
-        setCurrentGuests(mapped);
-      }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    fetchData(); // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [date]);
+  // 以前の fetchData/useEffect は SWR フックで置換
 
   function openNew(slot: string, guestId: string) {
     setEditing(null);
@@ -214,7 +130,7 @@ export default function ActivityLogPage() {
         return;
       }
       setSheetOpen(false);
-      await fetchData();
+      await refresh();
     } catch {
       setError("通信エラー");
     } finally {
@@ -237,7 +153,7 @@ export default function ActivityLogPage() {
         return;
       }
       setSheetOpen(false);
-      await fetchData();
+      await refresh();
     } catch {
       setError("通信エラー");
     } finally {
@@ -265,7 +181,7 @@ export default function ActivityLogPage() {
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
               />
-              <Button size="sm" variant="outline" onClick={fetchData}>
+              <Button size="sm" variant="outline" onClick={refresh}>
                 再読込
               </Button>
             </div>
@@ -277,9 +193,9 @@ export default function ActivityLogPage() {
                 id="activity-log-scroll"
               >
                 <div
-                  className="grid rounded-t-md border bg-muted/60 backdrop-blur supports-[backdrop-filter]:bg-muted/40 sticky top-0 z-30"
+                  className="grid rounded-t-md border bg-muted/60 backdrop-blur supports-[backdrop-filter]:bg-muted/40 sticky top-0 z-30 min-w-max"
                   style={{
-                    gridTemplateColumns: `120px repeat(${currentGuests.length}, minmax(160px,1fr))`,
+                    gridTemplateColumns: `120px repeat(${currentGuests.length}, 160px)`,
                   }}
                 >
                   <div className="text-[11px] font-semibold p-2 sticky left-0 z-40 bg-muted/70 border-r w-[120px]">
@@ -288,7 +204,7 @@ export default function ActivityLogPage() {
                   {currentGuests.map((g) => (
                     <div
                       key={g.guestId}
-                      className="text-[11px] font-semibold p-2 text-center truncate border-l first:border-l-0"
+                      className="text-[11px] font-semibold p-2 text-center truncate border-l first:border-l-0 w-[160px]"
                       title={g.name || String(g.displayId) || g.guestId}
                     >
                       <div className="flex flex-col items-center gap-0.5">
@@ -297,6 +213,9 @@ export default function ActivityLogPage() {
                         </span>
                         <span className="truncate max-w-full">
                           {g.name || g.guestId.slice(0, 8)}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground font-mono leading-tight">
+                          {formatGradeDisplay(g.grade)}
                         </span>
                       </div>
                     </div>
@@ -313,9 +232,9 @@ export default function ActivityLogPage() {
                       {timeSlots.map((slot) => (
                         <div
                           key={slot}
-                          className="grid group/time-row odd:bg-background even:bg-muted/20"
+                          className="grid group/time-row odd:bg-background even:bg-muted/20 min-w-max"
                           style={{
-                            gridTemplateColumns: `120px repeat(${currentGuests.length}, minmax(160px,1fr))`,
+                            gridTemplateColumns: `120px repeat(${currentGuests.length}, 160px)`,
                           }}
                         >
                           <div className="text-[10px] sm:text-xs px-2 py-2 sticky left-0 z-20 bg-background/95 font-mono border-r border-dashed group-hover/time-row:bg-accent/40 w-[120px]">
@@ -331,7 +250,7 @@ export default function ActivityLogPage() {
                                 onClick={() =>
                                   log ? openEdit(log) : openNew(slot, g.guestId)
                                 }
-                                className={`relative text-left min-h-[46px] sm:min-h-[54px] border-l first:border-l-0 px-2 py-1.5 focus:outline-none focus-visible:ring-2 ring-offset-2 ring-primary/40 transition-colors hover:bg-accent/30`}
+                                className={`relative text-left min-h-[46px] sm:min-h-[54px] border-l first:border-l-0 px-2 py-1.5 focus:outline-none focus-visible:ring-2 ring-offset-2 ring-primary/40 transition-colors hover:bg-accent/30 w-[160px]`}
                               >
                                 {log ? (
                                   <div className="h-full flex flex-col gap-1">

@@ -214,6 +214,72 @@ export class CheckinService {
     });
   }
 
+  // 今日チェックインした(履歴がある)ゲスト一覧取得（チェックアウト済みも含む）
+  static async getTodayGuests(): Promise<CheckinRecord[]> {
+    const today = getTodayStartJST();
+    const tomorrow = getTomorrowStartJST();
+
+    // 今日の全チェックイン (最初のチェックインを代表とする)
+    const todayCheckins = await prisma.checkinRecord.findMany({
+      where: { checkinAt: { gte: today, lt: tomorrow } },
+      include: { guest: true },
+      orderBy: { checkinAt: "asc" },
+    });
+    const representative = todayCheckins.reduce<typeof todayCheckins>(
+      (acc, cur) => {
+        if (!acc.some((r) => r.guestId === cur.guestId)) acc.push(cur);
+        return acc;
+      },
+      []
+    );
+
+    // 各ゲストの累計統計（全期間）
+    const guestIds = representative.map((r) => r.guestId);
+    const allVisits = await prisma.checkinRecord.findMany({
+      where: { guestId: { in: guestIds } },
+      select: { guestId: true, checkinAt: true, checkoutAt: true },
+    });
+    const statsMap = new Map<
+      string,
+      { totalVisitCount: number; totalStayMinutes: number }
+    >();
+    for (const v of allVisits) {
+      const prev = statsMap.get(v.guestId) || {
+        totalVisitCount: 0,
+        totalStayMinutes: 0,
+      };
+      prev.totalVisitCount += 1;
+      const end = v.checkoutAt ?? new Date();
+      prev.totalStayMinutes += Math.floor(
+        (end.getTime() - v.checkinAt.getTime()) / (1000 * 60)
+      );
+      statsMap.set(v.guestId, prev);
+    }
+
+    return representative.map((record) => {
+      const stat = statsMap.get(record.guestId);
+      const duration = record.checkoutAt
+        ? Math.floor(
+            (record.checkoutAt.getTime() - record.checkinAt.getTime()) /
+              (1000 * 60)
+          )
+        : Math.floor((Date.now() - record.checkinAt.getTime()) / (1000 * 60));
+      return {
+        id: record.id,
+        guestId: record.guestId,
+        guestName: record.guest.name,
+        guestDisplayId: record.guest.displayId,
+        checkinAt: record.checkinAt.toISOString(),
+        checkoutAt: record.checkoutAt?.toISOString() || null,
+        isActive: record.checkoutAt == null,
+        duration,
+        guestGrade: record.guest.grade ?? null,
+        totalVisitCount: stat?.totalVisitCount ?? 1,
+        totalStayMinutes: stat?.totalStayMinutes ?? 0,
+      } as import("@/types/api").CheckinRecord;
+    });
+  }
+
   // 今日の統計取得
   static async getTodayStats(): Promise<{
     totalCheckins: number;
