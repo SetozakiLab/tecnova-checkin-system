@@ -33,10 +33,19 @@ enum Role {
 
 // 活動カテゴリ（活動ログ用）
 enum ActivityCategory {
-  STUDY
-  MEETING
-  EVENT
-  PROJECT
+  VR_HMD
+  DRONE
+  PRINTER_3D
+  PEPPER
+  LEGO
+  MBOT2
+  LITTLE_BITS
+  MESH
+  TOIO
+  MINECRAFT
+  UNITY
+  BLENDER
+  DAVINCI_RESOLVE
   OTHER
 }
 
