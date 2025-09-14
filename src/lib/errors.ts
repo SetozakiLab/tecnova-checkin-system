@@ -4,7 +4,9 @@ export type DomainErrorCode =
   | "NOT_CHECKED_IN"
   | "GUEST_CURRENTLY_CHECKED_IN"
   | "SEQUENCE_LIMIT_EXCEEDED"
-  | "DISPLAY_ID_GENERATION_FAILED";
+  | "DISPLAY_ID_GENERATION_FAILED"
+  | "FORBIDDEN"
+  | "NOT_FOUND";
 
 const codeMessage: Record<DomainErrorCode, string> = {
   GUEST_NOT_FOUND: "ゲストが見つかりません",
@@ -13,6 +15,8 @@ const codeMessage: Record<DomainErrorCode, string> = {
   GUEST_CURRENTLY_CHECKED_IN: "現在チェックイン中のゲストは削除できません",
   SEQUENCE_LIMIT_EXCEEDED: "年間登録上限に達しました",
   DISPLAY_ID_GENERATION_FAILED: "表示ID生成に失敗しました",
+  FORBIDDEN: "権限がありません",
+  NOT_FOUND: "対象が見つかりません",
 };
 
 const codeStatus: Record<DomainErrorCode, number> = {
@@ -22,6 +26,8 @@ const codeStatus: Record<DomainErrorCode, number> = {
   GUEST_CURRENTLY_CHECKED_IN: 400,
   SEQUENCE_LIMIT_EXCEEDED: 500,
   DISPLAY_ID_GENERATION_FAILED: 500,
+  FORBIDDEN: 403,
+  NOT_FOUND: 404,
 };
 
 export class DomainError extends Error {

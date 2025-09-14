@@ -69,6 +69,7 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
     },
     { href: "/admin/history", label: "入退場履歴", icon: HistoryIcon },
     { href: "/admin/guests", label: "ゲスト管理", icon: Users },
+    { href: "/admin/activity-log", label: "活動ログ記入", icon: HistoryIcon },
   ];
 
   const NavLinks = () => (
