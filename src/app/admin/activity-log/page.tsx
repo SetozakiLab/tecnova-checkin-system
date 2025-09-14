@@ -19,7 +19,7 @@ import {
   SheetTitle,
   SheetFooter,
 } from "@/components/ui/sheet";
-import { Loader2 } from "lucide-react";
+import { Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { formatGradeDisplay } from "@/domain/value-objects/grade";
 import { useActivityLog } from "@/hooks/use-activity-log";
 import {
@@ -41,6 +41,13 @@ interface ActivityLogRow {
 }
 
 export default function ActivityLogPage() {
+  function shiftDate(base: string, delta: number) {
+    // base: YYYY-MM-DD (JST想定) をUTC日付として安全にずらし ISO の最初10文字を返す
+    // タイムゾーン差異で+/-2日飛ぶのを防ぐため常にUTC基準 00:00:00Z に固定
+    const d = new Date(base + "T00:00:00Z");
+    d.setUTCDate(d.getUTCDate() + delta);
+    return d.toISOString().slice(0, 10);
+  }
   const [date, setDate] = useState<string>(() =>
     new Date().toISOString().slice(0, 10)
   );
@@ -50,6 +57,10 @@ export default function ActivityLogPage() {
     isLoading: loading,
     refresh,
   } = useActivityLog(date);
+  const isToday = useMemo(
+    () => new Date().toISOString().slice(0, 10) === date,
+    [date]
+  );
   const [sheetOpen, setSheetOpen] = useState(false);
   const [editing, setEditing] = useState<ActivityLogRow | null>(null);
   const [formGuestId, setFormGuestId] = useState("");
@@ -174,37 +185,67 @@ export default function ActivityLogPage() {
       <div className="space-y-6">
         <Card>
           <CardHeader className="flex items-center justify-between space-y-0">
-            <CardTitle className="text-lg">活動ログ (30分グリッド)</CardTitle>
+            <CardTitle className="text-lg">活動ログ</CardTitle>
             <div className="flex items-center gap-3">
-              <Input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-              />
+              <div className="flex items-center gap-1">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => {
+                    setDate(shiftDate(date, -1));
+                  }}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <Input
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  className="h-8"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => {
+                    const next = shiftDate(date, 1);
+                    const todayStr = new Date().toISOString().slice(0, 10);
+                    if (next <= todayStr) setDate(next);
+                  }}
+                  disabled={date === new Date().toISOString().slice(0, 10)}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
               <Button size="sm" variant="outline" onClick={refresh}>
                 再読込
               </Button>
             </div>
           </CardHeader>
           <CardContent className="overflow-hidden">
-            <div className="min-w-[900px] relative">
+            <div className="relative">
+              {/* 横スクロール領域: 端までスクロールできるよう overflow-x-auto を明示 */}
               <div
-                className="overflow-auto max-h-[70vh]"
+                className="overflow-x-auto overflow-y-auto max-h-[70vh]"
                 id="activity-log-scroll"
               >
                 <div
                   className="grid rounded-t-md border bg-muted/60 backdrop-blur supports-[backdrop-filter]:bg-muted/40 sticky top-0 z-30 min-w-max"
                   style={{
-                    gridTemplateColumns: `120px repeat(${currentGuests.length}, 160px)`,
+                    // 列幅調整: 時刻 140px, 各ゲスト 190px
+                    gridTemplateColumns: `140px repeat(${currentGuests.length}, 190px)`,
                   }}
                 >
-                  <div className="text-[11px] font-semibold p-2 sticky left-0 z-40 bg-muted/70 border-r w-[120px]">
-                    Time
+                  <div className="text-[11px] font-semibold p-2 sticky left-0 z-40 bg-muted/70 border-r w-[140px]">
+                    時刻（30分刻み）
                   </div>
                   {currentGuests.map((g) => (
                     <div
                       key={g.guestId}
-                      className="text-[11px] font-semibold p-2 text-center truncate border-l first:border-l-0 w-[160px]"
+                      className="text-[11px] font-semibold p-2 text-center truncate border-l first:border-l-0 w-[190px]"
                       title={g.name || String(g.displayId) || g.guestId}
                     >
                       <div className="flex flex-col items-center gap-0.5">
@@ -234,10 +275,10 @@ export default function ActivityLogPage() {
                           key={slot}
                           className="grid group/time-row odd:bg-background even:bg-muted/20 min-w-max"
                           style={{
-                            gridTemplateColumns: `120px repeat(${currentGuests.length}, 160px)`,
+                            gridTemplateColumns: `140px repeat(${currentGuests.length}, 190px)`,
                           }}
                         >
-                          <div className="text-[10px] sm:text-xs px-2 py-2 sticky left-0 z-20 bg-background/95 font-mono border-r border-dashed group-hover/time-row:bg-accent/40 w-[120px]">
+                          <div className="text-[10px] sm:text-xs px-2 py-2 sticky left-0 z-20 bg-background/95 font-mono border-r border-dashed group-hover/time-row:bg-accent/40 w-[140px]">
                             {slot}
                           </div>
                           {currentGuests.map((g) => {
@@ -248,9 +289,17 @@ export default function ActivityLogPage() {
                               <button
                                 key={g.guestId + slot}
                                 onClick={() =>
-                                  log ? openEdit(log) : openNew(slot, g.guestId)
+                                  isToday &&
+                                  (log
+                                    ? openEdit(log)
+                                    : openNew(slot, g.guestId))
                                 }
-                                className={`relative text-left min-h-[46px] sm:min-h-[54px] border-l first:border-l-0 px-2 py-1.5 focus:outline-none focus-visible:ring-2 ring-offset-2 ring-primary/40 transition-colors hover:bg-accent/30 w-[160px]`}
+                                disabled={!isToday}
+                                className={`relative text-left min-h-[46px] sm:min-h-[54px] border-l first:border-l-0 px-2 py-1.5 focus:outline-none focus-visible:ring-2 ring-offset-2 ring-primary/40 transition-colors w-[190px] ${
+                                  isToday
+                                    ? "hover:bg-accent/30 cursor-pointer"
+                                    : "opacity-60 cursor-not-allowed"
+                                }`}
                               >
                                 {log ? (
                                   <div className="h-full flex flex-col gap-1">
@@ -274,11 +323,11 @@ export default function ActivityLogPage() {
                                       </span>
                                     )}
                                   </div>
-                                ) : (
+                                ) : isToday ? (
                                   <span className="opacity-30 group-hover/time-row:opacity-60 text-[11px] flex items-center justify-center h-full font-medium">
                                     ＋
                                   </span>
-                                )}
+                                ) : null}
                                 <span className="pointer-events-none absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-muted/10 opacity-0 group-hover/time-row:opacity-100 transition" />
                                 <span className="pointer-events-none absolute inset-0 border border-transparent group-hover/time-row:border-border/60 rounded-sm" />
                               </button>
@@ -294,7 +343,7 @@ export default function ActivityLogPage() {
           </CardContent>
         </Card>
       </div>
-      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+      <Sheet open={sheetOpen && isToday} onOpenChange={setSheetOpen}>
         <SheetContent side="right" className="w-[380px] sm:w-[420px]">
           <SheetHeader>
             <SheetTitle>{editing ? "活動ログ編集" : "活動ログ追加"}</SheetTitle>

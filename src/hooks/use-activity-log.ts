@@ -1,5 +1,5 @@
 import useSWR from "swr";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 
 interface ActivityLogRow {
   id: string;
@@ -33,6 +33,11 @@ const fetcher = async (url: string) => {
 };
 
 export function useActivityLog(date: string): UseActivityLogResult {
+  // YYYY-MM-DD で今日か判定
+  const isToday = useMemo(() => {
+    const todayStr = new Date().toISOString().slice(0, 10);
+    return date === todayStr;
+  }, [date]);
   const {
     data: logsData,
     isLoading: loadingLogs,
@@ -48,9 +53,13 @@ export function useActivityLog(date: string): UseActivityLogResult {
     isLoading: loadingGuests,
     error: errorGuests,
     mutate: mutateGuests,
-  } = useSWR<GuestColumn[]>(`/api/checkins/today?date=${date}`, fetcher, {
-    revalidateOnFocus: false,
-  });
+  } = useSWR<GuestColumn[]>(
+    isToday
+      ? `/api/checkins/today?date=${date}`
+      : `/api/checkins/by-date?date=${date}`,
+    fetcher,
+    { revalidateOnFocus: false }
+  );
 
   const refresh = useCallback(() => {
     mutateLogs();

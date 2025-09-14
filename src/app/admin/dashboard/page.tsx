@@ -13,9 +13,18 @@ import {
   TodaySummarySkeleton,
 } from "@/components/features/admin/dashboard-components";
 import { RefreshButton } from "@/components/shared";
-import { getServerTodayStats, getServerCurrentGuests } from "@/infrastructure/server-data";
+import {
+  getServerTodayStats,
+  getServerCurrentGuests,
+} from "@/infrastructure/server-data";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertTriangle, Users, Activity, Clock, TrendingUp } from "lucide-react";
+import {
+  AlertTriangle,
+  Users,
+  Activity,
+  Clock,
+  TrendingUp,
+} from "lucide-react";
 
 // Force dynamic rendering for real-time data
 export const dynamic = "force-dynamic";
@@ -42,7 +51,7 @@ async function DashboardStatsSection() {
 async function CurrentGuestsSection() {
   try {
     const guests = await getServerCurrentGuests();
-    
+
     return (
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-3">
@@ -142,7 +151,7 @@ function QuickActionsCard() {
               ゲスト情報の確認・編集
             </p>
           </button>
-          
+
           <button className="p-3 text-left rounded-lg border border-border hover:bg-accent transition-colors">
             <div className="flex items-center gap-2 mb-1">
               <Activity className="h-4 w-4 text-primary" />
@@ -152,25 +161,21 @@ function QuickActionsCard() {
               チェックイン履歴の確認
             </p>
           </button>
-          
+
           <button className="p-3 text-left rounded-lg border border-border hover:bg-accent transition-colors">
             <div className="flex items-center gap-2 mb-1">
               <Clock className="h-4 w-4 text-primary" />
               <span className="font-medium text-sm">時間管理</span>
             </div>
-            <p className="text-xs text-muted-foreground">
-              滞在時間の分析
-            </p>
+            <p className="text-xs text-muted-foreground">滞在時間の分析</p>
           </button>
-          
+
           <button className="p-3 text-left rounded-lg border border-border hover:bg-accent transition-colors">
             <div className="flex items-center gap-2 mb-1">
               <TrendingUp className="h-4 w-4 text-primary" />
               <span className="font-medium text-sm">レポート</span>
             </div>
-            <p className="text-xs text-muted-foreground">
-              利用状況レポート
-            </p>
+            <p className="text-xs text-muted-foreground">利用状況レポート</p>
           </button>
         </div>
       </CardContent>
@@ -184,15 +189,6 @@ export default function AdminDashboardPage() {
     <AdminLayout title="ダッシュボード">
       <div className="space-y-8">
         {/* Welcome Section */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">ダッシュボード</h1>
-            <p className="text-muted-foreground mt-1">
-              施設の利用状況をリアルタイムで確認できます
-            </p>
-          </div>
-          <RefreshButton />
-        </div>
 
         {/* Key Metrics - 最も重要な情報を最上位に配置 */}
         <section>
@@ -217,7 +213,9 @@ export default function AdminDashboardPage() {
                       <Users className="h-5 w-5" />
                       現在の滞在者
                     </CardTitle>
-                    <div className="text-sm text-muted-foreground">読み込み中...</div>
+                    <div className="text-sm text-muted-foreground">
+                      読み込み中...
+                    </div>
                   </CardHeader>
                   <CardContent>
                     <CurrentGuestsSkeleton />
@@ -232,7 +230,7 @@ export default function AdminDashboardPage() {
           {/* Quick Actions - Secondary Information */}
           <div className="space-y-6">
             <QuickActionsCard />
-            
+
             {/* System Status Indicator */}
             <Card>
               <CardHeader className="pb-3">
@@ -240,23 +238,29 @@ export default function AdminDashboardPage() {
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">データベース</span>
+                  <span className="text-sm text-muted-foreground">
+                    データベース
+                  </span>
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 bg-success rounded-full" />
                     <span className="text-xs text-success">正常</span>
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">リアルタイム更新</span>
+                  <span className="text-sm text-muted-foreground">
+                    リアルタイム更新
+                  </span>
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 bg-success rounded-full" />
                     <span className="text-xs text-success">有効</span>
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">最終更新</span>
+                  <span className="text-sm text-muted-foreground">
+                    最終更新
+                  </span>
                   <span className="text-xs text-muted-foreground">
-                    {new Date().toLocaleTimeString('ja-JP')}
+                    {new Date().toLocaleTimeString("ja-JP")}
                   </span>
                 </div>
               </CardContent>
