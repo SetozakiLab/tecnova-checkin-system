@@ -1,6 +1,6 @@
 # API 設計書
 
-**最終更新日:** 2025 年 9 月 13 日
+**最終更新日:** 2025 年 9 月 14 日
 
 ---
 
@@ -220,7 +220,7 @@
 
 #### 現在の滞在者
 
-`GET /api/admin/dashboard/current-guests`
+`GET /api/admin/dashboard/current-guests` (認証必須)
 レスポンス（実装）:
 
 ```json
@@ -356,6 +356,23 @@
 `DELETE /api/admin/guests/{id}`
 成功: 200 （チェックイン中は 409 CONFLICT）
 
+### 3.5. 管理ユーザー一覧 (補助)
+
+`GET /api/admin/users`
+
+レスポンス例:
+
+```json
+{
+  "success": true,
+  "data": {
+    "users": [{ "id": "user-uuid", "username": "admin", "role": "SUPER" }]
+  }
+}
+```
+
+備考: ログイン画面の既存ユーザー選択プルダウン用。MANAGER 自己作成フローと併用。
+
 ---
 
 ## 4. リアルタイム更新（WebSocket）
@@ -420,19 +437,20 @@
 
 ## 8. 変更履歴（差分要約）
 
-| 項目                | 旧記述                                   | 現行実装                            | 備考                    |
-| ------------------- | ---------------------------------------- | ----------------------------------- | ----------------------- |
-| ゲスト検索          | limit 対応                               | limit 未実装                        | 固定 10 件              |
-| チェックイン/アウト | timestamp フィールド                     | ボディ不要                          | サーバー時刻使用        |
-| 現在滞在者          | totalCount + guests オブジェクト         | 配列のみ                            | duration 分単位         |
-| 今日統計            | 多項目 (peak 等)                         | 3 項目のみ                          | 拡張予定                |
-| 履歴 API            | guest オブジェクト + stayDuration 文字列 | フラット + duration(分)             | 文字列整形未実装        |
-| 更新レスポンス      | updatedAt 返却                           | 未返却                              | 返却統一検討            |
-| サインイン          | user / sessionToken 返却                 | message のみ                        | NextAuth セッション管理 |
-| WebSocket           | 実装前提                                 | 未実装                              | 設計のみ保持            |
-| レート制限          | 実装記述あり                             | 未実装                              | 導入予定                |
-| エラー              | NOT_CHECKED_IN 等のみ                    | BAD_REQUEST/METHOD_NOT_ALLOWED 追加 | 共通化                  |
-| 学年フィールド      | 未記載                                   | 追加 (任意: grade)                  | null 可                 |
+| 項目                | 旧記述                                   | 現行実装                               | 備考                    |
+| ------------------- | ---------------------------------------- | -------------------------------------- | ----------------------- |
+| ゲスト検索          | limit 対応                               | limit 未実装                           | 固定 10 件              |
+| チェックイン/アウト | timestamp フィールド                     | ボディ不要                             | サーバー時刻使用        |
+| 現在滞在者          | totalCount + guests オブジェクト         | 配列のみ (public current にも類似構造) | duration 分単位         |
+| 今日統計            | 多項目 (peak 等)                         | 3 項目のみ                             | 拡張予定                |
+| 履歴 API            | guest オブジェクト + stayDuration 文字列 | フラット + duration(分)                | 文字列整形未実装        |
+| 更新レスポンス      | updatedAt 返却                           | 未返却                                 | 返却統一検討            |
+| サインイン          | user / sessionToken 返却                 | message のみ                           | NextAuth セッション管理 |
+| WebSocket           | 実装前提                                 | 未実装                                 | 設計のみ保持            |
+| レート制限          | 実装記述あり                             | 未実装                                 | 導入予定                |
+| エラー              | NOT_CHECKED_IN 等のみ                    | BAD_REQUEST/METHOD_NOT_ALLOWED 追加    | 共通化                  |
+| 学年フィールド      | 未記載                                   | 追加 (任意: grade)                     | null 可                 |
+| users API           | 未記載                                   | /api/admin/users 追加                  | ログイン補助            |
 
 ---
 

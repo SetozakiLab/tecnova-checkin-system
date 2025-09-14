@@ -1,6 +1,6 @@
 # データベース設計書
 
-**最終更新日:** 2025 年 9 月 13 日
+**最終更新日:** 2025 年 9 月 14 日
 
 ---
 
@@ -73,7 +73,7 @@ erDiagram
 - UNIQUE INDEX (displayId)
 - INDEX (name) - 検索用
 
-**実装状況差分:** Prisma schema では `displayId` の UNIQUE のみ明示。`name` インデックスは未定義（必要性とクエリ頻度を踏まえ追加検討）。
+**実装状況差分:** Prisma schema は `displayId` の UNIQUE のみ。`grade` カラム追加済 (Enum)。`name` インデックスは未定義（必要性とクエリ頻度を踏まえ追加検討）。
 
 **備考:**
 
