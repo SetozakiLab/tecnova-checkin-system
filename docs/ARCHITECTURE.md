@@ -72,17 +72,19 @@ src/app/(admin)/login/page.tsx       # A001 ログイン
 src/app/(admin)/dashboard/page.tsx   # A002 ダッシュボード（手動更新）
 src/app/(admin)/history/page.tsx     # A003 履歴
 src/app/(admin)/guests/page.tsx      # A004 ゲスト管理（モーダル編集）
+src/app/(admin)/activity-log/page.tsx # A006 活動ログ入力 (MVP: 入力のみ)
 ```
 
 （A005 ゲスト詳細ページは未実装 / 現状不要）
 
 ### 2.2. 差異メモ
 
-| 項目      | 旧ドキュメント      | 現状             | 備考                            |
-| --------- | ------------------- | ---------------- | ------------------------------- |
-| G005/G006 | 分離                | G005 に統合      | `CheckinActions` コンポーネント |
-| A005      | 独立ページ          | 未実装           | モーダル編集で代替              |
-| 自動更新  | ダッシュボード 5 秒 | 手動リフレッシュ | 今後ポーリング予定              |
+| 項目      | 旧ドキュメント      | 現状              | 備考                            |
+| --------- | ------------------- | ----------------- | ------------------------------- |
+| G005/G006 | 分離                | G005 に統合       | `CheckinActions` コンポーネント |
+| A005      | 独立ページ          | 未実装            | モーダル編集で代替              |
+| 自動更新  | ダッシュボード 5 秒 | 手動リフレッシュ  | 今後ポーリング予定              |
+| 活動ログ  | 未記載              | A006 入力画面のみ | 一覧/集計は将来                 |
 
 ## 3. ドメインフロー
 
@@ -132,6 +134,29 @@ sequenceDiagram
 
 ### 3.3. リアルタイム設計（未実装）
 
+### 3.4. 活動ログ記入フロー（MVP）
+
+```mermaid
+sequenceDiagram
+    participant ADM as A006(Activity Log 入力)
+    participant API as API(/api/admin/activity-logs)
+    participant DB as DB
+
+    ADM->>API: POST { guestId, category, description, timeslotStart? }
+    API->>API: 入力正規化(時刻切り捨て 00/30, 文字数, Enum)
+    API->>DB: SELECT ActivityLog (guestId, timeslotStart)
+    DB-->>API: 既存 or null
+    alt 既存なし
+        API->>DB: INSERT ActivityLog
+    else 既存あり
+        API->>DB: UPDATE ActivityLog SET category, description, updatedAt
+    end
+    DB-->>API: 保存結果
+    API-->>ADM: 200 JSON (id, timeslotStart, category, description, timestamps)
+```
+
+削除フロー (SUPER): `DELETE /api/admin/activity-logs/:id` → 物理削除（監査導入前）。
+
 ```mermaid
 sequenceDiagram
     participant ADM as 管理UI
@@ -160,9 +185,13 @@ sequenceDiagram
 
 ## 6. ドメインモデル追加属性
 
-| エンティティ | フィールド | 型    | 説明 | 備考                            |
-| ------------ | ---------- | ----- | ---- | ------------------------------- |
-| Guest        | grade      | Enum? | 学年 | ES1..ES6/JH1..JH3/HS1..HS3/NULL |
+| エンティティ | フィールド      | 型       | 説明         | 備考                            |
+| ------------ | --------------- | -------- | ------------ | ------------------------------- |
+| Guest        | grade           | Enum?    | 学年         | ES1..ES6/JH1..JH3/HS1..HS3/NULL |
+| ActivityLog  | timeslotStart   | DateTime | 30 分枠開始  | 分=00/30 JST 正規化             |
+| ActivityLog  | category        | Enum     | 活動カテゴリ | ActivityCategory                |
+| ActivityLog  | description     | String   | 活動説明     | 1–100 文字                      |
+| ActivityLog  | createdByUserId | UUID     | 記入者       | User 参照                       |
 
 ### 6.1. grade モデル設計メモ
 
@@ -184,11 +213,13 @@ sequenceDiagram
 4. レート制限 / メトリクス
 5. WebSocket/SSE 導入
 6. エクスポート / QR / 通知
+7. 活動ログ一覧/集計 + 監査ログ
 
 ## 8. 変更履歴
 
 | 日付       | 区分 | 内容                                                                           |
 | ---------- | ---- | ------------------------------------------------------------------------------ |
 | 2025-09-14 | 修正 | grade Enum 追加反映 / current-guests 公開エンドポイント注記 / users API 追記   |
+| 2025-09-14 | 追加 | ActivityLog モデル / A006 画面 / フローシーケンス図追加                        |
 | 2025-09-06 | 修正 | G005+G006 統合 / A005 未実装明示 / 自動チェックインフロー追加 / 将来優先度整理 |
 | 2025-07-03 | 初版 | 初期作成                                                                       |

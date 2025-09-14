@@ -9,6 +9,7 @@
 ```mermaid
 erDiagram
     Guest ||--o{ CheckinRecord : has
+  Guest ||--o{ ActivityLog : logs
     User {
         uuid id PK
         string username UK
@@ -36,6 +37,16 @@ erDiagram
         datetime createdAt
         datetime updatedAt
     }
+  ActivityLog {
+    uuid id PK
+    uuid guestId FK
+    datetime timeslotStart "枠開始(分=00/30 JST)"
+    ActivityCategory category "カテゴリ"
+    string description "活動内容(1-100文字)"
+    uuid createdByUserId FK "記入者"
+    datetime createdAt
+    datetime updatedAt
+  }
 ```
 
 ## 2. テーブル詳細設計
@@ -131,6 +142,58 @@ erDiagram
 - checkoutAt = NULL: 滞在中
 - 同一 guestId で isActive=TRUE は 1 件だけであるべき。現在アプリケーションロジックで保証（DB 制約は未付与 / 将来部分 UNIQUE インデックス検討）
 
+### 2.4. ActivityLog（活動ログ）テーブル
+
+| カラム名        | データ型              | 制約                    | 説明                        |
+| --------------- | --------------------- | ----------------------- | --------------------------- |
+| id              | UUID                  | PRIMARY KEY             | 主キー                      |
+| guestId         | UUID                  | FOREIGN KEY, NOT NULL   | ゲスト ID                   |
+| timeslotStart   | TIMESTAMP             | NOT NULL                | 30 分枠開始（分 = 00 / 30） |
+| category        | ENUM ActivityCategory | NOT NULL                | 活動カテゴリ                |
+| description     | VARCHAR(100)          | NOT NULL                | 1–100 文字 プレーンテキスト |
+| createdByUserId | UUID                  | FOREIGN KEY, NOT NULL   | 記入ユーザー ID             |
+| createdAt       | TIMESTAMP             | NOT NULL, DEFAULT NOW() | 作成日時                    |
+| updatedAt       | TIMESTAMP             | NOT NULL, DEFAULT NOW() | 更新日時                    |
+
+**外部キー制約:**
+
+- guestId REFERENCES Guest(id) ON DELETE CASCADE
+- createdByUserId REFERENCES User(id) ON DELETE RESTRICT
+
+**インデックス（設計）:**
+
+- PRIMARY KEY (id)
+- UNIQUE INDEX (guestId, timeslotStart)
+- INDEX (timeslotStart)
+- INDEX (category)
+
+**Enum: ActivityCategory**
+
+| 値              | 表示            | 備考                 |
+| --------------- | --------------- | -------------------- |
+| VR_HMD          | VR（HMD）       |                      |
+| DRONE           | ドローン        |                      |
+| PRINTER_3D      | 3D プリンタ     |                      |
+| PEPPER          | ペッパー        |                      |
+| LEGO            | レゴ            |                      |
+| MBOT2           | mBot2           |                      |
+| LITTLE_BITS     | little Bits     | 表示揺れ防止         |
+| MESH            | MESH            |                      |
+| TOIO            | toio            |                      |
+| MINECRAFT       | マインクラフト  |                      |
+| UNITY           | Unity           |                      |
+| BLENDER         | Blender         |                      |
+| DAVINCI_RESOLVE | DaVinci Resolve |                      |
+| OTHER           | その他          | description で具体化 |
+
+**備考:**
+
+- timeslotStart はサーバー側で JST 現在時刻を :00 / :30 に切り捨て。
+- 過去枠入力許可。MVP ではその時間帯に在席していた検証は「警告表示」想定（将来: 厳格バリデーション+参照整合性）。
+- 1 ゲスト 1 枠 = UNIQUE(guestId, timeslotStart)。再送信は更新扱い。
+- 削除は SUPER のみ許可（アプリ層ロールチェック）。DB レベルでは権限制御を持たない。
+- 編集履歴保持は未実装（監査ログ導入後に before/after 記録）。
+
 ## 3. ビジネスルール
 
 ### 3.1. DisplayID 生成ルール
@@ -184,6 +247,9 @@ const getNextSequenceForYear = async (year: number): Promise<number> => {
 - ゲスト削除時は関連するチェックイン記録も削除（CASCADE）
 - チェックイン時刻 ≤ チェックアウト時刻の制約
 - 同一ゲストで isActive=TRUE のレコードは最大 1 件
+- ActivityLog: timeslotStart の分は 0 または 30 のみ許容（バリデーション）
+- ActivityLog: description 1–100 文字 / 空白のみ無効
+- ActivityLog: OTHER でも description 必須（他カテゴリも必須）
 
 ## 4. パフォーマンス考慮事項
 
@@ -219,6 +285,22 @@ ORDER BY name;
 3. **入退場履歴検索**（`checkinAt` 範囲検索。`checkinAt` インデックス未定義のため追加予定）
 
 4. **学年別現在滞在者集計 (将来予定)**
+5. **活動ログ入力/上書き検証**（`guestId` + `timeslotStart` 取得 → 存在すれば UPDATE）
+
+```sql
+SELECT id FROM ActivityLog
+WHERE guestId = $1 AND timeslotStart = $2;
+```
+
+6. **活動ログ日次集計 (将来)**
+
+```sql
+SELECT category, COUNT(*)
+FROM ActivityLog
+WHERE DATE(timeslotStart) = CURRENT_DATE
+GROUP BY category
+ORDER BY COUNT(*) DESC;
+```
 
 ```sql
 SELECT grade, COUNT(*)
@@ -240,6 +322,9 @@ ORDER BY grade;
 | CheckinRecord | guestId,isActive                    | 重複チェックイン防止判定 |
 | CheckinRecord | checkinAt                           | 日次範囲集計             |
 | CheckinRecord | (部分)UNIQUE guestId WHERE isActive | アプリ側制約の DB 移行   |
+| ActivityLog   | (guestId, timeslotStart) UNIQUE     | 1 枠 1 レコード強制      |
+| ActivityLog   | timeslotStart                       | 日付/枠検索              |
+| ActivityLog   | category                            | カテゴリ集計             |
 
 ### 4.4. リスクと対応
 

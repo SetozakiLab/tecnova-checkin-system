@@ -356,6 +356,91 @@
 `DELETE /api/admin/guests/{id}`
 成功: 200 （チェックイン中は 409 CONFLICT）
 
+### 3.5. 活動ログ (Activity Log)
+
+MVP: 作成/更新（同一枠再送で上書き） + 削除のみ。一覧/検索は将来実装。
+
+#### 作成 / 更新
+
+`POST /api/admin/activity-logs`
+
+リクエスト（`timeslotStart` 省略時: サーバー側で現在時刻を直前 :00 / :30 に切り捨て）:
+
+```json
+{
+  "guestId": "guest-uuid",
+  "category": "VR_HMD",
+  "description": "初めてVR体験",
+  "timeslotStart": "2025-09-14T09:00:00+09:00"
+}
+```
+
+バリデーション:
+
+- guestId: UUID 必須（存在・チェックイン中推奨, MVP では在席未検証でも受理）
+- category: ActivityCategory Enum
+- description: 1–100 文字 / プレーンテキスト（空白のみ不可）
+- timeslotStart: 分=00 or 30, JST 想定（UTC 受領時はサーバー側で丸め）
+
+同一 (guestId, timeslotStart) が存在する場合は UPDATE として上書きし `updatedAt` 更新。
+
+レスポンス:
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "activity-log-uuid",
+    "guestId": "guest-uuid",
+    "timeslotStart": "2025-09-14T09:00:00+09:00",
+    "category": "VR_HMD",
+    "description": "初めてVR体験",
+    "createdByUserId": "user-uuid",
+    "createdAt": "2025-09-14T09:01:02+09:00",
+    "updatedAt": "2025-09-14T09:05:10+09:00"
+  },
+  "message": "活動ログを保存しました"
+}
+```
+
+エラー:
+
+- 400 VALIDATION_ERROR (形式, 分単位不正, 長さ不正)
+- 404 NOT_FOUND (guestId 不存在)
+
+#### 削除 (SUPER のみ)
+
+`DELETE /api/admin/activity-logs/{id}`
+
+成功:
+
+```json
+{ "success": true, "message": "活動ログを削除しました" }
+```
+
+エラー: 403 FORBIDDEN (MANAGER), 404 NOT_FOUND
+
+#### Enum: ActivityCategory
+
+| 値              | 表示            |
+| --------------- | --------------- |
+| VR_HMD          | VR（HMD）       |
+| DRONE           | ドローン        |
+| PRINTER_3D      | 3D プリンタ     |
+| PEPPER          | ペッパー        |
+| LEGO            | レゴ            |
+| MBOT2           | mBot2           |
+| LITTLE_BITS     | little Bits     |
+| MESH            | MESH            |
+| TOIO            | toio            |
+| MINECRAFT       | マインクラフト  |
+| UNITY           | Unity           |
+| BLENDER         | Blender         |
+| DAVINCI_RESOLVE | DaVinci Resolve |
+| OTHER           | その他          |
+
+備考: OTHER でも description 必須（他カテゴリも必須）。
+
 ### 3.5. 管理ユーザー一覧 (補助)
 
 `GET /api/admin/users`
@@ -451,6 +536,7 @@
 | エラー              | NOT_CHECKED_IN 等のみ                    | BAD_REQUEST/METHOD_NOT_ALLOWED 追加    | 共通化                  |
 | 学年フィールド      | 未記載                                   | 追加 (任意: grade)                     | null 可                 |
 | users API           | 未記載                                   | /api/admin/users 追加                  | ログイン補助            |
+| 活動ログ API        | 未記載                                   | 作成/更新/削除 (一覧未実装)            | 30 分枠/カテゴリ選択    |
 
 ---
 
