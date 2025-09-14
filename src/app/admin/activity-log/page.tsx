@@ -83,6 +83,70 @@ export default function ActivityLogPage() {
     return arr;
   }, []);
 
+  // 現在スロット (今日のみ) 例: 14:05 => 14:00, 14:35 => 14:30
+  const currentSlot = useMemo(() => {
+    if (!isToday) return null;
+    const now = new Date();
+    const h = String(now.getHours()).padStart(2, "0");
+    const m = now.getMinutes() < 30 ? "00" : "30";
+    return `${h}:${m}`;
+  }, [isToday]);
+
+  // ゲスト滞在スロット集合を事前計算 (guestId -> Set(slot))
+  const guestPresenceMap = useMemo(() => {
+    const map = new Map<string, Set<string>>();
+    for (const g of currentGuests) {
+      if (!g.checkinAt) continue;
+      const start = new Date(g.checkinAt);
+      const end = g.checkoutAt
+        ? new Date(g.checkoutAt)
+        : isToday
+        ? new Date()
+        : new Date(g.checkinAt); // 過去日でcheckoutAt無いケースは同一スロットのみ
+      const slots = new Set<string>();
+      const cursor = new Date(start);
+      // 30分刻みで end まで
+      while (cursor <= end) {
+        const hh = String(cursor.getHours()).padStart(2, "0");
+        const slot = `${hh}:${cursor.getMinutes() < 30 ? "00" : "30"}`;
+        if (timeSlots.includes(slot)) slots.add(slot);
+        // 30分進める
+        cursor.setMinutes(cursor.getMinutes() + 30);
+      }
+      map.set(g.guestId, slots);
+    }
+    return map;
+  }, [currentGuests, timeSlots, isToday]);
+
+  // ログ存在スロット集合 (guestId -> Set(slot))
+  const guestLoggedSlots = useMemo(() => {
+    const map = new Map<string, Set<string>>();
+    for (const l of logs) {
+      const d = new Date(l.timeslotStart);
+      const hh = String(d.getHours()).padStart(2, "0");
+      const mm = String(d.getMinutes()).padStart(2, "0");
+      const slot = `${hh}:${mm}`;
+      if (!map.has(l.guestId)) map.set(l.guestId, new Set());
+      map.get(l.guestId)!.add(slot);
+    }
+    return map;
+  }, [logs]);
+
+  // セル装飾クラス取得
+  function getCellStateClasses(guestId: string, slot: string, hasLog: boolean) {
+    const presence = guestPresenceMap.get(guestId);
+    const logged = guestLoggedSlots.get(guestId);
+    const isCurrent = currentSlot === slot;
+    const isPresent = presence?.has(slot);
+    const isLogged = logged?.has(slot) || hasLog;
+    // 優先度: 現在スロット(枠) > 未記録滞在枠 > 滞在枠 > デフォルト
+    if (isCurrent) return "bg-sky-100 dark:bg-sky-900/30";
+    if (isPresent && !isLogged)
+      return "bg-warning/30 dark:bg-warning/20 animate-pulse";
+    if (isPresent) return "bg-primary/5";
+    return "";
+  }
+
   // 以前の fetchData/useEffect は SWR フックで置換
 
   function openNew(slot: string, guestId: string) {
@@ -293,6 +357,11 @@ export default function ActivityLogPage() {
                             const log = findLog(g.guestId, slot);
                             const cats = (log?.categories ||
                               []) as (keyof typeof activityCategoryLabels)[];
+                            const stateClasses = getCellStateClasses(
+                              g.guestId,
+                              slot,
+                              !!log
+                            );
                             return (
                               <button
                                 key={g.guestId + slot}
@@ -303,7 +372,7 @@ export default function ActivityLogPage() {
                                     : openNew(slot, g.guestId))
                                 }
                                 disabled={!isToday}
-                                className={`relative text-left min-h-[46px] sm:min-h-[54px] border-l first:border-l-0 px-2 py-1.5 focus:outline-none focus-visible:ring-2 ring-offset-2 ring-primary/40 transition-colors w-[190px] ${
+                                className={`relative text-left min-h-[46px] sm:min-h-[54px] border-l first:border-l-0 px-2 py-1.5 focus:outline-none focus-visible:ring-2 ring-offset-2 ring-primary/40 transition-colors w-[190px] ${stateClasses} ${
                                   isToday
                                     ? "hover:bg-accent/30 cursor-pointer"
                                     : "opacity-60 cursor-not-allowed"

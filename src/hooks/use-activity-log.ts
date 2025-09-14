@@ -15,6 +15,9 @@ interface GuestColumn {
   name?: string;
   displayId?: number;
   grade?: string | null;
+  checkinAt?: string | null;
+  checkoutAt?: string | null;
+  isActive?: boolean;
 }
 
 interface UseActivityLogResult {

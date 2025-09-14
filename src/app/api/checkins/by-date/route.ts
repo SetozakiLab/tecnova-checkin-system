@@ -20,6 +20,9 @@ export const GET = withApiHandler(
         name: r.guestName,
         displayId: r.guestDisplayId,
         grade: r.guestGrade ?? null,
+        checkinAt: r.checkinAt,
+        checkoutAt: r.checkoutAt,
+        isActive: r.isActive,
       }))
     );
   },
