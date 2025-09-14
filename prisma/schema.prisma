@@ -31,15 +31,39 @@ enum Role {
   MANAGER
 }
 
+// 活動カテゴリ（活動ログ用）
+enum ActivityCategory {
+  STUDY
+  MEETING
+  EVENT
+  PROJECT
+  OTHER
+}
+
+model ActivityLog {
+  id            String           @id @default(cuid())
+  guest         Guest            @relation(fields: [guestId], references: [id])
+  guestId       String
+  category      ActivityCategory
+  description   String           @db.VarChar(100)
+  timeslotStart DateTime // JSTで30分単位にfloorされた開始時刻
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  @@unique([guestId, timeslotStart])
+  @@index([timeslotStart])
+}
+
 model Guest {
-  id        String          @id @default(uuid())
-  displayId Int             @unique // アプリケーションロジックで生成
-  name      String
-  contact   String?
-  grade     Grade?
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @updatedAt
-  checkins  CheckinRecord[]
+  id           String          @id @default(uuid())
+  displayId    Int             @unique // アプリケーションロジックで生成
+  name         String
+  contact      String?
+  grade        Grade?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  checkins     CheckinRecord[]
+  activityLogs ActivityLog[]
 
   @@map("guests")
 }
