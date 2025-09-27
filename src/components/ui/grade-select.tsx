@@ -38,7 +38,6 @@ export function GradeSelect({
   value,
   onChange,
   disabled,
-  label = "学年（任意）",
   placeholder = "学年を選択",
   id,
   className,
@@ -53,7 +52,6 @@ export function GradeSelect({
 
   return (
     <div className={cn("space-y-2", className)}>
-      <Label htmlFor={compId}>{label}</Label>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button

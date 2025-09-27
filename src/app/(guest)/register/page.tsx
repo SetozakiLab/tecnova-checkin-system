@@ -307,7 +307,8 @@ export default function RegisterPage() {
             <CardContent className="flex flex-col gap-4 px-6 py-6 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <Link href="/" onClick={() => playClick()} className="block">
-                  <h1 className="text-3xl font-semibold text-slate-900">
+                  <h1 className="text-3xl font-semibold text-slate-900 flex items-center gap-2">
+                    <UserPlus className="h-8 w-8" aria-hidden />
                     新規登録
                   </h1>
                 </Link>
@@ -323,7 +324,7 @@ export default function RegisterPage() {
                     onClick={() => playClick()}
                   >
                     <ArrowLeft className="h-4 w-4" aria-hidden />
-                    入チェックアウトへ
+                    チェックアウトへ
                   </Button>
                 </Link>
                 <Link href="/" className="flex-1 sm:flex-none">

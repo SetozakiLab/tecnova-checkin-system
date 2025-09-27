@@ -18,7 +18,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { useGuestSoundEffects } from "@/hooks/use-guest-sound-effects";
 import { motion } from "motion/react";
-import { ArrowLeft, Home, ShieldCheck } from "lucide-react";
+import { ArrowLeft, BookOpenIcon, Home, ShieldCheck } from "lucide-react";
 
 export default function TermsPage() {
   const router = useRouter();
@@ -45,7 +45,8 @@ export default function TermsPage() {
             <CardContent className="flex flex-col gap-4 px-6 py-6 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <Link href="/" onClick={() => playClick()} className="block">
-                  <h1 className="text-3xl font-semibold text-slate-900">
+                  <h1 className="text-3xl font-semibold text-slate-900 flex items-center gap-2">
+                    <BookOpenIcon className="h-8 w-8" aria-hidden />
                     利用規約
                   </h1>
                 </Link>

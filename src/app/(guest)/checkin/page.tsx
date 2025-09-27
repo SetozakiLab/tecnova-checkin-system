@@ -10,7 +10,7 @@ import { useGuestSoundEffects } from "@/hooks/use-guest-sound-effects";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "motion/react";
-import { ArrowLeft, Home, Users } from "lucide-react";
+import { ArrowLeft, DoorOpen, Home, Users } from "lucide-react";
 
 export default function CheckinPage() {
   const [selectedGuest, setSelectedGuest] = useState<GuestData | null>(null);
@@ -35,7 +35,8 @@ export default function CheckinPage() {
             <CardContent className="flex flex-col gap-4 px-6 py-6 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <Link href="/" onClick={() => playClick()} className="block">
-                  <h1 className="text-3xl font-semibold text-slate-900">
+                  <h1 className="text-3xl font-semibold text-slate-900 flex items-center gap-2">
+                    <DoorOpen className="h-8 w-8" aria-hidden />
                     チェックイン
                   </h1>
                 </Link>

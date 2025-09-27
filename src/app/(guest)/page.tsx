@@ -28,7 +28,7 @@ export default function GuestHomePage() {
       <Card className="border-slate-200 shadow-sm">
         <CardContent className="flex flex-col gap-6 px-6 py-8 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-3">
-            <Badge variant="secondary" className="w-fit text-slate-600">
+            <Badge variant="info" className="w-fit text-slate-600">
               はじめに
             </Badge>
             <div className="space-y-1">

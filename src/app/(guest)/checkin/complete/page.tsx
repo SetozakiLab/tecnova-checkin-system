@@ -22,6 +22,7 @@ import {
   LogOut,
   ArrowLeft,
   UserCircle2,
+  CheckCircle2Icon,
 } from "lucide-react";
 
 function CheckinCompleteContent() {
@@ -140,7 +141,8 @@ function CheckinCompleteContent() {
             <CardContent className="flex flex-col gap-4 px-6 py-6 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <Link href="/" onClick={() => playClick()} className="block">
-                  <h1 className="text-3xl font-semibold text-slate-900">
+                  <h1 className="text-3xl font-semibold text-slate-900 flex items-center gap-2">
+                    <CheckCircle2Icon className="h-8 w-8" aria-hidden />
                     {isCheckin ? "チェックイン完了" : "チェックアウト完了"}
                   </h1>
                 </Link>

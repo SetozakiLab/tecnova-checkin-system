@@ -32,6 +32,7 @@ import {
   Search,
   Users,
   ClipboardCheck,
+  DoorClosed,
 } from "lucide-react";
 import { useGuestSoundEffects } from "@/hooks/use-guest-sound-effects";
 import { motion, AnimatePresence } from "motion/react";
@@ -120,7 +121,8 @@ export default function CheckoutPage() {
             <CardContent className="flex flex-col gap-4 px-6 py-6 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <Link href="/" onClick={() => playClick()} className="block">
-                  <h1 className="text-3xl font-semibold text-slate-900">
+                  <h1 className="text-3xl font-semibold text-slate-900 flex items-center gap-2">
+                    <DoorClosed className="h-8 w-8" aria-hidden />
                     チェックアウト
                   </h1>
                 </Link>
