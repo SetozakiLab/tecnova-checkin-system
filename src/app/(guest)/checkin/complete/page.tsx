@@ -71,13 +71,13 @@ function CheckinCompleteContent() {
     }
   }, [guest, loading, error, successSoundPlayed, playSuccess]);
 
-  // 10秒後に自動でホームに戻る
+  // 30秒後に自動でホームに戻る
   useEffect(() => {
     const timer = setTimeout(() => {
       if (typeof window !== "undefined") {
         window.location.href = "/";
       }
-    }, 10000);
+    }, 30000);
 
     return () => clearTimeout(timer);
   }, []);
@@ -304,7 +304,7 @@ function CheckinCompleteContent() {
 
           <div className="flex items-center justify-center gap-2 text-sm text-slate-500">
             <Clock className="h-4 w-4" aria-hidden />
-            10秒後に自動的にホームへ遷移します
+            30秒後に自動的にホームへ遷移します
           </div>
         </motion.section>
       </div>
