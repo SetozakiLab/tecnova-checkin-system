@@ -228,7 +228,11 @@ function CheckinCompleteContent() {
                     <p className="text-xs font-medium uppercase tracking-[0.1em] text-slate-500">
                       ステータス
                     </p>
-                    <p className="mt-2 text-base font-medium text-slate-800">
+                    <p
+                      className={`mt-2 text-base font-medium ${
+                        isCheckin ? "text-emerald-600" : "text-red-600"
+                      }`}
+                    >
                       {isCheckin ? "滞在中" : "退場済み"}
                     </p>
                   </div>
