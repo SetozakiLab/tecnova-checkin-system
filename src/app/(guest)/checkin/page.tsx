@@ -4,7 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { GuestSearch } from "@/components/features/checkin/guest-search";
 import { CheckinActions } from "@/components/features/checkin/checkin-actions";
-import { ErrorState } from "@/components/shared/error-state";
 import { GuestData } from "@/types/api";
 import { useGuestSoundEffects } from "@/hooks/use-guest-sound-effects";
 import { Button } from "@/components/ui/button";
@@ -14,17 +13,15 @@ import { ArrowLeft, DoorOpen, Home, Users } from "lucide-react";
 
 export default function CheckinPage() {
   const [selectedGuest, setSelectedGuest] = useState<GuestData | null>(null);
-  const [error, setError] = useState("");
   const { playClick } = useGuestSoundEffects();
 
   const handleGuestSelect = (guest: GuestData) => {
     setSelectedGuest(guest);
-    setError("");
   };
 
   return (
     <div className="flex flex-1 flex-col">
-      <div className="mx-auto flex-1 px-4 py-10 md:w-full md:max-w-3xl md:px-6">
+      <div className="mx-auto flex-1 px-3 py-10 sm:px-4 md:w-full md:max-w-5xl lg:max-w-6xl lg:px-6">
         <motion.section
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -72,37 +69,39 @@ export default function CheckinPage() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1, duration: 0.4, ease: "easeOut" }}
-            className="flex flex-col gap-6"
+            className="flex flex-col gap-6 lg:flex-row lg:items-start"
           >
-            <GuestSearch onGuestSelect={handleGuestSelect} />
-
-            {error && (
-              <motion.div
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.25 }}
-              >
-                <ErrorState message={error} />
-              </motion.div>
-            )}
-
-            {selectedGuest ? (
-              <motion.div
-                key={selectedGuest.id}
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <CheckinActions guest={selectedGuest} />
-              </motion.div>
-            ) : (
-              <Card className="border-dashed border-slate-200 bg-white/80 shadow-none">
-                <CardContent className="flex items-center gap-3 px-6 py-8 text-slate-600">
-                  <Users className="h-5 w-5" aria-hidden />
-                  ゲストを検索して選択すると、ここに手続き内容が表示されます。
-                </CardContent>
-              </Card>
-            )}
+            <div className="w-full lg:basis-[58%] lg:pr-4 xl:basis-[60%]">
+              <div className="lg:sticky lg:top-6">
+                <GuestSearch onGuestSelect={handleGuestSelect} />
+              </div>
+            </div>
+            <div className="flex-1 space-y-4 lg:basis-[42%]">
+              {selectedGuest ? (
+                <motion.div
+                  key={selectedGuest.id}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <CheckinActions guest={selectedGuest} />
+                </motion.div>
+              ) : (
+                <Card className="border-dashed border-slate-200 bg-white/80 shadow-none">
+                  <CardContent className="flex flex-col items-center gap-3 px-6 py-10 text-center text-slate-600">
+                    <Users className="h-6 w-6" aria-hidden />
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium text-slate-700">
+                        左側の検索からゲストを選択してください
+                      </p>
+                      <p className="text-xs text-slate-500">
+                        選択したゲストのチェックイン手続きがここに表示されます。
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
           </motion.div>
 
           <div className="flex justify-center pt-2">

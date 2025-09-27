@@ -35,6 +35,7 @@ export function GuestSearch({ onGuestSelect }: GuestSearchProps) {
   const { playClick } = useGuestSoundEffects();
 
   const [searchError, setSearchError] = useState("");
+  const [hasSearched, setHasSearched] = useState(false);
 
   // 検索結果が1件の場合に自動的に親コンポーネントに通知
   useEffect(() => {
@@ -50,8 +51,15 @@ export function GuestSearch({ onGuestSelect }: GuestSearchProps) {
     }
     setSearchError("");
     playClick();
+    setHasSearched(true);
     await handleSearch();
   };
+
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setHasSearched(false);
+    }
+  }, [searchQuery]);
 
   return (
     <Card className="border-slate-200 shadow-sm">
@@ -68,7 +76,7 @@ export function GuestSearch({ onGuestSelect }: GuestSearchProps) {
           IDまたは名前で検索してください
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-5">
+      <CardContent className="flex flex-col gap-5 lg:max-h-[620px]">
         <div>
           <Label htmlFor="search" className="text-sm font-medium">
             検索キーワード
@@ -96,68 +104,96 @@ export function GuestSearch({ onGuestSelect }: GuestSearchProps) {
           <ErrorState message={error || searchError} />
         )}
 
-        {searchResults.length > 1 && (
-          <div className="space-y-3">
-            <Label className="text-sm font-medium text-slate-600">
-              検索結果
-            </Label>
-            {searchResults.map((guest) => (
-              <Card
-                key={guest.id}
-                className={`cursor-pointer border-slate-200 transition-colors ${
-                  selectedGuest?.id === guest.id
-                    ? "bg-slate-100"
-                    : "hover:bg-slate-50"
-                }`}
-                onClick={() => {
-                  playClick();
-                  setSelectedGuest(guest);
-                  onGuestSelect(guest);
-                }}
-              >
-                <CardContent className="flex items-center justify-between gap-4 p-4">
-                  <div>
-                    <p className="font-medium text-slate-900">{guest.name}</p>
-                    <p className="text-sm text-slate-600">
-                      ID: {guest.displayId}
-                    </p>
-                  </div>
-                  {selectedGuest?.id === guest.id && (
-                    <Badge
-                      variant="secondary"
-                      className="flex items-center gap-1 text-slate-700"
-                    >
-                      <Check className="h-3 w-3" aria-hidden />
-                      選択中
-                    </Badge>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-
-        {searchResults.length === 1 && (
-          <Card className="border-slate-200 bg-slate-100">
-            <CardContent className="flex items-center justify-between gap-4 p-4">
-              <div>
-                <p className="font-medium text-slate-900">
-                  {searchResults[0].name}
-                </p>
-                <p className="text-sm text-slate-600">
-                  ID: {searchResults[0].displayId}
-                </p>
+        <div className="flex-1 space-y-3 lg:max-h-[440px] lg:overflow-y-auto lg:pr-1">
+          {searchResults.length > 1 && (
+            <div className="space-y-3">
+              <Label className="text-sm font-medium text-slate-600">
+                検索結果
+              </Label>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {searchResults.map((guest) => (
+                  <Card
+                    key={guest.id}
+                    className={`h-full cursor-pointer border-slate-200 transition-all ${
+                      selectedGuest?.id === guest.id
+                        ? "border-slate-400 bg-slate-100 shadow-sm"
+                        : "hover:border-slate-300 hover:bg-slate-50"
+                    }`}
+                    onClick={() => {
+                      playClick();
+                      setSelectedGuest(guest);
+                      onGuestSelect(guest);
+                    }}
+                  >
+                    <CardContent className="flex h-full flex-col justify-between gap-3 p-4">
+                      <div>
+                        <p className="font-medium text-slate-900">
+                          {guest.name}
+                        </p>
+                        <p className="text-sm text-slate-600">
+                          ID: {guest.displayId}
+                        </p>
+                      </div>
+                      {selectedGuest?.id === guest.id && (
+                        <Badge
+                          variant="secondary"
+                          className="flex items-center gap-1 text-slate-700"
+                        >
+                          <Check className="h-3 w-3" aria-hidden />
+                          選択中
+                        </Badge>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
-              <Badge
-                variant="secondary"
-                className="flex items-center gap-1 text-slate-700"
-              >
-                <Check className="h-3 w-3" aria-hidden />
-                選択中
-              </Badge>
-            </CardContent>
-          </Card>
-        )}
+            </div>
+          )}
+
+          {searchResults.length === 1 && (
+            <Card className="border-slate-200 bg-slate-100">
+              <CardContent className="flex items-center justify-between gap-4 p-4">
+                <div>
+                  <p className="font-medium text-slate-900">
+                    {searchResults[0].name}
+                  </p>
+                  <p className="text-sm text-slate-600">
+                    ID: {searchResults[0].displayId}
+                  </p>
+                </div>
+                <Badge
+                  variant="secondary"
+                  className="flex items-center gap-1 text-slate-700"
+                >
+                  <Check className="h-3 w-3" aria-hidden />
+                  選択中
+                </Badge>
+              </CardContent>
+            </Card>
+          )}
+
+          {hasSearched && !loading && searchResults.length === 0 && (
+            <Card className="border-dashed border-slate-200 bg-white">
+              <CardContent className="space-y-2 p-4 text-sm text-slate-600">
+                <p>条件に一致するゲストが見つかりませんでした。</p>
+                <p className="text-xs text-slate-500">
+                  スペースや全角・半角の揺れがないかご確認ください。
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
+          {!hasSearched && searchResults.length === 0 && (
+            <Card className="border-dashed border-slate-200 bg-slate-50">
+              <CardContent className="space-y-2 p-4 text-sm text-slate-600">
+                <p>ゲストを検索すると結果がここに表示されます。</p>
+                <p className="text-xs text-slate-500">
+                  ID、氏名の一部でも検索できます。
+                </p>
+              </CardContent>
+            </Card>
+          )}
+        </div>
       </CardContent>
     </Card>
   );
