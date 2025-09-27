@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { DatePicker } from "@/components/ui/date-picker";
 
 interface SearchFilterProps {
   onSearch: (filters: SearchFilters) => void;
@@ -37,21 +38,19 @@ export function SearchFilter({ onSearch, loading = false }: SearchFilterProps) {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
             <Label htmlFor="startDate">開始日</Label>
-            <Input
+            <DatePicker
               id="startDate"
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
+              value={startDate || undefined}
+              onChange={(value) => setStartDate(value ?? "")}
               disabled={loading}
             />
           </div>
           <div>
             <Label htmlFor="endDate">終了日</Label>
-            <Input
+            <DatePicker
               id="endDate"
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
+              value={endDate || undefined}
+              onChange={(value) => setEndDate(value ?? "")}
               disabled={loading}
             />
           </div>

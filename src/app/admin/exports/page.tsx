@@ -40,6 +40,7 @@ import type {
   GradeValue,
 } from "@/types/api";
 import { Loader2 } from "lucide-react";
+import { DatePicker } from "@/components/ui/date-picker";
 
 function toDateInputValue(base: Date): string {
   const date = new Date(base);
@@ -332,24 +333,22 @@ export default function AdminExportsPage() {
               <div className="mt-3 grid gap-4 sm:grid-cols-2">
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="activity-start">開始日</Label>
-                  <Input
+                  <DatePicker
                     id="activity-start"
-                    type="date"
-                    value={activityStartDate}
-                    max={activityEndDate}
-                    onChange={(event) =>
-                      setActivityStartDate(event.target.value)
-                    }
+                    value={activityStartDate || undefined}
+                    max={activityEndDate || undefined}
+                    onChange={(next) => setActivityStartDate(next ?? "")}
+                    className="h-10"
                   />
                 </div>
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="activity-end">終了日</Label>
-                  <Input
+                  <DatePicker
                     id="activity-end"
-                    type="date"
-                    value={activityEndDate}
-                    min={activityStartDate}
-                    onChange={(event) => setActivityEndDate(event.target.value)}
+                    value={activityEndDate || undefined}
+                    min={activityStartDate || undefined}
+                    onChange={(next) => setActivityEndDate(next ?? "")}
+                    className="h-10"
                   />
                 </div>
               </div>
@@ -535,26 +534,22 @@ export default function AdminExportsPage() {
             <div className="grid gap-4 md:grid-cols-2">
               <div className="flex flex-col gap-2">
                 <Label htmlFor="guest-registered-start">登録日（開始）</Label>
-                <Input
+                <DatePicker
                   id="guest-registered-start"
-                  type="date"
-                  value={guestRegisteredStart}
+                  value={guestRegisteredStart || undefined}
                   max={guestRegisteredEnd || undefined}
-                  onChange={(event) =>
-                    setGuestRegisteredStart(event.target.value)
-                  }
+                  onChange={(next) => setGuestRegisteredStart(next ?? "")}
+                  className="h-10"
                 />
               </div>
               <div className="flex flex-col gap-2">
                 <Label htmlFor="guest-registered-end">登録日（終了）</Label>
-                <Input
+                <DatePicker
                   id="guest-registered-end"
-                  type="date"
-                  value={guestRegisteredEnd}
+                  value={guestRegisteredEnd || undefined}
                   min={guestRegisteredStart || undefined}
-                  onChange={(event) =>
-                    setGuestRegisteredEnd(event.target.value)
-                  }
+                  onChange={(next) => setGuestRegisteredEnd(next ?? "")}
+                  className="h-10"
                 />
               </div>
             </div>

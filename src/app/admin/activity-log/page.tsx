@@ -30,6 +30,7 @@ import {
 } from "@/domain/activity-category";
 import { formatJST } from "@/lib/timezone";
 import { downloadCsv } from "@/lib/csv";
+import { DatePicker } from "@/components/ui/date-picker";
 
 const categories = ACTIVITY_CATEGORIES;
 
@@ -295,11 +296,15 @@ export default function ActivityLogPage() {
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
-                <Input
-                  type="date"
+                <DatePicker
                   value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  className="h-8"
+                  onChange={(next) => {
+                    if (next) {
+                      setDate(next);
+                    }
+                  }}
+                  clearable={false}
+                  className="h-8 w-[140px]"
                 />
                 <Button
                   type="button"
