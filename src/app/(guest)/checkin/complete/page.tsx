@@ -189,15 +189,18 @@ function CheckinCompleteContent() {
                     initial={{ scale: 0.9, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ duration: 0.35, delay: 0.1 }}
-                    className="flex h-16 w-16 items-center justify-center rounded-full border border-slate-300 bg-white"
+                    className="flex h-16 w-16 items-center justify-center rounded-full border border-emerald-200 bg-emerald-50"
                   >
                     {isCheckin ? (
                       <CheckCircle2
-                        className="h-9 w-9 text-slate-800"
+                        className="h-9 w-9 text-emerald-600"
                         aria-hidden
                       />
                     ) : (
-                      <LogOut className="h-9 w-9 text-slate-800" aria-hidden />
+                      <LogOut
+                        className="h-9 w-9 text-emerald-600"
+                        aria-hidden
+                      />
                     )}
                   </motion.span>
                   <div className="space-y-2">

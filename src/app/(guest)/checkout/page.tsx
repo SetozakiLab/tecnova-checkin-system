@@ -252,8 +252,8 @@ export default function CheckoutPage() {
                               </p>
                             </div>
                             <Button
-                              variant="outline"
-                              className="w-full justify-center gap-2 border-slate-300 text-slate-700 hover:bg-slate-100 sm:w-auto"
+                              variant="destructive"
+                              className="w-full justify-center gap-2 sm:w-auto"
                               onClick={() => openConfirm(r)}
                               disabled={loading}
                             >
@@ -312,7 +312,7 @@ export default function CheckoutPage() {
               キャンセル
             </Button>
             <Button
-              className="bg-slate-900 hover:bg-slate-800"
+              variant="destructive"
               onClick={confirmCheckout}
               disabled={loading}
             >

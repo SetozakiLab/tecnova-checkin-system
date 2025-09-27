@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
 import { useGuestSoundEffects } from "@/hooks/use-guest-sound-effects";
 
 export default function GuestHomePage() {
@@ -50,6 +51,7 @@ export default function GuestHomePage() {
             description: "利用前に必ず規約をご確認ください。",
             href: "/terms",
             icon: UserPlus,
+            iconWrapperClass: "border-blue-200 bg-blue-50 text-blue-700",
             buttonLabel: "利用規約を見る",
           },
           {
@@ -57,6 +59,8 @@ export default function GuestHomePage() {
             description: "施設に入場するときはこちら。",
             href: "/checkin",
             icon: DoorOpen,
+            iconWrapperClass:
+              "border-emerald-200 bg-emerald-50 text-emerald-700",
             buttonLabel: "入場手続きを行う",
           },
           {
@@ -64,10 +68,21 @@ export default function GuestHomePage() {
             description: "お帰りの際はこちらから。",
             href: "/checkout",
             icon: DoorClosed,
+            iconWrapperClass: "border-amber-200 bg-amber-50 text-amber-700",
             buttonLabel: "退場手続きを行う",
           },
         ].map(
-          ({ title, description, href, icon: Icon, buttonLabel }, index) => (
+          (
+            {
+              title,
+              description,
+              href,
+              icon: Icon,
+              iconWrapperClass,
+              buttonLabel,
+            },
+            index
+          ) => (
             <motion.div
               key={title}
               initial={{ opacity: 0, y: 16 }}
@@ -80,8 +95,13 @@ export default function GuestHomePage() {
             >
               <Card className="h-full border-slate-200 shadow-sm">
                 <CardHeader className="space-y-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-slate-200 bg-white">
-                    <Icon className="h-5 w-5 text-slate-800" aria-hidden />
+                  <div
+                    className={cn(
+                      "flex h-12 w-12 items-center justify-center rounded-lg border",
+                      iconWrapperClass
+                    )}
+                  >
+                    <Icon className="h-5 w-5" aria-hidden />
                   </div>
                   <div className="space-y-2">
                     <CardTitle className="text-xl font-semibold text-slate-900">
