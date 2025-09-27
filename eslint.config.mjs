@@ -50,7 +50,7 @@ export default [
       "react-hooks/exhaustive-deps": "warn",
       // TypeScript specific tuning
       "@typescript-eslint/explicit-function-return-type": "off",
-      "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/no-explicit-any": "off",
     },
   },
   {
