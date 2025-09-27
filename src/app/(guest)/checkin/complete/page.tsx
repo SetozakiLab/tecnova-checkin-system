@@ -4,9 +4,25 @@ import { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { ApiResponse, GuestData } from "@/types/api";
 import { useGuestSoundEffects } from "@/hooks/use-guest-sound-effects";
+import { Badge } from "@/components/ui/badge";
+import { motion } from "motion/react";
+import {
+  CheckCircle2,
+  Clock,
+  Home,
+  LogOut,
+  ArrowLeft,
+  UserCircle2,
+} from "lucide-react";
 
 function CheckinCompleteContent() {
   const searchParams = useSearchParams();
@@ -67,10 +83,12 @@ function CheckinCompleteContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-lg">読み込み中...</p>
+      <div className="flex flex-1 flex-col">
+        <div className="flex flex-1 items-center justify-center px-4 py-20">
+          <div className="flex flex-col items-center gap-4 text-slate-600">
+            <div className="h-12 w-12 animate-spin rounded-full border-2 border-slate-300 border-t-slate-600" />
+            <p className="text-sm">読み込み中...</p>
+          </div>
         </div>
       </div>
     );
@@ -78,20 +96,31 @@ function CheckinCompleteContent() {
 
   if (error || !guest) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-red-50 to-pink-100 flex items-center justify-center p-4">
-        <Card className="max-w-md">
-          <CardHeader>
-            <CardTitle className="text-center text-red-700">エラー</CardTitle>
-          </CardHeader>
-          <CardContent className="text-center">
-            <p className="mb-4">{error}</p>
-            <Link href="/">
-              <Button variant="outline" onClick={() => playClick()}>
-                ホームに戻る
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
+      <div className="flex flex-1 flex-col">
+        <div className="mx-auto flex-1 px-4 py-10 md:max-w-md md:px-6">
+          <Card className="border-slate-200 shadow-sm">
+            <CardHeader className="text-center">
+              <CardTitle className="text-lg font-semibold text-slate-900">
+                エラーが発生しました
+              </CardTitle>
+              <CardDescription className="text-sm text-slate-500">
+                {error || "ゲスト情報の取得に失敗しました"}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex justify-center">
+              <Link href="/">
+                <Button
+                  variant="ghost"
+                  className="gap-2 text-slate-600"
+                  onClick={() => playClick()}
+                >
+                  <Home className="h-4 w-4" aria-hidden />
+                  ホームに戻る
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }
@@ -99,138 +128,183 @@ function CheckinCompleteContent() {
   const isCheckin = type === "checkin";
 
   return (
-    <div
-      className={`min-h-screen ${
-        isCheckin
-          ? "bg-gradient-to-br from-green-50 to-emerald-100"
-          : "bg-gradient-to-br from-orange-50 to-yellow-100"
-      } flex items-center justify-center p-4`}
-    >
-      <div className="max-w-2xl w-full">
-        {/* 成功メッセージ */}
-        <div className="text-center mb-8">
-          <div
-            className={`w-24 h-24 ${
-              isCheckin ? "bg-green-500" : "bg-orange-500"
-            } rounded-full flex items-center justify-center mx-auto mb-6`}
-          >
-            <span className="text-4xl text-white">
-              {isCheckin ? "🏠" : "👋"}
-            </span>
-          </div>
-          <h1
-            className={`text-5xl font-bold mb-4 ${
-              isCheckin ? "text-green-800" : "text-orange-800"
-            }`}
-          >
-            {isCheckin ? "いらっしゃいませ！" : "お疲れ様でした！"}
-          </h1>
-          <p
-            className={`text-2xl ${
-              isCheckin ? "text-green-700" : "text-orange-700"
-            }`}
-          >
-            {guest.name} さん
-          </p>
-        </div>
+    <div className="flex flex-1 flex-col">
+      <div className="mx-auto flex-1 px-4 py-10 md:max-w-3xl md:px-6">
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+          className="flex h-full flex-col gap-8"
+        >
+          <Card className="border-slate-200 shadow-sm">
+            <CardContent className="flex flex-col gap-4 px-6 py-6 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <Link href="/" onClick={() => playClick()} className="block">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                    Tec-nova
+                  </p>
+                  <h1 className="text-3xl font-semibold text-slate-900">
+                    {isCheckin ? "チェックイン完了" : "チェックアウト完了"}
+                  </h1>
+                </Link>
+                <p className="mt-3 text-sm text-slate-600">
+                  {isCheckin
+                    ? "本日のご来場、ありがとうございます。"
+                    : "本日のご利用、ありがとうございました。"}
+                </p>
+              </div>
+              <div className="flex flex-col gap-2 sm:w-auto sm:flex-row">
+                <Link href="/checkin" className="flex-1 sm:flex-none">
+                  <Button
+                    variant="secondary"
+                    className="w-full min-w-[150px] justify-center gap-2 text-slate-700"
+                    onClick={() => playClick()}
+                  >
+                    <ArrowLeft className="h-4 w-4" aria-hidden />
+                    入退場画面へ
+                  </Button>
+                </Link>
+                <Link href="/" className="flex-1 sm:flex-none">
+                  <Button
+                    variant="ghost"
+                    className="w-full min-w-[150px] justify-center gap-2 text-slate-600"
+                    onClick={() => playClick()}
+                  >
+                    <Home className="h-4 w-4" aria-hidden />
+                    ホームへ戻る
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
 
-        <Card className="mb-8">
-          <CardContent className="pt-8">
-            <div className="text-center space-y-4">
-              {isCheckin ? (
-                <>
-                  <p className="text-xl text-green-800 font-semibold">
-                    チェックイン完了！
-                  </p>
-                  <p className="text-lg text-gray-700">
-                    今日も楽しく過ごしてくださいね！
-                  </p>
-                  <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-                    <p className="text-green-800">
-                      何か困ったことがあったら、
-                      <br />
-                      すぐにメンターに相談してください
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <Card className="border-slate-200 shadow-sm">
+              <CardContent className="flex flex-col gap-6 px-6 py-8">
+                <div className="flex flex-col items-center gap-4 text-center">
+                  <motion.span
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ duration: 0.35, delay: 0.1 }}
+                    className="flex h-16 w-16 items-center justify-center rounded-full border border-slate-300 bg-white"
+                  >
+                    {isCheckin ? (
+                      <CheckCircle2
+                        className="h-9 w-9 text-slate-800"
+                        aria-hidden
+                      />
+                    ) : (
+                      <LogOut className="h-9 w-9 text-slate-800" aria-hidden />
+                    )}
+                  </motion.span>
+                  <div className="space-y-2">
+                    <h2 className="text-2xl font-semibold text-slate-900">
+                      {guest.name} さん
+                    </h2>
+                    <p className="text-sm text-slate-600">
+                      {isCheckin
+                        ? "チェックインの手続きが完了しました。"
+                        : "チェックアウトの手続きが完了しました。"}
                     </p>
                   </div>
-                </>
-              ) : (
-                <>
-                  <p className="text-xl text-orange-800 font-semibold">
-                    チェックアウト完了！
-                  </p>
-                  <p className="text-lg text-gray-700">
-                    今日はありがとうございました！また遊びに来てくださいね！
-                  </p>
-                  <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
-                    <p className="text-orange-800">
-                      気をつけて帰ってください。
-                      <br />
-                      また待っています！
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                    <p className="text-xs font-medium uppercase tracking-[0.1em] text-slate-500">
+                      カード番号
+                    </p>
+                    <p className="mt-2 text-2xl font-semibold text-slate-900">
+                      {guest.displayId}
                     </p>
                   </div>
-                </>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                    <p className="text-xs font-medium uppercase tracking-[0.1em] text-slate-500">
+                      ステータス
+                    </p>
+                    <p className="mt-2 text-base font-medium text-slate-800">
+                      {isCheckin ? "滞在中" : "退場済み"}
+                    </p>
+                  </div>
+                </div>
 
-        {/* 次回へのメッセージ */}
-        <Card className="mb-8">
-          <CardContent className="pt-6">
-            <div className="text-center space-y-3">
-              <h3 className="text-lg font-semibold">次回からは簡単！</h3>
-              <div className="text-left space-y-2">
-                <div className="flex items-center space-x-3">
-                  <span className="flex-shrink-0 w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
-                    1
-                  </span>
-                  <p>
-                    あなたの番号 <strong>{guest.displayId}</strong> を
-                    覚えておいてください
+                <div className="rounded-xl border border-slate-200 bg-white p-4">
+                  <p className="text-sm text-slate-600">
+                    {isCheckin
+                      ? "施設内ではスタッフの指示に従い、安全にお過ごしください。"
+                      : "お気をつけてお帰りください。またのご利用をお待ちしています。"}
                   </p>
                 </div>
-                <div className="flex items-center space-x-3">
-                  <span className="flex-shrink-0 w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <Card className="border-slate-200 shadow-sm">
+            <CardContent className="flex flex-col gap-4 px-6 py-8">
+              <div className="flex items-center gap-3 text-slate-900">
+                <UserCircle2 className="h-5 w-5" aria-hidden />
+                <h3 className="text-base font-semibold">
+                  次回の利用をスムーズに
+                </h3>
+              </div>
+              <div className="space-y-3">
+                <div className="flex items-start gap-3">
+                  <Badge variant="outline" className="mt-1 text-slate-600">
+                    1
+                  </Badge>
+                  <p className="text-sm text-slate-600">
+                    あなたの番号{" "}
+                    <span className="font-medium text-slate-900">
+                      {guest.displayId}
+                    </span>{" "}
+                    を覚えておくと、次回の入退場がスムーズです。
+                  </p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Badge variant="outline" className="mt-1 text-slate-600">
                     2
-                  </span>
-                  <p>次回からは番号を入力するだけで 大丈夫です</p>
+                  </Badge>
+                  <p className="text-sm text-slate-600">
+                    次回からは番号を入力するだけで手続きを完了できます。
+                  </p>
                 </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        {/* ナビゲーション */}
-        <div className="flex gap-4">
-          <Link href="/" className="flex-1">
-            <Button
-              variant="outline"
-              size="lg"
-              className="w-full"
-              onClick={() => playClick()}
-            >
-              ホームに戻る
-            </Button>
-          </Link>
-          {isCheckin && (
-            <Link href="/checkin" className="flex-1">
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <Link href="/" className="flex-1">
               <Button
+                variant="outline"
                 size="lg"
-                className="w-full bg-orange-600 hover:bg-orange-700"
+                className="w-full"
                 onClick={() => playClick()}
               >
-                チェックアウトする場合
+                ホームに戻る
               </Button>
             </Link>
-          )}
-        </div>
+            {isCheckin && (
+              <Link href="/checkout" className="flex-1">
+                <Button
+                  size="lg"
+                  className="w-full bg-slate-900 hover:bg-slate-800"
+                  onClick={() => playClick()}
+                >
+                  退場手続きを行う
+                </Button>
+              </Link>
+            )}
+          </div>
 
-        {/* 自動的に戻る */}
-        <div className="text-center mt-6">
-          <p className="text-sm text-gray-500">
-            10秒後に自動的にホームに戻ります
-          </p>
-        </div>
+          <div className="flex items-center justify-center gap-2 text-sm text-slate-500">
+            <Clock className="h-4 w-4" aria-hidden />
+            10秒後に自動的にホームへ遷移します
+          </div>
+        </motion.section>
       </div>
     </div>
   );
@@ -238,10 +312,12 @@ function CheckinCompleteContent() {
 
 function LoadingFallback() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto mb-4"></div>
-        <p className="text-blue-700 text-lg">読み込み中...</p>
+    <div className="flex flex-1 flex-col">
+      <div className="flex flex-1 items-center justify-center px-4 py-20">
+        <div className="flex flex-col items-center gap-4 text-slate-600">
+          <div className="h-12 w-12 animate-spin rounded-full border-2 border-slate-300 border-t-slate-600" />
+          <p className="text-sm">読み込み中...</p>
+        </div>
       </div>
     </div>
   );

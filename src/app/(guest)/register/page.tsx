@@ -7,13 +7,22 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ApiResponse, GuestData, GradeValue } from "@/types/api";
 import { GradeSelect } from "@/components/ui/grade-select";
 import { useGuestSoundEffects } from "@/hooks/use-guest-sound-effects";
+import { motion } from "motion/react";
+import { ArrowLeft, Home, UserPlus, CheckCircle2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 const registerSchema = z.object({
   name: z
@@ -124,35 +133,49 @@ function RegisterForm({ soundEffects }: RegisterFormProps) {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-xl text-center">
+    <Card className="border-slate-200 shadow-sm">
+      <CardHeader className="text-center">
+        <div className="mb-2 flex justify-center">
+          <Badge variant="secondary" className="gap-1 text-slate-600">
+            <UserPlus className="h-3 w-3" aria-hidden />
+            新規登録
+          </Badge>
+        </div>
+        <CardTitle className="text-lg font-semibold text-slate-900">
           あなたの情報を教えてください
         </CardTitle>
+        <CardDescription className="text-sm text-slate-500">
+          入場時に必要な最低限の情報のみを入力してください
+        </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-6 pb-6 pt-2">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* エラーメッセージ */}
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <p className="text-red-700 text-center">{error}</p>
+            <div className="rounded-xl border border-rose-200 bg-rose-50 p-4">
+              <p className="text-center text-sm font-medium text-rose-700">
+                {error}
+              </p>
             </div>
           )}
 
           {/* 名前 */}
           <div className="space-y-2">
-            <Label htmlFor="name" className="text-lg">
-              お名前（ニックネーム） <span className="text-red-500">*</span>
+            <Label
+              htmlFor="name"
+              className="text-sm font-medium text-slate-700"
+            >
+              お名前（ニックネーム） <span className="text-rose-500">*</span>
             </Label>
             <Input
               id="name"
               {...register("name")}
               placeholder="テッくん"
-              className="text-lg p-4 h-12"
+              className="h-12 text-base"
               disabled={loading}
             />
             {errors.name && (
-              <p className="text-red-500 text-sm">{errors.name.message}</p>
+              <p className="text-sm text-rose-600">{errors.name.message}</p>
             )}
           </div>
 
@@ -177,8 +200,11 @@ function RegisterForm({ soundEffects }: RegisterFormProps) {
           </div> */}
           {/* 学年 */}
           <div className="space-y-2">
-            <Label htmlFor="grade" className="text-lg">
-              学年 <span className="text-red-500">*</span>
+            <Label
+              htmlFor="grade"
+              className="text-sm font-medium text-slate-700"
+            >
+              学年 <span className="text-rose-500">*</span>
             </Label>
             <GradeSelect
               value={watch("grade") as GradeValue | null | undefined}
@@ -189,7 +215,7 @@ function RegisterForm({ soundEffects }: RegisterFormProps) {
               disabled={loading}
             />
             {errors.grade && (
-              <p className="text-red-500 text-sm">{errors.grade.message}</p>
+              <p className="text-sm text-rose-600">{errors.grade.message}</p>
             )}
           </div>
 
@@ -209,7 +235,7 @@ function RegisterForm({ soundEffects }: RegisterFormProps) {
                   <Label htmlFor="acceptTerms" className="text-lg">
                     <Link
                       href="/terms"
-                      className="text-blue-600 hover:underline"
+                      className="text-slate-900 underline"
                       onClick={() => playClick()}
                     >
                       利用規約
@@ -219,7 +245,7 @@ function RegisterForm({ soundEffects }: RegisterFormProps) {
                 </div>
               </div>
               {errors.acceptTerms && (
-                <p className="text-red-500 text-sm">
+                <p className="text-sm text-rose-600">
                   {errors.acceptTerms.message}
                 </p>
               )}
@@ -227,13 +253,16 @@ function RegisterForm({ soundEffects }: RegisterFormProps) {
           )}
 
           {agreedFromTerms && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <p className="text-green-700 text-center">✓ 利用規約に同意済み</p>
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <p className="flex items-center justify-center gap-2 text-sm font-medium text-slate-700">
+                <CheckCircle2 className="h-4 w-4" aria-hidden />{" "}
+                利用規約に同意済み
+              </p>
             </div>
           )}
 
           {/* ボタン */}
-          <div className="flex gap-4 pt-4">
+          <div className="flex gap-3 pt-4">
             <Link href={agreedFromTerms ? "/terms" : "/"} className="flex-1">
               <Button
                 type="button"
@@ -249,7 +278,7 @@ function RegisterForm({ soundEffects }: RegisterFormProps) {
             <Button
               type="submit"
               size="lg"
-              className="flex-1 bg-green-600 hover:bg-green-700"
+              className="flex-1 bg-slate-900 hover:bg-slate-800"
               disabled={loading || !acceptTerms || !watch("grade")}
             >
               {loading ? "登録中..." : "登録する"}
@@ -266,24 +295,72 @@ export default function RegisterPage() {
   const { playClick } = soundEffects;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 p-4">
-      <div className="max-w-2xl mx-auto">
-        {/* ヘッダー */}
-        <div className="text-center mb-8">
-          <Link
-            href="/"
-            className="inline-block mb-4"
-            onClick={() => playClick()}
-          >
-            <h1 className="text-4xl font-bold text-emerald-900">tec-nova</h1>
-          </Link>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">新規登録</h2>
-          <p className="text-lg text-gray-600">初回利用者の情報登録</p>
-        </div>
+    <div className="flex flex-1 flex-col">
+      <div className="mx-auto flex-1 px-4 py-10 md:max-w-3xl md:px-6">
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+          className="flex h-full flex-col gap-8"
+        >
+          <Card className="border-slate-200 shadow-sm">
+            <CardContent className="flex flex-col gap-4 px-6 py-6 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <Link href="/" onClick={() => playClick()} className="block">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                    Tec-nova
+                  </p>
+                  <h1 className="text-3xl font-semibold text-slate-900">
+                    新規登録
+                  </h1>
+                </Link>
+                <p className="mt-3 text-sm text-slate-600">
+                  初めての方は、こちらから登録を完了してください。
+                </p>
+              </div>
+              <div className="flex flex-col gap-2 sm:w-auto sm:flex-row">
+                <Link href="/checkin" className="flex-1 sm:flex-none">
+                  <Button
+                    variant="secondary"
+                    className="w-full min-w-[150px] justify-center gap-2 text-slate-700"
+                    onClick={() => playClick()}
+                  >
+                    <ArrowLeft className="h-4 w-4" aria-hidden />
+                    入退場手続きへ
+                  </Button>
+                </Link>
+                <Link href="/" className="flex-1 sm:flex-none">
+                  <Button
+                    variant="ghost"
+                    className="w-full min-w-[150px] justify-center gap-2 text-slate-600"
+                    onClick={() => playClick()}
+                  >
+                    <Home className="h-4 w-4" aria-hidden />
+                    トップへ戻る
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
 
-        <Suspense fallback={<div>Loading...</div>}>
-          <RegisterForm soundEffects={soundEffects} />
-        </Suspense>
+          <Suspense
+            fallback={
+              <Card className="border-slate-200 shadow-sm">
+                <CardContent className="px-6 py-16 text-center text-sm text-slate-500">
+                  登録フォームを読み込んでいます...
+                </CardContent>
+              </Card>
+            }
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <RegisterForm soundEffects={soundEffects} />
+            </motion.div>
+          </Suspense>
+        </motion.section>
       </div>
     </div>
   );
