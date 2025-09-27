@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ApiResponse, GuestData, GradeValue } from "@/types/api";
 import { GradeSelect } from "@/components/ui/grade-select";
+import { useGuestSoundEffects } from "@/hooks/use-guest-sound-effects";
 
 const registerSchema = z.object({
   name: z
@@ -48,13 +49,18 @@ const registerSchema = z.object({
 
 type RegisterFormData = z.infer<typeof registerSchema>;
 
+type RegisterFormProps = {
+  soundEffects: ReturnType<typeof useGuestSoundEffects>;
+};
+
 // SearchParamsを使用するコンポーネントを分離
-function RegisterForm() {
+function RegisterForm({ soundEffects }: RegisterFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>("");
   const [agreedFromTerms, setAgreedFromTerms] = useState(false);
+  const { playClick, playSuccess } = soundEffects;
 
   const {
     register,
@@ -81,6 +87,7 @@ function RegisterForm() {
 
   const onSubmit = async (data: RegisterFormData) => {
     try {
+      playClick();
       setLoading(true);
       setError("");
 
@@ -104,6 +111,7 @@ function RegisterForm() {
       }
 
       // 登録後は自動チェックイン済みのため、チェックイン完了ページへ
+      playSuccess();
       router.push(`/checkin/complete?type=checkin&guestId=${result.data!.id}`);
     } catch (err) {
       console.error("Registration error:", err);
@@ -174,7 +182,10 @@ function RegisterForm() {
             </Label>
             <GradeSelect
               value={watch("grade") as GradeValue | null | undefined}
-              onChange={(v) => setValue("grade", v as any)}
+              onChange={(v) => {
+                if (!v) return;
+                setValue("grade", v);
+              }}
               disabled={loading}
             />
             {errors.grade && (
@@ -199,6 +210,7 @@ function RegisterForm() {
                     <Link
                       href="/terms"
                       className="text-blue-600 hover:underline"
+                      onClick={() => playClick()}
                     >
                       利用規約
                     </Link>
@@ -229,6 +241,7 @@ function RegisterForm() {
                 size="lg"
                 className="w-full"
                 disabled={loading}
+                onClick={() => playClick()}
               >
                 戻る
               </Button>
@@ -249,12 +262,19 @@ function RegisterForm() {
 }
 
 export default function RegisterPage() {
+  const soundEffects = useGuestSoundEffects();
+  const { playClick } = soundEffects;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 p-4">
       <div className="max-w-2xl mx-auto">
         {/* ヘッダー */}
         <div className="text-center mb-8">
-          <Link href="/" className="inline-block mb-4">
+          <Link
+            href="/"
+            className="inline-block mb-4"
+            onClick={() => playClick()}
+          >
             <h1 className="text-4xl font-bold text-emerald-900">tec-nova</h1>
           </Link>
           <h2 className="text-2xl font-bold text-gray-800 mb-2">新規登録</h2>
@@ -262,7 +282,7 @@ export default function RegisterPage() {
         </div>
 
         <Suspense fallback={<div>Loading...</div>}>
-          <RegisterForm />
+          <RegisterForm soundEffects={soundEffects} />
         </Suspense>
       </div>
     </div>

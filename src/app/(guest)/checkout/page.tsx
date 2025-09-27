@@ -26,6 +26,7 @@ import { ApiResponse, CheckinRecord, GuestData } from "@/types/api";
 import { useCheckinActions } from "@/hooks/use-checkin-actions";
 import { formatTime, formatStayDuration } from "@/lib/date-utils";
 import { LogOut } from "lucide-react";
+import { useGuestSoundEffects } from "@/hooks/use-guest-sound-effects";
 
 export default function CheckoutPage() {
   const { loading, handleCheckout } = useCheckinActions();
@@ -35,6 +36,7 @@ export default function CheckoutPage() {
   const [search, setSearch] = useState("");
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [selected, setSelected] = useState<CheckinRecord | null>(null);
+  const { playClick, playSuccess } = useGuestSoundEffects();
 
   const fetchCurrent = async () => {
     try {
@@ -69,12 +71,14 @@ export default function CheckoutPage() {
   }, [records, search]);
 
   const openConfirm = (record: CheckinRecord) => {
+    playClick();
     setSelected(record);
     setConfirmOpen(true);
   };
 
   const confirmCheckout = async () => {
     if (!selected) return;
+    playClick();
     const guest: GuestData = {
       id: selected.guestId,
       displayId: selected.guestDisplayId,
@@ -82,7 +86,14 @@ export default function CheckoutPage() {
       createdAt: new Date().toISOString(),
       isCurrentlyCheckedIn: true,
     };
-    await handleCheckout(guest);
+    try {
+      const success = await handleCheckout(guest);
+      if (success) {
+        playSuccess();
+      }
+    } catch (error) {
+      console.error("Checkout failed", error);
+    }
     setConfirmOpen(false);
     setSelected(null);
   };
@@ -92,7 +103,11 @@ export default function CheckoutPage() {
       <div className="w-full max-w-2xl">
         {/* ヘッダー */}
         <div className="text-center mb-8">
-          <Link href="/" className="inline-block mb-6">
+          <Link
+            href="/"
+            className="inline-block mb-6"
+            onClick={() => playClick()}
+          >
             <h1 className="text-4xl font-bold text-indigo-800">tec-nova</h1>
             <p className="text-lg text-indigo-600">入退場管理システム</p>
           </Link>
@@ -193,6 +208,7 @@ export default function CheckoutPage() {
           <Link
             href="/checkin"
             className="text-sm text-gray-500 hover:text-gray-700 underline"
+            onClick={() => playClick()}
           >
             入場手続きへ
           </Link>
@@ -219,7 +235,13 @@ export default function CheckoutPage() {
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setConfirmOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                playClick();
+                setConfirmOpen(false);
+              }}
+            >
               キャンセル
             </Button>
             <Button

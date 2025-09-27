@@ -10,13 +10,17 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { useGuestSoundEffects } from "@/hooks/use-guest-sound-effects";
 
 export default function TermsPage() {
   const router = useRouter();
   const [acceptTerms, setAcceptTerms] = useState(false);
+  const { playClick, playSuccess } = useGuestSoundEffects();
 
   const handleProceedToRegister = () => {
+    playClick();
     if (acceptTerms) {
+      playSuccess();
       router.push("/register?agreed=true");
     }
   };
@@ -25,7 +29,11 @@ export default function TermsPage() {
       <div className="max-w-4xl mx-auto">
         {/* ヘッダー */}
         <div className="text-center mb-8">
-          <Link href="/" className="inline-block mb-4">
+          <Link
+            href="/"
+            className="inline-block mb-4"
+            onClick={() => playClick()}
+          >
             <h1 className="text-4xl font-bold text-indigo-900">tec-nova</h1>
           </Link>
           <h2 className="text-2xl font-bold text-gray-800">利用規約</h2>
@@ -191,7 +199,7 @@ export default function TermsPage() {
           <Separator />
           <div className="flex justify-center gap-4">
             <Link href="/">
-              <Button variant="outline" size="lg">
+              <Button variant="outline" size="lg" onClick={() => playClick()}>
                 戻る
               </Button>
             </Link>

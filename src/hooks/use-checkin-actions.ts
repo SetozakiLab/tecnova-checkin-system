@@ -6,8 +6,8 @@ import { GuestData, CheckinData } from "@/types/api";
 interface UseCheckinActionsReturn {
   loading: boolean;
   error: string;
-  handleCheckin: (guest: GuestData) => Promise<void>;
-  handleCheckout: (guest: GuestData) => Promise<void>;
+  handleCheckin: (guest: GuestData) => Promise<boolean>;
+  handleCheckout: (guest: GuestData) => Promise<boolean>;
 }
 
 export function useCheckinActions(): UseCheckinActionsReturn {
@@ -26,7 +26,10 @@ export function useCheckinActions(): UseCheckinActionsReturn {
 
       if (result) {
         router.push(`/checkin/complete?type=checkin&guestId=${guest.id}`);
+        return true;
       }
+
+      return false;
     },
     [execute, router]
   );
@@ -43,7 +46,10 @@ export function useCheckinActions(): UseCheckinActionsReturn {
 
       if (result) {
         router.push(`/checkin/complete?type=checkout&guestId=${guest.id}`);
+        return true;
       }
+
+      return false;
     },
     [execute, router]
   );

@@ -4,6 +4,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { useCheckinActions } from "@/hooks/use-checkin-actions";
 import { ErrorState } from "@/components/shared/error-state";
 import { GuestData } from "@/types/api";
+import { useGuestSoundEffects } from "@/hooks/use-guest-sound-effects";
 
 interface CheckinActionsProps {
   guest: GuestData;
@@ -11,6 +12,35 @@ interface CheckinActionsProps {
 
 export function CheckinActions({ guest }: CheckinActionsProps) {
   const { loading, error, handleCheckin, handleCheckout } = useCheckinActions();
+  const { playClick, playSuccess } = useGuestSoundEffects();
+
+  const handleCheckinButtonClick = async () => {
+    if (loading) return;
+    playClick();
+
+    try {
+      const success = await handleCheckin(guest);
+      if (success) {
+        playSuccess();
+      }
+    } catch (error) {
+      console.error("Check-in failed", error);
+    }
+  };
+
+  const handleCheckoutButtonClick = async () => {
+    if (loading) return;
+    playClick();
+
+    try {
+      const success = await handleCheckout(guest);
+      if (success) {
+        playSuccess();
+      }
+    } catch (error) {
+      console.error("Check-out failed", error);
+    }
+  };
 
   return (
     <Card>
@@ -24,7 +54,9 @@ export function CheckinActions({ guest }: CheckinActionsProps) {
               <h3 className="font-semibold text-lg">{guest.name}</h3>
               <p className="text-sm text-gray-600">ID: {guest.displayId}</p>
             </div>
-            <StatusBadge status={guest.isCurrentlyCheckedIn ? "active" : "inactive"}>
+            <StatusBadge
+              status={guest.isCurrentlyCheckedIn ? "active" : "inactive"}
+            >
               {guest.isCurrentlyCheckedIn ? "滞在中" : "退場済み"}
             </StatusBadge>
           </div>
@@ -38,7 +70,7 @@ export function CheckinActions({ guest }: CheckinActionsProps) {
               <p className="text-green-800 font-semibold">現在入場中です</p>
             </div>
             <Button
-              onClick={() => handleCheckout(guest)}
+              onClick={handleCheckoutButtonClick}
               disabled={loading}
               size="lg"
               className="w-full bg-red-600 hover:bg-red-700 text-white"
@@ -52,7 +84,7 @@ export function CheckinActions({ guest }: CheckinActionsProps) {
               <p className="text-blue-800 font-semibold">現在退場中です</p>
             </div>
             <Button
-              onClick={() => handleCheckin(guest)}
+              onClick={handleCheckinButtonClick}
               disabled={loading}
               size="lg"
               className="w-full bg-green-600 hover:bg-green-700 text-white"

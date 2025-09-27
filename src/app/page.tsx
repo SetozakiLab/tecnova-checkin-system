@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,8 +10,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import Image from "next/image";
+import { useGuestSoundEffects } from "@/hooks/use-guest-sound-effects";
 
 export default function HomePage() {
+  const { playClick } = useGuestSoundEffects();
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
       <div className="w-full max-w-4xl">
@@ -32,7 +37,7 @@ export default function HomePage() {
         <div className="grid md:grid-cols-3 gap-8 mb-12">
           {/* はじめての方 */}
           <Card className="hover:shadow-lg transition-shadow cursor-pointer border-2 border-green-200">
-            <Link href="/terms">
+            <Link href="/terms" onClick={() => playClick()}>
               <CardHeader className="text-center pb-4">
                 <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <span className="text-3xl">👋</span>
@@ -51,6 +56,7 @@ export default function HomePage() {
                 <Button
                   size="lg"
                   className="bg-green-600 hover:bg-green-700 text-white"
+                  onClick={() => playClick()}
                 >
                   規約を確認する
                 </Button>
@@ -60,7 +66,7 @@ export default function HomePage() {
 
           {/* メンバーの方 */}
           <Card className="hover:shadow-lg transition-shadow cursor-pointer border-2 border-blue-200">
-            <Link href="/checkin">
+            <Link href="/checkin" onClick={() => playClick()}>
               <CardHeader className="text-center pb-4">
                 <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <span className="text-3xl">🏠</span>
@@ -79,6 +85,7 @@ export default function HomePage() {
                 <Button
                   size="lg"
                   className="bg-blue-600 hover:bg-blue-700 text-white"
+                  onClick={() => playClick()}
                 >
                   チェックイン
                 </Button>
@@ -88,7 +95,7 @@ export default function HomePage() {
 
           {/* チェックアウト */}
           <Card className="hover:shadow-lg transition-shadow cursor-pointer border-2 border-red-200">
-            <Link href="/checkout">
+            <Link href="/checkout" onClick={() => playClick()}>
               <CardHeader className="text-center pb-4">
                 <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <span className="text-3xl">🚪</span>
@@ -107,6 +114,7 @@ export default function HomePage() {
                 <Button
                   size="lg"
                   className="bg-red-600 hover:bg-red-700 text-white"
+                  onClick={() => playClick()}
                 >
                   チェックアウト
                 </Button>
@@ -120,6 +128,7 @@ export default function HomePage() {
           <Link
             href="/admin/login"
             className="text-sm text-gray-500 hover:text-gray-700 underline"
+            onClick={() => playClick()}
           >
             管理者ログイン
           </Link>

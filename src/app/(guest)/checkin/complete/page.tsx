@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ApiResponse, GuestData } from "@/types/api";
+import { useGuestSoundEffects } from "@/hooks/use-guest-sound-effects";
 
 function CheckinCompleteContent() {
   const searchParams = useSearchParams();
@@ -14,6 +15,8 @@ function CheckinCompleteContent() {
   const [guest, setGuest] = useState<GuestData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [successSoundPlayed, setSuccessSoundPlayed] = useState(false);
+  const { playClick, playSuccess } = useGuestSoundEffects();
 
   useEffect(() => {
     const fetchGuest = async () => {
@@ -43,6 +46,13 @@ function CheckinCompleteContent() {
 
     fetchGuest();
   }, [guestId]);
+
+  useEffect(() => {
+    if (!loading && guest && !error && !successSoundPlayed) {
+      playSuccess();
+      setSuccessSoundPlayed(true);
+    }
+  }, [guest, loading, error, successSoundPlayed, playSuccess]);
 
   // 10秒後に自動でホームに戻る
   useEffect(() => {
@@ -76,7 +86,9 @@ function CheckinCompleteContent() {
           <CardContent className="text-center">
             <p className="mb-4">{error}</p>
             <Link href="/">
-              <Button variant="outline">ホームに戻る</Button>
+              <Button variant="outline" onClick={() => playClick()}>
+                ホームに戻る
+              </Button>
             </Link>
           </CardContent>
         </Card>
@@ -191,7 +203,12 @@ function CheckinCompleteContent() {
         {/* ナビゲーション */}
         <div className="flex gap-4">
           <Link href="/" className="flex-1">
-            <Button variant="outline" size="lg" className="w-full">
+            <Button
+              variant="outline"
+              size="lg"
+              className="w-full"
+              onClick={() => playClick()}
+            >
               ホームに戻る
             </Button>
           </Link>
@@ -200,6 +217,7 @@ function CheckinCompleteContent() {
               <Button
                 size="lg"
                 className="w-full bg-orange-600 hover:bg-orange-700"
+                onClick={() => playClick()}
               >
                 チェックアウトする場合
               </Button>

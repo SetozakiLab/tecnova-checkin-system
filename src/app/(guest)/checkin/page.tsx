@@ -6,10 +6,12 @@ import { GuestSearch } from "@/components/features/checkin/guest-search";
 import { CheckinActions } from "@/components/features/checkin/checkin-actions";
 import { ErrorState } from "@/components/shared/error-state";
 import { GuestData } from "@/types/api";
+import { useGuestSoundEffects } from "@/hooks/use-guest-sound-effects";
 
 export default function CheckinPage() {
   const [selectedGuest, setSelectedGuest] = useState<GuestData | null>(null);
   const [error, setError] = useState("");
+  const { playClick } = useGuestSoundEffects();
 
   const handleGuestSelect = (guest: GuestData) => {
     setSelectedGuest(guest);
@@ -21,7 +23,11 @@ export default function CheckinPage() {
       <div className="w-full max-w-2xl">
         {/* ヘッダー */}
         <div className="text-center mb-8">
-          <Link href="/" className="inline-block mb-6">
+          <Link
+            href="/"
+            className="inline-block mb-6"
+            onClick={() => playClick()}
+          >
             <h1 className="text-4xl font-bold text-indigo-800">tec-nova</h1>
             <p className="text-lg text-indigo-600">入退場管理システム</p>
           </Link>
@@ -41,6 +47,7 @@ export default function CheckinPage() {
           <Link
             href="/"
             className="text-sm text-gray-500 hover:text-gray-700 underline"
+            onClick={() => playClick()}
           >
             トップページに戻る
           </Link>

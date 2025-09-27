@@ -5,9 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useGuestSearch } from "@/hooks/use-guest-search";
 import { ErrorState } from "@/components/shared/error-state";
+import { useGuestSoundEffects } from "@/hooks/use-guest-sound-effects";
+import { GuestData } from "@/types/api";
 
 interface GuestSearchProps {
-  onGuestSelect: (guest: any) => void;
+  onGuestSelect: (guest: GuestData) => void;
 }
 
 export function GuestSearch({ onGuestSelect }: GuestSearchProps) {
@@ -21,6 +23,8 @@ export function GuestSearch({ onGuestSelect }: GuestSearchProps) {
     error,
     handleSearch,
   } = useGuestSearch();
+
+  const { playClick } = useGuestSoundEffects();
 
   const [searchError, setSearchError] = useState("");
 
@@ -37,6 +41,7 @@ export function GuestSearch({ onGuestSelect }: GuestSearchProps) {
       return;
     }
     setSearchError("");
+    playClick();
     await handleSearch();
   };
 
@@ -82,6 +87,7 @@ export function GuestSearch({ onGuestSelect }: GuestSearchProps) {
                     : "hover:bg-gray-50"
                 }`}
                 onClick={() => {
+                  playClick();
                   setSelectedGuest(guest);
                   onGuestSelect(guest);
                 }}
