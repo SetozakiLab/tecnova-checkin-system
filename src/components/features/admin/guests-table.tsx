@@ -17,7 +17,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { StatusBadge } from "@/components/shared/status-badge";
+import { StatusBadge } from "@/components/ui/status-badge";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -148,7 +148,9 @@ export function GuestsTable({ guests, onUpdate }: GuestsTableProps) {
                 <TableCell>{formatGrade(guest.grade)}</TableCell>
                 <TableCell>{formatDateTime(guest.createdAt)}</TableCell>
                 <TableCell>
-                  <StatusBadge isActive={!!guest.isCurrentlyCheckedIn} />
+                  <StatusBadge status={guest.isCurrentlyCheckedIn ? "active" : "inactive"}>
+                    {guest.isCurrentlyCheckedIn ? "滞在中" : "退場済み"}
+                  </StatusBadge>
                 </TableCell>
                 <TableCell>
                   <DropdownMenu>

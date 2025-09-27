@@ -6,7 +6,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { StatusBadge } from "@/components/shared/status-badge";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { formatDateTime } from "@/lib/date-utils";
 import { CheckinRecord } from "@/types/api";
 import { useState } from "react";
@@ -137,7 +137,9 @@ export function HistoryTable({ records, onUpdated }: HistoryTableProps) {
                   {record.duration ? `${record.duration}分` : "-"}
                 </TableCell>
                 <TableCell>
-                  <StatusBadge isActive={!!record.isActive} />
+                  <StatusBadge status={record.isActive ? "active" : "inactive"}>
+                    {record.isActive ? "滞在中" : "退場済み"}
+                  </StatusBadge>
                 </TableCell>
                 <TableCell>
                   <DropdownMenu>

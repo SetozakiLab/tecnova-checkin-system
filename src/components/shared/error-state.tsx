@@ -1,19 +1,26 @@
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import * as React from "react";
 
-interface ErrorStateProps {
+export interface ErrorStateProps extends React.HTMLAttributes<HTMLDivElement> {
   message: string;
   onRetry?: () => void;
-  className?: string;
 }
 
 export function ErrorState({
   message,
   onRetry,
-  className = "",
+  className,
+  ...props
 }: ErrorStateProps) {
   return (
     <div
-      className={`bg-red-50 border border-red-200 rounded-lg p-6 ${className}`}
+      className={cn(
+        "bg-red-50 border border-red-200 rounded-lg p-6",
+        className
+      )}
+      data-slot="error-state"
+      {...props}
     >
       <p className="text-red-700 mb-4">{message}</p>
       {onRetry && (

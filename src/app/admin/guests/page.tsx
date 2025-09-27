@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { GuestsTable } from "@/components/features/admin/guests-table";
-import { Pagination } from "@/components/shared/pagination";
+import { AppPagination as Pagination } from "@/components/ui/pagination";
 import { GuestsTableSkeleton } from "@/components/shared/loading";
 import { ErrorState } from "@/components/shared/error-state";
 import { usePaginatedData } from "@/hooks/use-paginated-data";

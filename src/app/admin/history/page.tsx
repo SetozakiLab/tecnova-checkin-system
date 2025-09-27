@@ -8,7 +8,7 @@ import {
   SearchFilters,
 } from "@/components/features/admin/search-filter";
 import { HistoryTable } from "@/components/features/admin/history-table";
-import { Pagination } from "@/components/shared/pagination";
+import { AppPagination as Pagination } from "@/components/ui/pagination";
 import { LoadingState } from "@/components/shared/loading";
 import { ErrorState } from "@/components/shared/error-state";
 import { usePaginatedData } from "@/hooks/use-paginated-data";

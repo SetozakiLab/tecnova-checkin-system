@@ -4,11 +4,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { UserAvatarWithStatus } from "./user-avatar-with-status";
-import { StatusBadge } from "./status-badge";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { cn } from "@/lib/utils";
 import { Clock, User, Calendar } from "lucide-react";
+import * as React from "react";
 
-interface ProjectCardProps {
+export interface ProjectCardProps extends React.HTMLAttributes<HTMLDivElement> {
   id: string;
   title: string;
   description?: string;
@@ -23,7 +24,6 @@ interface ProjectCardProps {
   status: "active" | "inactive";
   onViewDetails?: (id: string) => void;
   onQuickAction?: (id: string) => void;
-  className?: string;
 }
 
 export function ProjectCard({
@@ -35,12 +35,17 @@ export function ProjectCard({
   onViewDetails,
   onQuickAction,
   className,
+  ...props
 }: ProjectCardProps) {
   const activeGuests = guests.filter((guest) => guest.isActive);
   const totalGuests = guests.length;
 
   return (
-    <Card className={cn("hover:shadow-md transition-shadow", className)}>
+    <Card 
+      className={cn("hover:shadow-md transition-shadow", className)}
+      data-slot="project-card"
+      {...props}
+    >
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="space-y-2">

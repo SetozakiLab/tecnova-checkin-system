@@ -8,7 +8,12 @@ export function RefreshButton() {
   };
 
   return (
-    <Button onClick={handleRefresh} variant="outline" size="sm">
+    <Button 
+      onClick={handleRefresh} 
+      variant="outline" 
+      size="sm"
+      data-slot="refresh-button"
+    >
       更新
     </Button>
   );
