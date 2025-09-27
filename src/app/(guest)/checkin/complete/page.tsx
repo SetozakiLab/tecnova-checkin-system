@@ -7,6 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ApiResponse, GuestData } from "@/types/api";
 import { useGuestSoundEffects } from "@/hooks/use-guest-sound-effects";
+import { PageContainer } from "@/components/ui/page-container";
+import { FadeIn, ScaleIn, Float } from "@/components/ui/motion";
+import { Home, LogIn, LogOut, CheckCircle, AlertTriangle, Clock } from "lucide-react";
 
 function CheckinCompleteContent() {
   const searchParams = useSearchParams();
@@ -67,183 +70,207 @@ function CheckinCompleteContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+      <PageContainer gradient="blue">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-lg">読み込み中...</p>
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-600 border-t-transparent mx-auto mb-6"></div>
+          <p className="text-lg text-muted-foreground">読み込み中...</p>
         </div>
-      </div>
+      </PageContainer>
     );
   }
 
   if (error || !guest) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-red-50 to-pink-100 flex items-center justify-center p-4">
-        <Card className="max-w-md">
+      <PageContainer gradient="red">
+        <Card className="max-w-md mx-auto border-2 border-red-200/50 bg-white/80 backdrop-blur-sm shadow-lg">
           <CardHeader>
-            <CardTitle className="text-center text-red-700">エラー</CardTitle>
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <AlertTriangle className="h-6 w-6 text-red-600" />
+              <CardTitle className="text-center text-red-700">エラー</CardTitle>
+            </div>
           </CardHeader>
-          <CardContent className="text-center">
-            <p className="mb-4">{error}</p>
+          <CardContent className="text-center space-y-4">
+            <p className="text-muted-foreground">{error}</p>
             <Link href="/">
-              <Button variant="outline" onClick={() => playClick()}>
+              <Button variant="outline" onClick={() => playClick()} className="w-full">
+                <Home className="h-4 w-4 mr-2" />
                 ホームに戻る
               </Button>
             </Link>
           </CardContent>
         </Card>
-      </div>
+      </PageContainer>
     );
   }
 
   const isCheckin = type === "checkin";
+  const gradient = isCheckin ? "green" : "orange";
 
   return (
-    <div
-      className={`min-h-screen ${
-        isCheckin
-          ? "bg-gradient-to-br from-green-50 to-emerald-100"
-          : "bg-gradient-to-br from-orange-50 to-yellow-100"
-      } flex items-center justify-center p-4`}
-    >
+    <PageContainer gradient={gradient}>
       <div className="max-w-2xl w-full">
-        {/* 成功メッセージ */}
-        <div className="text-center mb-8">
-          <div
-            className={`w-24 h-24 ${
-              isCheckin ? "bg-green-500" : "bg-orange-500"
-            } rounded-full flex items-center justify-center mx-auto mb-6`}
-          >
-            <span className="text-4xl text-white">
-              {isCheckin ? "🏠" : "👋"}
-            </span>
-          </div>
+        {/* Success Message */}
+        <FadeIn delay={0.1} className="text-center mb-12">
+          <Float floatHeight={8} duration={4}>
+            <div
+              className={`w-24 h-24 ${
+                isCheckin 
+                  ? "bg-gradient-to-br from-emerald-500 to-green-500" 
+                  : "bg-gradient-to-br from-orange-500 to-amber-500"
+              } rounded-full flex items-center justify-center mx-auto mb-8 shadow-xl`}
+            >
+              {isCheckin ? (
+                <LogIn className="h-12 w-12 text-white" />
+              ) : (
+                <LogOut className="h-12 w-12 text-white" />
+              )}
+            </div>
+          </Float>
+          
           <h1
-            className={`text-5xl font-bold mb-4 ${
-              isCheckin ? "text-green-800" : "text-orange-800"
+            className={`text-4xl md:text-5xl font-bold mb-4 ${
+              isCheckin ? "text-emerald-800" : "text-orange-800"
             }`}
           >
             {isCheckin ? "いらっしゃいませ！" : "お疲れ様でした！"}
           </h1>
           <p
-            className={`text-2xl ${
-              isCheckin ? "text-green-700" : "text-orange-700"
+            className={`text-2xl font-medium ${
+              isCheckin ? "text-emerald-700" : "text-orange-700"
             }`}
           >
             {guest.name} さん
           </p>
-        </div>
+        </FadeIn>
 
-        <Card className="mb-8">
-          <CardContent className="pt-8">
-            <div className="text-center space-y-4">
-              {isCheckin ? (
-                <>
-                  <p className="text-xl text-green-800 font-semibold">
-                    チェックイン完了！
-                  </p>
-                  <p className="text-lg text-gray-700">
-                    今日も楽しく過ごしてくださいね！
-                  </p>
-                  <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-                    <p className="text-green-800">
-                      何か困ったことがあったら、
-                      <br />
-                      すぐにメンターに相談してください
+        <ScaleIn delay={0.3} className="mb-8">
+          <Card className={`border-2 ${
+            isCheckin ? "border-emerald-200/50" : "border-orange-200/50"
+          } bg-white/80 backdrop-blur-sm shadow-lg`}>
+            <CardContent className="pt-8">
+              <div className="text-center space-y-6">
+                {isCheckin ? (
+                  <>
+                    <div className="flex items-center justify-center gap-3 mb-4">
+                      <CheckCircle className="h-6 w-6 text-emerald-600" />
+                      <p className="text-xl text-emerald-800 font-semibold">
+                        チェックイン完了！
+                      </p>
+                    </div>
+                    <p className="text-lg text-muted-foreground">
+                      今日も楽しく過ごしてくださいね！
+                    </p>
+                    <div className="bg-gradient-to-r from-emerald-50/80 to-green-50/80 p-6 rounded-lg border border-emerald-200/50 backdrop-blur-sm">
+                      <p className="text-emerald-800 leading-relaxed">
+                        何か困ったことがあったら、<br />
+                        すぐにメンターに相談してください
+                      </p>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex items-center justify-center gap-3 mb-4">
+                      <CheckCircle className="h-6 w-6 text-orange-600" />
+                      <p className="text-xl text-orange-800 font-semibold">
+                        チェックアウト完了！
+                      </p>
+                    </div>
+                    <p className="text-lg text-muted-foreground">
+                      今日はありがとうございました！また遊びに来てくださいね！
+                    </p>
+                    <div className="bg-gradient-to-r from-orange-50/80 to-amber-50/80 p-6 rounded-lg border border-orange-200/50 backdrop-blur-sm">
+                      <p className="text-orange-800 leading-relaxed">
+                        気をつけて帰ってください。<br />
+                        また待っています！
+                      </p>
+                    </div>
+                  </>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </ScaleIn>
+
+        {/* Instructions for next time */}
+        <ScaleIn delay={0.5} className="mb-8">
+          <Card className="border-2 border-blue-200/50 bg-white/80 backdrop-blur-sm shadow-lg">
+            <CardContent className="pt-6">
+              <div className="text-center space-y-6">
+                <h3 className="text-lg font-semibold flex items-center justify-center gap-2">
+                  <CheckCircle className="h-5 w-5 text-blue-600" />
+                  次回からは簡単！
+                </h3>
+                <div className="text-left space-y-4 max-w-md mx-auto">
+                  <div className="flex items-start space-x-4">
+                    <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold shadow-md">
+                      1
+                    </div>
+                    <p className="text-base leading-relaxed pt-1">
+                      あなたの番号 <strong className="text-primary">{guest.displayId}</strong> を
+                      覚えておいてください
                     </p>
                   </div>
-                </>
-              ) : (
-                <>
-                  <p className="text-xl text-orange-800 font-semibold">
-                    チェックアウト完了！
-                  </p>
-                  <p className="text-lg text-gray-700">
-                    今日はありがとうございました！また遊びに来てくださいね！
-                  </p>
-                  <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
-                    <p className="text-orange-800">
-                      気をつけて帰ってください。
-                      <br />
-                      また待っています！
+                  <div className="flex items-start space-x-4">
+                    <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold shadow-md">
+                      2
+                    </div>
+                    <p className="text-base leading-relaxed pt-1">
+                      次回からは番号を入力するだけで大丈夫です
                     </p>
                   </div>
-                </>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* 次回へのメッセージ */}
-        <Card className="mb-8">
-          <CardContent className="pt-6">
-            <div className="text-center space-y-3">
-              <h3 className="text-lg font-semibold">次回からは簡単！</h3>
-              <div className="text-left space-y-2">
-                <div className="flex items-center space-x-3">
-                  <span className="flex-shrink-0 w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
-                    1
-                  </span>
-                  <p>
-                    あなたの番号 <strong>{guest.displayId}</strong> を
-                    覚えておいてください
-                  </p>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <span className="flex-shrink-0 w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
-                    2
-                  </span>
-                  <p>次回からは番号を入力するだけで 大丈夫です</p>
                 </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </ScaleIn>
 
-        {/* ナビゲーション */}
-        <div className="flex gap-4">
+        {/* Navigation */}
+        <FadeIn delay={0.7} className="flex flex-col sm:flex-row gap-4 mb-8">
           <Link href="/" className="flex-1">
             <Button
               variant="outline"
               size="lg"
-              className="w-full"
+              className="w-full border-primary/20 hover:bg-primary/5 transition-all duration-300"
               onClick={() => playClick()}
             >
+              <Home className="h-4 w-4 mr-2" />
               ホームに戻る
             </Button>
           </Link>
           {isCheckin && (
-            <Link href="/checkin" className="flex-1">
+            <Link href="/checkout" className="flex-1">
               <Button
                 size="lg"
-                className="w-full bg-orange-600 hover:bg-orange-700"
+                className="w-full bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 text-white shadow-lg hover:shadow-xl transition-all duration-300"
                 onClick={() => playClick()}
               >
+                <LogOut className="h-4 w-4 mr-2" />
                 チェックアウトする場合
               </Button>
             </Link>
           )}
-        </div>
+        </FadeIn>
 
-        {/* 自動的に戻る */}
-        <div className="text-center mt-6">
-          <p className="text-sm text-gray-500">
-            10秒後に自動的にホームに戻ります
-          </p>
-        </div>
+        {/* Auto redirect message */}
+        <FadeIn delay={0.9} className="text-center">
+          <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+            <Clock className="h-4 w-4" />
+            <p>10秒後に自動的にホームに戻ります</p>
+          </div>
+        </FadeIn>
       </div>
-    </div>
+    </PageContainer>
   );
 }
 
 function LoadingFallback() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+    <PageContainer gradient="blue">
       <div className="text-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto mb-4"></div>
-        <p className="text-blue-700 text-lg">読み込み中...</p>
+        <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-600 border-t-transparent mx-auto mb-6"></div>
+        <p className="text-lg text-muted-foreground">読み込み中...</p>
       </div>
-    </div>
+    </PageContainer>
   );
 }
 
