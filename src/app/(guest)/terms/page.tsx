@@ -72,7 +72,7 @@ export default function TermsPage() {
                     onClick={() => playClick()}
                   >
                     <ArrowLeft className="h-4 w-4" aria-hidden />
-                    入退場へ
+                    チェックインへ
                   </Button>
                 </Link>
               </div>

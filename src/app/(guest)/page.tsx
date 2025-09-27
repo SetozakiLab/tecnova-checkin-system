@@ -46,7 +46,7 @@ export default function GuestHomePage() {
       <div className="grid gap-6 md:grid-cols-3">
         {[
           {
-            title: "初めての方",
+            title: "はじめての方",
             description: "利用前に必ず規約をご確認ください。",
             href: "/terms",
             icon: UserPlus,
