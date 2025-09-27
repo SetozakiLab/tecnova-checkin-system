@@ -4,8 +4,9 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { cn } from "@/lib/utils";
+import * as React from "react";
 
-interface UserAvatarWithStatusProps {
+export interface UserAvatarWithStatusProps extends React.HTMLAttributes<HTMLDivElement> {
   name: string;
   displayId?: number;
   grade?: string | null;
@@ -13,7 +14,6 @@ interface UserAvatarWithStatusProps {
   size?: "sm" | "md" | "lg";
   showStatus?: boolean;
   showGrade?: boolean;
-  className?: string;
 }
 
 export function UserAvatarWithStatus({
@@ -25,6 +25,7 @@ export function UserAvatarWithStatus({
   showStatus = true,
   showGrade = true,
   className,
+  ...props
 }: UserAvatarWithStatusProps) {
   const getInitials = (name: string) => {
     return name
@@ -47,7 +48,11 @@ export function UserAvatarWithStatus({
   };
 
   return (
-    <div className={cn("flex items-center gap-3", className)}>
+    <div 
+      className={cn("flex items-center gap-3", className)}
+      data-slot="user-avatar-with-status"
+      {...props}
+    >
       {/* Avatar with Status Indicator */}
       <div className="relative">
         <Avatar className={getSizeClasses(size)}>

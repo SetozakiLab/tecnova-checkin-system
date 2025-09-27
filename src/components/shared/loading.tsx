@@ -1,6 +1,8 @@
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils"; 
+import * as React from "react";
 
-interface LoadingStateProps {
+export interface LoadingStateProps extends React.HTMLAttributes<HTMLDivElement> {
   message?: string;
   size?: "sm" | "md" | "lg";
 }
@@ -8,6 +10,8 @@ interface LoadingStateProps {
 export function LoadingState({
   message = "読み込み中...",
   size = "lg",
+  className,
+  ...props
 }: LoadingStateProps) {
   const skeletonSizes = {
     sm: "h-8",
@@ -16,7 +20,11 @@ export function LoadingState({
   };
 
   return (
-    <div className="text-center py-12">
+    <div 
+      className={cn("text-center py-12", className)}
+      data-slot="loading-state"
+      {...props}
+    >
       <div className="flex flex-col items-center space-y-4">
         <Skeleton
           className={`w-24 ${skeletonSizes[size]} rounded-full mx-auto`}

@@ -4,8 +4,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { LucideIcon } from "lucide-react";
+import * as React from "react";
 
-interface MetricCardProps {
+export interface MetricCardProps extends React.HTMLAttributes<HTMLDivElement> {
   title: string;
   value: string | number;
   subtitle?: string;
@@ -16,7 +17,6 @@ interface MetricCardProps {
     isPositive?: boolean;
   };
   variant?: "default" | "success" | "warning" | "info";
-  className?: string;
 }
 
 export function MetricCard({
@@ -27,6 +27,7 @@ export function MetricCard({
   trend,
   variant = "default",
   className,
+  ...props
 }: MetricCardProps) {
   const getVariantStyles = (variant: MetricCardProps["variant"]) => {
     switch (variant) {
@@ -60,7 +61,11 @@ export function MetricCard({
   const styles = getVariantStyles(variant);
 
   return (
-    <Card className={cn(styles.card, className)}>
+    <Card 
+      className={cn(styles.card, className)} 
+      data-slot="metric-card"
+      {...props}
+    >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">
           {title}
