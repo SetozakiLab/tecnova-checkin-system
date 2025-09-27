@@ -7,3 +7,6 @@ export * from "./admin/search-filter";
 // Checkin features
 export * from "./checkin/checkin-actions";
 export * from "./checkin/guest-search";
+
+// Guest features
+export * from "./guest/guest-header";

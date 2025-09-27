@@ -4,6 +4,8 @@ import { ReactNode } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { usePathname } from "next/navigation";
 
+import { GuestHeader } from "@/components/features";
+
 type GuestLayoutProps = {
   children: ReactNode;
 };
@@ -13,6 +15,7 @@ export default function GuestLayout({ children }: GuestLayoutProps) {
 
   return (
     <div className="flex min-h-[100dvh] flex-col bg-slate-100 text-slate-900">
+      <GuestHeader />
       <AnimatePresence initial={false} mode="wait">
         <motion.main
           key={pathname}

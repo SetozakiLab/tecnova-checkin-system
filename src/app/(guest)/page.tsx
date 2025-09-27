@@ -2,13 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "motion/react";
-import {
-  ArrowUpRight,
-  DoorClosed,
-  DoorOpen,
-  ShieldCheck,
-  UserPlus,
-} from "lucide-react";
+import { ArrowUpRight, DoorClosed, DoorOpen, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -39,20 +33,12 @@ export default function GuestHomePage() {
             </Badge>
             <div className="space-y-1">
               <h1 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
-                テクノバ ナガサキ へようこそ
+                テクノバ ながさき へようこそ
               </h1>
               <CardDescription className="text-base text-slate-600">
                 下のメニューから操作を選んで、手続きを行ってください。
               </CardDescription>
             </div>
-          </div>
-          <div className="flex gap-2">
-            <Button asChild variant="ghost" className="gap-2 text-slate-600">
-              <Link href="/admin/login" onClick={() => playClick()}>
-                <ShieldCheck className="h-4 w-4" aria-hidden />
-                管理コンソールへログイン
-              </Link>
-            </Button>
           </div>
         </CardContent>
       </Card>

@@ -204,7 +204,7 @@ export default function AdminLoginPage() {
         <div className="text-center mb-8">
           <Link href="/" className="inline-block mb-6">
             <Image
-              src="/logo.png"
+              src="/images/logo_tecnova.png"
               alt="テクノバ ロゴ"
               width={400}
               height={160}

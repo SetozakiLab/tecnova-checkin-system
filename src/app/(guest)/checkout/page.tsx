@@ -272,7 +272,7 @@ export default function CheckoutPage() {
             <Link href="/" onClick={() => playClick()}>
               <Button variant="ghost" className="gap-2 text-slate-600">
                 <Home className="h-4 w-4" aria-hidden />
-                トップページに戻る
+                ホームへ戻る
               </Button>
             </Link>
           </div>

@@ -110,7 +110,7 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
             className="mx-auto flex flex-col items-center leading-tight text-center"
           >
             <Image
-              src="/logo.png"
+              src="/images/logo_tecnova.png"
               alt="テクノバ Nagasaki"
               width={160}
               height={40}
