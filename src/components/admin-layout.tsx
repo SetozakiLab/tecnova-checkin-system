@@ -111,7 +111,7 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
           >
             <Image
               src="/logo.png"
-              alt="tec-nova Nagasaki"
+              alt="テクノバ Nagasaki"
               width={160}
               height={40}
               className="h-8 w-auto"

@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "tec-nova 入退場管理システム",
-  description: "tec-nova施設の入退場管理システム",
+  title: "テクノバ 入退場管理システム",
+  description: "テクノバ施設の入退場管理システム",
 };
 
 export default function RootLayout({

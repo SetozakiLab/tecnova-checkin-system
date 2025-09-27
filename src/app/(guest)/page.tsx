@@ -35,14 +35,14 @@ export default function GuestHomePage() {
         <CardContent className="flex flex-col gap-6 px-6 py-8 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-3">
             <Badge variant="secondary" className="w-fit text-slate-600">
-              Tec-nova facility
+              はじめに
             </Badge>
             <div className="space-y-1">
               <h1 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
-                入退場手続きを始めましょう
+                テクノバ ナガサキ へようこそ
               </h1>
               <CardDescription className="text-base text-slate-600">
-                利用目的に合わせて、下のメニューから進んでください。
+                下のメニューから操作を選んで、手続きを行ってください。
               </CardDescription>
             </div>
           </div>
@@ -50,13 +50,7 @@ export default function GuestHomePage() {
             <Button asChild variant="ghost" className="gap-2 text-slate-600">
               <Link href="/admin/login" onClick={() => playClick()}>
                 <ShieldCheck className="h-4 w-4" aria-hidden />
-                管理者ログイン
-              </Link>
-            </Button>
-            <Button asChild className="gap-2 bg-slate-900 hover:bg-slate-800">
-              <Link href="/checkin" onClick={() => playClick()}>
-                次回からスムーズに
-                <ArrowUpRight className="h-4 w-4" aria-hidden />
+                管理コンソールへログイン
               </Link>
             </Button>
           </div>
@@ -132,7 +126,7 @@ export default function GuestHomePage() {
 
       <div className="flex justify-center">
         <p className="text-xs text-slate-500">
-          ゲスト専用ポータル — Tec-nova Check-in System
+          ゲスト専用ポータル - テクノバ管理システム
         </p>
       </div>
     </motion.section>

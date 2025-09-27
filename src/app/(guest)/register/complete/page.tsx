@@ -92,12 +92,12 @@ function RegisterCompleteContent() {
           <CardContent className="space-y-4">
             <div className="bg-blue-50 p-6 rounded-lg border-2 border-blue-200">
               <div className="text-center space-y-2">
-                <p className="text-sm text-gray-600">あなたの番号</p>
+                <p className="text-sm text-gray-600">あなたのID</p>
                 <p className="text-3xl font-bold text-blue-800">
                   {guest.displayId}
                 </p>
                 <p className="text-sm text-gray-600">
-                  この番号を覚えておいてください！
+                  このIDを覚えておいてください！
                 </p>
               </div>
             </div>
@@ -129,7 +129,7 @@ function RegisterCompleteContent() {
                   <span className="flex-shrink-0 w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
                     1
                   </span>
-                  <p>入退場画面であなたの番号または名前を 入力してください</p>
+                  <p>入退場画面であなたのIDまたは名前を 入力してください</p>
                 </div>
                 <div className="flex items-start space-x-3">
                   <span className="flex-shrink-0 w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold">

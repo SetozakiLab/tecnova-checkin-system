@@ -307,9 +307,6 @@ export default function RegisterPage() {
             <CardContent className="flex flex-col gap-4 px-6 py-6 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <Link href="/" onClick={() => playClick()} className="block">
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-                    Tec-nova
-                  </p>
                   <h1 className="text-3xl font-semibold text-slate-900">
                     新規登録
                   </h1>

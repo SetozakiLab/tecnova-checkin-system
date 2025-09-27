@@ -45,9 +45,6 @@ export default function TermsPage() {
             <CardContent className="flex flex-col gap-4 px-6 py-6 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <Link href="/" onClick={() => playClick()} className="block">
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-                    Tec-nova
-                  </p>
                   <h1 className="text-3xl font-semibold text-slate-900">
                     利用規約
                   </h1>
@@ -130,11 +127,11 @@ export default function TermsPage() {
                   </li>
                   <li className="leading-relaxed">
                     何かをダウンロードまたはアップロードするときは、
-                    <strong>かならずスタッフに聞き</strong>ましょう。
+                    <strong>かならずメンターに聞き</strong>ましょう。
                   </li>
                   <li className="leading-relaxed">
                     <strong>ケガにつながる機材</strong>
-                    もあるので、スタッフの注意を聞いて
+                    もあるので、メンターの注意を聞いて
                     <strong>安全に使い</strong>
                     ましょう。
                   </li>
@@ -165,7 +162,7 @@ export default function TermsPage() {
                   </li>
                   <li className="leading-relaxed">
                     帰る際は<strong>アンケートに回答</strong>して、
-                    <strong>スタッフに報告</strong>をし、
+                    <strong>メンターに報告</strong>をし、
                     <strong>名札ケースを置いて</strong>帰ってください。
                   </li>
                   <li className="leading-relaxed">
@@ -175,12 +172,12 @@ export default function TermsPage() {
                   </li>
                   <li className="leading-relaxed">
                     トイレ以外で途中退室する（建物から出る）際は
-                    <strong>スタッフに報告</strong>
+                    <strong>メンターに報告</strong>
                     してください（名札は置いていく）。
                   </li>
                   <li className="leading-relaxed">
                     トラブル防止のため、
-                    <strong>スタッフと利用者のSNS等連絡先の交換を禁止</strong>
+                    <strong>メンターと利用者のSNS等連絡先の交換を禁止</strong>
                     します。
                   </li>
                   <li className="leading-relaxed">
@@ -201,7 +198,7 @@ export default function TermsPage() {
                   <strong>
                     これらの約束事を守って、みんなで楽しく安全にテクノバを利用しましょう！
                   </strong>
-                  わからないことがあったら、いつでもスタッフに聞いてくださいね。
+                  わからないことがあったら、いつでもメンターに聞いてくださいね。
                 </AlertDescription>
               </Alert>
             </CardContent>

@@ -45,7 +45,7 @@ export function GuestSearch({ onGuestSelect }: GuestSearchProps) {
 
   const onSearch = async () => {
     if (!searchQuery.trim()) {
-      setSearchError("番号または名前を入力してください");
+      setSearchError("IDまたは名前を入力してください");
       return;
     }
     setSearchError("");
@@ -65,7 +65,7 @@ export function GuestSearch({ onGuestSelect }: GuestSearchProps) {
           </CardTitle>
         </div>
         <CardDescription className="text-sm text-slate-500">
-          番号または名前で検索してください
+          IDまたは名前で検索してください
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-5">
@@ -78,7 +78,7 @@ export function GuestSearch({ onGuestSelect }: GuestSearchProps) {
               id="search"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="番号または名前を入力"
+              placeholder="IDまたは名前を入力"
               onKeyDown={(e) => e.key === "Enter" && onSearch()}
               disabled={loading}
             />

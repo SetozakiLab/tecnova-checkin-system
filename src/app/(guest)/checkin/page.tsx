@@ -35,15 +35,12 @@ export default function CheckinPage() {
             <CardContent className="flex flex-col gap-4 px-6 py-6 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <Link href="/" onClick={() => playClick()} className="block">
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-                    Tec-nova
-                  </p>
                   <h1 className="text-3xl font-semibold text-slate-900">
-                    入退場手続き
+                    チェックイン
                   </h1>
                 </Link>
                 <p className="mt-3 text-sm text-slate-600">
-                  お持ちの番号またはお名前から入退場の手続きを進めます。
+                  お持ちのIDまたはお名前から入退場の手続きを進めます。
                 </p>
               </div>
               <div className="flex flex-col gap-2 sm:w-auto sm:flex-row">

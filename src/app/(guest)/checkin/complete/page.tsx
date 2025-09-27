@@ -140,9 +140,6 @@ function CheckinCompleteContent() {
             <CardContent className="flex flex-col gap-4 px-6 py-6 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <Link href="/" onClick={() => playClick()} className="block">
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-                    Tec-nova
-                  </p>
                   <h1 className="text-3xl font-semibold text-slate-900">
                     {isCheckin ? "チェックイン完了" : "チェックアウト完了"}
                   </h1>
@@ -216,7 +213,7 @@ function CheckinCompleteContent() {
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
                     <p className="text-xs font-medium uppercase tracking-[0.1em] text-slate-500">
-                      カード番号
+                      あなたのID
                     </p>
                     <p className="mt-2 text-2xl font-semibold text-slate-900">
                       {guest.displayId}
@@ -235,7 +232,7 @@ function CheckinCompleteContent() {
                 <div className="rounded-xl border border-slate-200 bg-white p-4">
                   <p className="text-sm text-slate-600">
                     {isCheckin
-                      ? "施設内ではスタッフの指示に従い、安全にお過ごしください。"
+                      ? "施設内ではメンターの指示に従い、安全にお過ごしください。"
                       : "お気をつけてお帰りください。またのご利用をお待ちしています。"}
                   </p>
                 </div>
@@ -257,7 +254,7 @@ function CheckinCompleteContent() {
                     1
                   </Badge>
                   <p className="text-sm text-slate-600">
-                    あなたの番号{" "}
+                    あなたのID{" "}
                     <span className="font-medium text-slate-900">
                       {guest.displayId}
                     </span>{" "}
@@ -269,7 +266,7 @@ function CheckinCompleteContent() {
                     2
                   </Badge>
                   <p className="text-sm text-slate-600">
-                    次回からは番号を入力するだけで手続きを完了できます。
+                    次回からはIDを入力するだけで手続きを完了できます。
                   </p>
                 </div>
               </div>
