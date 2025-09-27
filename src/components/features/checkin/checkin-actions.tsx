@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { LegacyStatusBadge as StatusBadge } from "@/components/ui/status-badge";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { useCheckinActions } from "@/hooks/use-checkin-actions";
 import { ErrorState } from "@/components/shared/error-state";
 import { GuestData } from "@/types/api";
@@ -24,7 +24,9 @@ export function CheckinActions({ guest }: CheckinActionsProps) {
               <h3 className="font-semibold text-lg">{guest.name}</h3>
               <p className="text-sm text-gray-600">ID: {guest.displayId}</p>
             </div>
-            <StatusBadge isActive={!!guest.isCurrentlyCheckedIn} />
+            <StatusBadge status={guest.isCurrentlyCheckedIn ? "active" : "inactive"}>
+              {guest.isCurrentlyCheckedIn ? "滞在中" : "退場済み"}
+            </StatusBadge>
           </div>
         </div>
 

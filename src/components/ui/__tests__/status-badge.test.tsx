@@ -3,7 +3,6 @@ import { render, screen } from "@testing-library/react";
 import { describe, it, expect } from "vitest";
 import { 
   StatusBadge, 
-  LegacyStatusBadge, 
   CheckinStatusBadge, 
   GradeStatusBadge 
 } from "../status-badge";
@@ -38,29 +37,6 @@ describe("StatusBadge Components", () => {
       
       const badge = screen.getByTestId("status-badge");
       expect(badge).toHaveClass("custom-class");
-    });
-  });
-
-  describe("LegacyStatusBadge", () => {
-    it("renders active state with default text", () => {
-      render(<LegacyStatusBadge isActive={true} />);
-      expect(screen.getByText("滞在中")).toBeInTheDocument();
-    });
-
-    it("renders inactive state with default text", () => {
-      render(<LegacyStatusBadge isActive={false} />);
-      expect(screen.getByText("退場済み")).toBeInTheDocument();
-    });
-
-    it("renders with custom text", () => {
-      render(
-        <LegacyStatusBadge 
-          isActive={true} 
-          activeText="オンライン" 
-          inactiveText="オフライン"
-        />
-      );
-      expect(screen.getByText("オンライン")).toBeInTheDocument();
     });
   });
 

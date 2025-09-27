@@ -67,31 +67,6 @@ export function StatusBadge({
   );
 }
 
-// Legacy compatible component for gradual migration
-export interface LegacyStatusBadgeProps {
-  isActive: boolean;
-  activeText?: string;
-  inactiveText?: string;
-  className?: string;
-}
-
-export function LegacyStatusBadge({
-  isActive,
-  activeText = "滞在中",
-  inactiveText = "退場済み",
-  className,
-}: LegacyStatusBadgeProps) {
-  return (
-    <StatusBadge 
-      status={isActive ? "active" : "inactive"} 
-      className={className}
-      showIndicator={false}
-    >
-      {isActive ? activeText : inactiveText}
-    </StatusBadge>
-  );
-}
-
 // Specific status badges for the application
 export function CheckinStatusBadge({ isActive }: { isActive: boolean }) {
   return (
