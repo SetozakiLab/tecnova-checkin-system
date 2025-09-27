@@ -291,7 +291,7 @@ function CheckinCompleteContent() {
                   className="w-full bg-slate-900 hover:bg-slate-800"
                   onClick={() => playClick()}
                 >
-                  退場手続きを行う
+                  チェックアウトを行う
                 </Button>
               </Link>
             )}

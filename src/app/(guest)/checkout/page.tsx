@@ -121,11 +121,11 @@ export default function CheckoutPage() {
               <div>
                 <Link href="/" onClick={() => playClick()} className="block">
                   <h1 className="text-3xl font-semibold text-slate-900">
-                    退場手続き
+                    チェックアウト
                   </h1>
                 </Link>
                 <p className="mt-3 text-sm text-slate-600">
-                  現在入場中のゲストを確認し、退場処理を行います。
+                  現在チェックイン中のゲストを確認し、退場処理を行います。
                 </p>
               </div>
               <div className="flex flex-col gap-2 sm:w-auto sm:flex-row">
@@ -136,7 +136,7 @@ export default function CheckoutPage() {
                     onClick={() => playClick()}
                   >
                     <ArrowLeft className="h-4 w-4" aria-hidden />
-                    入場手続き
+                    チェックイン手続き
                   </Button>
                 </Link>
                 <Link href="/register" className="flex-1 sm:flex-none">
@@ -158,7 +158,7 @@ export default function CheckoutPage() {
                 <div>
                   <div className="flex items-center gap-2">
                     <CardTitle className="text-xl font-semibold text-slate-900">
-                      現在入場中の一覧
+                      現在チェックイン中の一覧
                     </CardTitle>
                     {!loadingList && (
                       <Badge variant="outline" className="text-slate-600">
@@ -245,7 +245,7 @@ export default function CheckoutPage() {
                                 ID: {r.guestDisplayId}
                               </p>
                               <p className="text-xs text-slate-500">
-                                入場 {formatTime(r.checkinAt)} ・ 滞在{" "}
+                                チェックイン {formatTime(r.checkinAt)} ・ 滞在{" "}
                                 {formatStayDuration(new Date(r.checkinAt))}
                               </p>
                             </div>
@@ -294,7 +294,7 @@ export default function CheckoutPage() {
               <p className="font-medium text-slate-900">{selected.guestName}</p>
               <p className="text-slate-600">ID: {selected.guestDisplayId}</p>
               <p className="text-slate-500">
-                入場 {formatTime(selected.checkinAt)} ・ 滞在{" "}
+                チェックイン {formatTime(selected.checkinAt)} ・ 滞在{" "}
                 {formatStayDuration(new Date(selected.checkinAt))}
               </p>
             </div>

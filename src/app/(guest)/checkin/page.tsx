@@ -40,7 +40,7 @@ export default function CheckinPage() {
                   </h1>
                 </Link>
                 <p className="mt-3 text-sm text-slate-600">
-                  お持ちのIDまたはお名前から入退場の手続きを進めます。
+                  お持ちのIDまたはお名前からチェックインの手続きを進めます。
                 </p>
               </div>
               <div className="flex flex-col gap-2 sm:w-auto sm:flex-row">
@@ -51,7 +51,7 @@ export default function CheckinPage() {
                     onClick={() => playClick()}
                   >
                     <ArrowLeft className="h-4 w-4" aria-hidden />
-                    退場手続き
+                    チェックアウト
                   </Button>
                 </Link>
                 <Link href="/register" className="flex-1 sm:flex-none">

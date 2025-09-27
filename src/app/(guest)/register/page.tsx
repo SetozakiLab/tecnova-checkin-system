@@ -145,7 +145,7 @@ function RegisterForm({ soundEffects }: RegisterFormProps) {
           あなたの情報を教えてください
         </CardTitle>
         <CardDescription className="text-sm text-slate-500">
-          入場時に必要な最低限の情報のみを入力してください
+          チェックイン時に必要な最低限の情報のみを入力してください
         </CardDescription>
       </CardHeader>
       <CardContent className="px-6 pb-6 pt-2">
@@ -323,7 +323,7 @@ export default function RegisterPage() {
                     onClick={() => playClick()}
                   >
                     <ArrowLeft className="h-4 w-4" aria-hidden />
-                    入退場手続きへ
+                    入チェックアウトへ
                   </Button>
                 </Link>
                 <Link href="/" className="flex-1 sm:flex-none">

@@ -85,7 +85,7 @@ export function CheckinActions({ guest }: CheckinActionsProps) {
           <div className="space-y-4 text-center">
             <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
               <p className="text-sm font-medium text-slate-700">
-                現在入場中です
+                現在チェックイン中です
               </p>
             </div>
             <Button
