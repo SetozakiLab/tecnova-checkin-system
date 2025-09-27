@@ -172,7 +172,7 @@ export function AppPagination({
     <Pagination className={className}>
       <PaginationContent>
         <PaginationItem>
-          <PaginationPrevious
+          <PaginationLink
             href="#"
             onClick={(e) => {
               e.preventDefault();
@@ -181,13 +181,15 @@ export function AppPagination({
               }
             }}
             className={cn(
+              "gap-1 px-2.5 sm:pl-2.5",
               currentPage <= 1 || loading
                 ? "pointer-events-none opacity-50"
                 : "cursor-pointer"
             )}
           >
-            前へ
-          </PaginationPrevious>
+            <ChevronLeftIcon />
+            <span className="hidden sm:block">前へ</span>
+          </PaginationLink>
         </PaginationItem>
 
         {getPageNumbers().map((pageNum) => (
@@ -211,7 +213,7 @@ export function AppPagination({
         ))}
 
         <PaginationItem>
-          <PaginationNext
+          <PaginationLink
             href="#"
             onClick={(e) => {
               e.preventDefault();
@@ -220,13 +222,15 @@ export function AppPagination({
               }
             }}
             className={cn(
+              "gap-1 px-2.5 sm:pr-2.5",
               currentPage >= totalPages || loading
                 ? "pointer-events-none opacity-50"
                 : "cursor-pointer"
             )}
           >
-            次へ
-          </PaginationNext>
+            <span className="hidden sm:block">次へ</span>
+            <ChevronRightIcon />
+          </PaginationLink>
         </PaginationItem>
       </PaginationContent>
     </Pagination>

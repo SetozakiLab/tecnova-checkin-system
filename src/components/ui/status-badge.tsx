@@ -47,6 +47,7 @@ export function StatusBadge({
   return (
     <div
       className={cn(statusBadgeVariants({ status, size }), className)}
+      data-slot="status-badge"
       {...props}
     >
       {showIndicator && (
