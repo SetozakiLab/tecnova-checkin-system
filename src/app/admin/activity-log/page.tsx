@@ -1,5 +1,5 @@
 "use client";
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { AdminLayout } from "@/components/admin-layout";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -19,7 +19,7 @@ import {
   SheetTitle,
   SheetFooter,
 } from "@/components/ui/sheet";
-import { Loader2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Loader2, ChevronLeft, ChevronRight, Download } from "lucide-react";
 import { formatGradeDisplay } from "@/domain/value-objects/grade";
 import { useActivityLog } from "@/hooks/use-activity-log";
 import {
@@ -28,6 +28,8 @@ import {
   activityCategoryColorClasses,
   formatActivityCategory,
 } from "@/domain/activity-category";
+import { formatJST } from "@/lib/timezone";
+import { downloadCsv } from "@/lib/csv";
 
 const categories = ACTIVITY_CATEGORIES;
 
@@ -66,7 +68,7 @@ export default function ActivityLogPage() {
   const [formGuestId, setFormGuestId] = useState("");
   const [formDisplayId, setFormDisplayId] = useState<number | undefined>();
   const [formTime, setFormTime] = useState("00:00");
-  const [formCategories, setFormCategories] = useState<string[]>(["VR_HMD"]);
+  const [formCategories, setFormCategories] = useState<string[]>([]);
   const [formDescription, setFormDescription] = useState<string>("");
   const [formMentorNote, setFormMentorNote] = useState<string>("");
   const [saving, setSaving] = useState(false);
@@ -155,7 +157,7 @@ export default function ActivityLogPage() {
     const g = currentGuests.find((c) => c.guestId === guestId);
     setFormDisplayId(g?.displayId);
     setFormTime(slot);
-    setFormCategories(["VR_HMD"]);
+    setFormCategories([]);
     setFormDescription("");
     setFormMentorNote("");
     setError("");
@@ -244,6 +246,36 @@ export default function ActivityLogPage() {
     });
   }
 
+  const handleExportCsv = useCallback(() => {
+    const headers = [
+      "日時(JST)",
+      "表示ID",
+      "ゲスト名",
+      "学年",
+      "カテゴリ",
+      "活動内容",
+      "メンター対応",
+    ];
+
+    const rows = logs.map((log) => {
+      const guest = currentGuests.find((g) => g.guestId === log.guestId);
+      const categoryLabels = (log.categories || []).map((c) =>
+        formatActivityCategory(c as keyof typeof activityCategoryLabels)
+      );
+      return [
+        formatJST(log.timeslotStart, "yyyy-MM-dd HH:mm"),
+        guest?.displayId ?? "",
+        guest?.name ?? log.guestId,
+        guest?.grade ? formatGradeDisplay(guest.grade) : "",
+        categoryLabels.join(" / "),
+        log.description ?? "",
+        log.mentorNote ?? "",
+      ];
+    });
+
+    downloadCsv(`activity_logs_${date}.csv`, headers, rows);
+  }, [currentGuests, date, logs]);
+
   return (
     <AdminLayout title="活動ログ">
       <div className="space-y-6">
@@ -284,6 +316,16 @@ export default function ActivityLogPage() {
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleExportCsv}
+                disabled={logs.length === 0}
+                className="flex items-center gap-1"
+              >
+                <Download className="h-4 w-4" />
+                CSV出力
+              </Button>
               <Button size="sm" variant="outline" onClick={refresh}>
                 再読込
               </Button>

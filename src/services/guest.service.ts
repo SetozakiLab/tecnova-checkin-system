@@ -1,9 +1,33 @@
+import { Prisma } from "@/generated/prisma";
 import { prisma } from "@/lib/prisma";
 import { generateDisplayId, getNextSequenceForYear } from "@/lib/date-utils";
-import { GuestData, PaginationData } from "@/types/api";
+import {
+  GuestData,
+  GuestExportRow,
+  PaginationData,
+  GradeValue,
+} from "@/types/api";
 import { buildPagination } from "@/lib/pagination";
 import { domain } from "@/lib/errors";
 import { z } from "zod";
+import { getDateEndJST, getDateStartJST } from "@/lib/timezone";
+
+const gradeEnumValues = [
+  "ES1",
+  "ES2",
+  "ES3",
+  "ES4",
+  "ES5",
+  "ES6",
+  "JH1",
+  "JH2",
+  "JH3",
+  "HS1",
+  "HS2",
+  "HS3",
+] as const;
+
+const gradeEnum = z.enum(gradeEnumValues);
 
 // Zodスキーマ
 export const createGuestSchema = z.object({
@@ -16,23 +40,7 @@ export const createGuestSchema = z.object({
     .email("有効なメールアドレスを入力してください")
     .optional()
     .or(z.literal("")),
-  grade: z
-    .enum([
-      "ES1",
-      "ES2",
-      "ES3",
-      "ES4",
-      "ES5",
-      "ES6",
-      "JH1",
-      "JH2",
-      "JH3",
-      "HS1",
-      "HS2",
-      "HS3",
-    ] as const)
-    .optional()
-    .nullable(),
+  grade: gradeEnum.optional().nullable(),
 });
 
 export const updateGuestSchema = z.object({
@@ -46,23 +54,7 @@ export const updateGuestSchema = z.object({
     .email("有効なメールアドレスを入力してください")
     .optional()
     .or(z.literal("")),
-  grade: z
-    .enum([
-      "ES1",
-      "ES2",
-      "ES3",
-      "ES4",
-      "ES5",
-      "ES6",
-      "JH1",
-      "JH2",
-      "JH3",
-      "HS1",
-      "HS2",
-      "HS3",
-    ] as const)
-    .optional()
-    .nullable(),
+  grade: gradeEnum.optional().nullable(),
 });
 
 export const guestSearchSchema = z.object({
@@ -74,6 +66,18 @@ export const guestSearchSchema = z.object({
 export type CreateGuestData = z.infer<typeof createGuestSchema>;
 export type UpdateGuestData = z.infer<typeof updateGuestSchema>;
 export type GuestSearchParams = z.infer<typeof guestSearchSchema>;
+
+export type GuestExportStatus = "ALL" | "CHECKED_IN" | "CHECKED_OUT";
+
+export interface GuestExportParams {
+  keyword?: string;
+  grades?: GradeValue[];
+  status?: GuestExportStatus;
+  registeredStart?: string;
+  registeredEnd?: string;
+  minTotalVisits?: number;
+  includeVisitStats?: boolean;
+}
 
 // ゲストサービスクラス
 export class GuestService {
@@ -233,6 +237,135 @@ export class GuestService {
     const pagination: PaginationData = buildPagination(page, limit, totalCount);
 
     return { guests: guestsData, pagination };
+  }
+
+  static async exportGuests(
+    params: GuestExportParams
+  ): Promise<GuestExportRow[]> {
+    const {
+      keyword,
+      grades,
+      status = "ALL",
+      registeredStart,
+      registeredEnd,
+      minTotalVisits,
+      includeVisitStats,
+    } = params;
+
+    const filters: Prisma.GuestWhereInput[] = [];
+
+    if (grades && grades.length > 0) {
+      filters.push({ grade: { in: grades } });
+    }
+
+    if (registeredStart || registeredEnd) {
+      const range: Prisma.DateTimeFilter = {};
+      if (registeredStart) {
+        range.gte = getDateStartJST(registeredStart);
+      }
+      if (registeredEnd) {
+        range.lte = getDateEndJST(registeredEnd);
+      }
+      filters.push({ createdAt: range });
+    }
+
+    if (status === "CHECKED_IN") {
+      filters.push({ checkins: { some: { isActive: true } } });
+    } else if (status === "CHECKED_OUT") {
+      filters.push({ checkins: { none: { isActive: true } } });
+    }
+
+    if (keyword?.trim()) {
+      const term = keyword.trim();
+      const isNumeric = /^\d+$/.test(term);
+      if (isNumeric) {
+        const displayId = Number.parseInt(term, 10);
+        if (!Number.isNaN(displayId)) {
+          filters.push({ displayId });
+        }
+      } else {
+        filters.push({
+          OR: [
+            { name: { contains: term, mode: "insensitive" } },
+            { contact: { contains: term, mode: "insensitive" } },
+          ],
+        });
+      }
+    }
+
+    const where: Prisma.GuestWhereInput =
+      filters.length > 0 ? { AND: filters } : {};
+
+    const guests = await prisma.guest.findMany({
+      where,
+      include: {
+        checkins: {
+          where: { isActive: true },
+          select: { id: true },
+        },
+        _count: {
+          select: { checkins: true },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    const filteredGuests =
+      typeof minTotalVisits === "number"
+        ? guests.filter(
+            (guest) => (guest._count?.checkins ?? 0) >= minTotalVisits
+          )
+        : guests;
+
+    const guestIds = filteredGuests.map((guest) => guest.id);
+    const statsMap = new Map<
+      string,
+      { lastVisitAt: string | null; totalStayMinutes: number }
+    >();
+
+    if (includeVisitStats && guestIds.length > 0) {
+      const checkins = await prisma.checkinRecord.findMany({
+        where: { guestId: { in: guestIds } },
+        select: { guestId: true, checkinAt: true, checkoutAt: true },
+        orderBy: { checkinAt: "asc" },
+      });
+      const now = new Date();
+      for (const record of checkins) {
+        const current = statsMap.get(record.guestId) ?? {
+          lastVisitAt: null as string | null,
+          totalStayMinutes: 0,
+        };
+        const end = record.checkoutAt ?? now;
+        const minutes = Math.max(
+          0,
+          Math.floor((end.getTime() - record.checkinAt.getTime()) / (1000 * 60))
+        );
+        current.totalStayMinutes += minutes;
+        const candidate = record.checkoutAt ?? record.checkinAt;
+        if (!current.lastVisitAt || candidate > new Date(current.lastVisitAt)) {
+          current.lastVisitAt = candidate.toISOString();
+        }
+        statsMap.set(record.guestId, current);
+      }
+    }
+
+    return filteredGuests.map((guest) => {
+      const stats = statsMap.get(guest.id);
+      return {
+        id: guest.id,
+        displayId: guest.displayId,
+        name: guest.name,
+        contact: guest.contact ?? null,
+        grade: guest.grade ?? null,
+        createdAt: guest.createdAt.toISOString(),
+        isCurrentlyCheckedIn: guest.checkins.length > 0,
+        totalVisits: guest._count?.checkins ?? 0,
+        lastVisitAt: includeVisitStats ? stats?.lastVisitAt ?? null : null,
+        totalStayMinutes: includeVisitStats
+          ? stats?.totalStayMinutes ?? 0
+          : null,
+      } satisfies GuestExportRow;
+    });
   }
 
   // ゲスト検索（公開用 - display IDまたは名前）

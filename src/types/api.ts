@@ -98,3 +98,31 @@ export interface GuestDetailStatsDto {
   isCurrentlyCheckedIn: boolean;
   daily: GuestDailyStatItemDto[];
 }
+
+export interface ActivityLogExportRow {
+  id: string;
+  guestId: string;
+  guestDisplayId: number | null;
+  guestName: string;
+  guestContact: string | null;
+  guestGrade: string | null;
+  categories: string[];
+  description: string | null;
+  mentorNote: string | null;
+  timeslotStart: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GuestExportRow {
+  id: string;
+  displayId: number;
+  name: string;
+  contact: string | null;
+  grade: string | null;
+  createdAt: string;
+  isCurrentlyCheckedIn: boolean;
+  totalVisits: number;
+  lastVisitAt: string | null;
+  totalStayMinutes: number | null;
+}

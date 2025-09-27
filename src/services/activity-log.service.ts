@@ -2,7 +2,12 @@ import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { domain } from "@/lib/errors";
 import { floorTo30MinSlotJST } from "@/lib/time-slot";
-import { ACTIVITY_CATEGORIES } from "@/domain/activity-category";
+import {
+  ACTIVITY_CATEGORIES,
+  type ActivityCategory,
+} from "@/domain/activity-category";
+import { getDateEndJST, getDateStartJST } from "@/lib/timezone";
+import { ActivityLogExportRow } from "@/types/api";
 
 export const upsertActivityLogSchema = z.object({
   guestId: z.string().min(1),
@@ -27,6 +32,12 @@ export const upsertActivityLogSchema = z.object({
 
 export type UpsertActivityLogInput = z.infer<typeof upsertActivityLogSchema>;
 
+export interface ActivityLogExportParams {
+  startDate: string;
+  endDate: string;
+  categories?: ActivityCategory[];
+}
+
 export class ActivityLogService {
   /**
    * 指定ゲスト・カテゴリ・説明で timeslot をJST30分単位に正規化し upsert。
@@ -44,12 +55,10 @@ export class ActivityLogService {
     // upsert: unique (guestId, timeslotStart)
     const log = await prisma.activityLog.upsert({
       where: { guestId_timeslotStart: { guestId, timeslotStart } },
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      update: { categories: categories as any, description, mentorNote },
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      update: { categories, description, mentorNote },
       create: {
         guestId,
-        categories: categories as any,
+        categories,
         description,
         mentorNote,
         timeslotStart,
@@ -78,22 +87,66 @@ export class ActivityLogService {
       where: { timeslotStart: { gte: start, lt: end } },
       orderBy: { timeslotStart: "asc" },
     });
+    const records = logs as Array<
+      (typeof logs)[number] & { category?: ActivityCategory | null }
+    >;
     // 型が古いクライアントの場合 category フィールドしかないためマッピング
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (logs as any[]).map((raw) => {
-      if (Array.isArray(raw.categories)) return this.format(raw as any);
-      const fallback = {
+    return records.map((raw) => {
+      const categories = Array.isArray(raw.categories)
+        ? (raw.categories as ActivityCategory[])
+        : raw.category
+        ? [raw.category]
+        : [];
+      return this.format({
         id: raw.id,
         guestId: raw.guestId,
-        categories: raw.category ? [raw.category] : [],
+        categories,
         description: raw.description ?? null,
         mentorNote: raw.mentorNote ?? null,
         timeslotStart: raw.timeslotStart,
         createdAt: raw.createdAt,
         updatedAt: raw.updatedAt,
-      };
-      return this.format(fallback);
+      });
     });
+  }
+
+  static async exportLogs(
+    params: ActivityLogExportParams
+  ): Promise<ActivityLogExportRow[]> {
+    const { startDate, endDate, categories } = params;
+    const start = getDateStartJST(startDate);
+    const end = getDateEndJST(endDate);
+
+    const logs = await prisma.activityLog.findMany({
+      where: {
+        timeslotStart: {
+          gte: start,
+          lte: end,
+        },
+        ...(categories && categories.length > 0
+          ? { categories: { hasSome: categories } }
+          : {}),
+      },
+      include: {
+        guest: true,
+      },
+      orderBy: { timeslotStart: "asc" },
+    });
+
+    return logs.map((log) => ({
+      id: log.id,
+      guestId: log.guestId,
+      guestDisplayId: log.guest.displayId ?? null,
+      guestName: log.guest.name,
+      guestContact: log.guest.contact ?? null,
+      guestGrade: log.guest.grade ?? null,
+      categories: (log.categories || []) as ActivityCategory[],
+      description: log.description ?? null,
+      mentorNote: log.mentorNote ?? null,
+      timeslotStart: log.timeslotStart.toISOString(),
+      createdAt: log.createdAt.toISOString(),
+      updatedAt: log.updatedAt.toISOString(),
+    }));
   }
 
   // prisma generate 前後で型が異なる可能性があるため category は any 許容

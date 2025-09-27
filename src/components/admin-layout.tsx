@@ -12,6 +12,7 @@ import {
   LogOut,
   Menu,
   User2Icon,
+  Download,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -70,6 +71,7 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
     { href: "/admin/history", label: "入退場履歴", icon: HistoryIcon },
     { href: "/admin/guests", label: "ゲスト管理", icon: Users },
     { href: "/admin/activity-log", label: "活動ログ記入", icon: HistoryIcon },
+    { href: "/admin/exports", label: "CSV出力", icon: Download },
   ];
 
   const NavLinks = () => (
