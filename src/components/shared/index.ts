@@ -4,6 +4,4 @@ export {
   DashboardSkeleton,
   GuestsTableSkeleton,
 } from "./loading";
-export * from "./pagination";
-export * from "./status-badge";
 export * from "./refresh-button";

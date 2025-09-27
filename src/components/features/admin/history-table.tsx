@@ -6,7 +6,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { StatusBadge } from "@/components/shared/status-badge";
+import { LegacyStatusBadge as StatusBadge } from "@/components/ui/status-badge";
 import { formatDateTime } from "@/lib/date-utils";
 import { CheckinRecord } from "@/types/api";
 import { useState } from "react";

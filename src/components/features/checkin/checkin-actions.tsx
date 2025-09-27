@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { StatusBadge } from "@/components/shared/status-badge";
+import { LegacyStatusBadge as StatusBadge } from "@/components/ui/status-badge";
 import { useCheckinActions } from "@/hooks/use-checkin-actions";
 import { ErrorState } from "@/components/shared/error-state";
 import { GuestData } from "@/types/api";

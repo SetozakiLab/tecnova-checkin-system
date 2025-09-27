@@ -125,3 +125,110 @@ export {
   PaginationNext,
   PaginationEllipsis,
 }
+
+// High-level pagination component for application use
+export interface AppPaginationProps {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+  loading?: boolean;
+  className?: string;
+}
+
+export function AppPagination({
+  currentPage,
+  totalPages,
+  onPageChange,
+  loading = false,
+  className,
+}: AppPaginationProps) {
+  if (totalPages <= 1) return null;
+
+  const getPageNumbers = () => {
+    const pages: number[] = [];
+    const maxVisiblePages = 5;
+
+    if (totalPages <= maxVisiblePages) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      let start = Math.max(1, currentPage - 2);
+      let end = Math.min(totalPages, start + maxVisiblePages - 1);
+
+      if (end - start < maxVisiblePages - 1) {
+        start = Math.max(1, end - maxVisiblePages + 1);
+      }
+
+      for (let i = start; i <= end; i++) {
+        pages.push(i);
+      }
+    }
+
+    return pages;
+  };
+
+  return (
+    <Pagination className={className}>
+      <PaginationContent>
+        <PaginationItem>
+          <PaginationPrevious
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              if (currentPage > 1 && !loading) {
+                onPageChange(currentPage - 1);
+              }
+            }}
+            className={cn(
+              currentPage <= 1 || loading
+                ? "pointer-events-none opacity-50"
+                : "cursor-pointer"
+            )}
+          >
+            前へ
+          </PaginationPrevious>
+        </PaginationItem>
+
+        {getPageNumbers().map((pageNum) => (
+          <PaginationItem key={pageNum}>
+            <PaginationLink
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                if (!loading) {
+                  onPageChange(pageNum);
+                }
+              }}
+              isActive={pageNum === currentPage}
+              className={cn(
+                loading ? "pointer-events-none opacity-50" : "cursor-pointer"
+              )}
+            >
+              {pageNum}
+            </PaginationLink>
+          </PaginationItem>
+        ))}
+
+        <PaginationItem>
+          <PaginationNext
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              if (currentPage < totalPages && !loading) {
+                onPageChange(currentPage + 1);
+              }
+            }}
+            className={cn(
+              currentPage >= totalPages || loading
+                ? "pointer-events-none opacity-50"
+                : "cursor-pointer"
+            )}
+          >
+            次へ
+          </PaginationNext>
+        </PaginationItem>
+      </PaginationContent>
+    </Pagination>
+  );
+}

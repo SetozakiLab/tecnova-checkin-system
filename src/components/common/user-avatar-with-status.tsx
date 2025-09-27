@@ -2,7 +2,7 @@
 // ゲスト情報と状態を表示するアバターコンポーネント
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { StatusBadge } from "./status-badge";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { cn } from "@/lib/utils";
 
 interface UserAvatarWithStatusProps {
