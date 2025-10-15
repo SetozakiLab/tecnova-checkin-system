@@ -8,7 +8,7 @@ export interface PaginationInfo {
 export function buildPagination(
   page: number,
   limit: number,
-  totalCount: number
+  totalCount: number,
 ): PaginationInfo {
   return {
     page,
@@ -26,7 +26,7 @@ export function coercePage(value: unknown, defaultValue = 1): number {
 export function coerceLimit(
   value: unknown,
   defaultValue = 50,
-  max = 100
+  max = 100,
 ): number {
   const n = Number(value);
   if (!Number.isFinite(n) || n <= 0) return defaultValue;

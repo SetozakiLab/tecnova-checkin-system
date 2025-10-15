@@ -1,8 +1,8 @@
-import { NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
 import {
-  withApiHandler,
-  createSuccessResponse,
   createErrorResponse,
+  createSuccessResponse,
+  withApiHandler,
 } from "@/lib/api-handler";
 import { CheckinService } from "@/services/checkin.service";
 
@@ -16,5 +16,5 @@ export const POST = withApiHandler(
     const checkinData = await CheckinService.checkinGuest(id);
     return createSuccessResponse(checkinData, "チェックインしました", 201);
   },
-  { allowedMethods: ["POST"] }
+  { allowedMethods: ["POST"] },
 );

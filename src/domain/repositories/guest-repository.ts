@@ -1,8 +1,8 @@
 // Domain Repository Interface: Guest Repository
 // ゲストデータアクセスの抽象化インターフェース
 
-import { GuestEntity, GuestWithStatus } from "@/domain/entities/guest";
-import { GradeValue } from "@/domain/value-objects/grade";
+import type { GuestEntity, GuestWithStatus } from "@/domain/entities/guest";
+import type { GradeValue } from "@/domain/value-objects/grade";
 
 export interface GuestSearchParams {
   page: number;

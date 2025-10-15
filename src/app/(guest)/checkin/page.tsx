@@ -1,15 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { ArrowLeft, DoorOpen, Home, Users } from "lucide-react";
+import { motion } from "motion/react";
 import Link from "next/link";
-import { GuestSearch } from "@/components/features/checkin/guest-search";
+import { useState } from "react";
 import { CheckinActions } from "@/components/features/checkin/checkin-actions";
-import { GuestData } from "@/types/api";
-import { useGuestSoundEffects } from "@/hooks/use-guest-sound-effects";
+import { GuestSearch } from "@/components/features/checkin/guest-search";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { motion } from "motion/react";
-import { ArrowLeft, DoorOpen, Home, Users } from "lucide-react";
+import { useGuestSoundEffects } from "@/hooks/use-guest-sound-effects";
+import type { GuestData } from "@/types/api";
 
 export default function CheckinPage() {
   const [selectedGuest, setSelectedGuest] = useState<GuestData | null>(null);

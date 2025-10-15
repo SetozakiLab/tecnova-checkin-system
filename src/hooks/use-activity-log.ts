@@ -1,5 +1,5 @@
-import useSWR from "swr";
 import { useCallback, useMemo } from "react";
+import useSWR from "swr";
 
 interface ActivityLogRow {
   id: string;
@@ -49,7 +49,7 @@ export function useActivityLog(date: string): UseActivityLogResult {
   } = useSWR<ActivityLogRow[]>(
     `/api/admin/activity-logs?date=${date}`,
     fetcher,
-    { revalidateOnFocus: false }
+    { revalidateOnFocus: false },
   );
   const {
     data: guestsData,
@@ -61,7 +61,7 @@ export function useActivityLog(date: string): UseActivityLogResult {
       ? `/api/checkins/today?date=${date}`
       : `/api/checkins/by-date?date=${date}`,
     fetcher,
-    { revalidateOnFocus: false }
+    { revalidateOnFocus: false },
   );
 
   const refresh = useCallback(() => {

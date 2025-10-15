@@ -1,4 +1,4 @@
-import { withApiHandler, createSuccessResponse } from "@/lib/api-handler";
+import { createSuccessResponse, withApiHandler } from "@/lib/api-handler";
 import { CheckinService } from "@/services/checkin.service";
 
 // 今日チェックイン履歴があるゲスト一覧（CheckinService に委譲）
@@ -16,8 +16,8 @@ export const GET = withApiHandler(
         checkinAt: r.checkinAt,
         checkoutAt: r.checkoutAt,
         isActive: r.isActive,
-      }))
+      })),
     );
   },
-  { requireAuth: true, allowedMethods: ["GET"] }
+  { requireAuth: true, allowedMethods: ["GET"] },
 );

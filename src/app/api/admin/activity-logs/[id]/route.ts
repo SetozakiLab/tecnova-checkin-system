@@ -1,11 +1,11 @@
-import {
-  withApiHandler,
-  createSuccessResponse,
-  createErrorResponse,
-} from "@/lib/api-handler";
-import { ActivityLogService } from "@/services/activity-log.service";
 import { getServerSession } from "next-auth";
+import {
+  createErrorResponse,
+  createSuccessResponse,
+  withApiHandler,
+} from "@/lib/api-handler";
 import { authOptions } from "@/lib/auth";
+import { ActivityLogService } from "@/services/activity-log.service";
 
 type Params = { id: string } & Record<string, string>;
 
@@ -29,7 +29,7 @@ const handler = withApiHandler<Params>(
     const result = await ActivityLogService.delete(id, role);
     return createSuccessResponse(result, undefined, 200);
   },
-  { requireAuth: true, allowedMethods: ["DELETE"] }
+  { requireAuth: true, allowedMethods: ["DELETE"] },
 );
 
 export { handler as DELETE };

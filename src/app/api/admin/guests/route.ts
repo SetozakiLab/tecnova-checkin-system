@@ -1,9 +1,9 @@
-import { NextRequest } from "next/server";
-import { withApiHandler, createSuccessResponse } from "@/lib/api-handler";
+import type { NextRequest } from "next/server";
+import { createSuccessResponse, withApiHandler } from "@/lib/api-handler";
 import {
+  type GuestSearchParams,
   GuestService,
   guestSearchSchema,
-  GuestSearchParams,
 } from "@/services/guest.service";
 
 export const GET = withApiHandler(
@@ -20,5 +20,5 @@ export const GET = withApiHandler(
     const result = await GuestService.searchGuests(params);
     return createSuccessResponse(result);
   },
-  { requireAuth: true, allowedMethods: ["GET"] }
+  { requireAuth: true, allowedMethods: ["GET"] },
 );

@@ -1,15 +1,15 @@
 import { z } from "zod";
+import { GRADE_DEFINITIONS } from "@/domain/value-objects/grade";
 import {
-  withApiHandler,
   createErrorResponse,
   createSuccessResponse,
+  withApiHandler,
 } from "@/lib/api-handler";
 import { GuestService } from "@/services/guest.service";
-import { GRADE_DEFINITIONS } from "@/domain/value-objects/grade";
 
 const gradeValues = GRADE_DEFINITIONS.map((g) => g.value) as [
   (typeof GRADE_DEFINITIONS)[number]["value"],
-  ...(typeof GRADE_DEFINITIONS)[number]["value"][]
+  ...(typeof GRADE_DEFINITIONS)[number]["value"][],
 ];
 
 const gradeEnum = z.enum(gradeValues);
@@ -62,7 +62,7 @@ const handler = withApiHandler(
         parsed.error.errors.map((issue) => ({
           field: issue.path.join("."),
           message: issue.message,
-        }))
+        })),
       );
     }
 
@@ -74,7 +74,7 @@ const handler = withApiHandler(
 
     return createSuccessResponse(data);
   },
-  { requireAuth: true, allowedMethods: ["POST"] }
+  { requireAuth: true, allowedMethods: ["POST"] },
 );
 
 export { handler as POST };

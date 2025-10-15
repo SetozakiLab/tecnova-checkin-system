@@ -1,4 +1,7 @@
-import { useState, useEffect } from "react";
+import { Check, Search } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ErrorState } from "@/components/shared/error-state";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -10,11 +13,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useGuestSearch } from "@/hooks/use-guest-search";
-import { ErrorState } from "@/components/shared/error-state";
 import { useGuestSoundEffects } from "@/hooks/use-guest-sound-effects";
-import { GuestData } from "@/types/api";
-import { Badge } from "@/components/ui/badge";
-import { Check, Search } from "lucide-react";
+import type { GuestData } from "@/types/api";
 
 interface GuestSearchProps {
   onGuestSelect: (guest: GuestData) => void;

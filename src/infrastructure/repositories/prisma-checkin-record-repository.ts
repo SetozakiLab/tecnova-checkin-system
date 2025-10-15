@@ -1,25 +1,25 @@
 // Infrastructure: CheckinRecord Repository Implementation
 // Prismaを使用したチェックイン記録リポジトリの実装
 
-import { prisma } from "@/lib/prisma";
-import { Prisma } from "@/generated/prisma";
-import {
-  nowInJST,
-  getTodayStartJST,
-  getTomorrowStartJST,
-} from "@/lib/timezone";
-import {
+import type {
   CheckinRecordEntity,
   CheckinRecordWithGuest,
 } from "@/domain/entities/checkin-record";
-import {
-  ICheckinRecordRepository,
+import type {
   CheckinSearchParams,
   CheckinSearchResult,
-  TodayStats,
   GuestDailyStatItem,
   GuestDetailStats,
+  ICheckinRecordRepository,
+  TodayStats,
 } from "@/domain/repositories/checkin-record-repository";
+import type { Prisma } from "@/generated/prisma";
+import { prisma } from "@/lib/prisma";
+import {
+  getTodayStartJST,
+  getTomorrowStartJST,
+  nowInJST,
+} from "@/lib/timezone";
 
 export class PrismaCheckinRecordRepository implements ICheckinRecordRepository {
   async findById(id: string): Promise<CheckinRecordEntity | null> {
@@ -33,7 +33,7 @@ export class PrismaCheckinRecordRepository implements ICheckinRecordRepository {
   }
 
   async findActiveByGuestId(
-    guestId: string
+    guestId: string,
   ): Promise<CheckinRecordEntity | null> {
     const record = await prisma.checkinRecord.findFirst({
       where: {
@@ -85,7 +85,7 @@ export class PrismaCheckinRecordRepository implements ICheckinRecordRepository {
       prev.totalVisitCount += 1;
       const end = v.checkoutAt ?? now;
       prev.totalStayMinutes += Math.floor(
-        (end.getTime() - v.checkinAt.getTime()) / (1000 * 60)
+        (end.getTime() - v.checkinAt.getTime()) / (1000 * 60),
       );
       statsMap.set(v.guestId, prev);
     }
@@ -203,7 +203,7 @@ export class PrismaCheckinRecordRepository implements ICheckinRecordRepository {
             checkoutAt: true,
           },
         }),
-      ]
+      ],
     );
 
     // 平均滞在時間を計算（分単位）
@@ -218,7 +218,7 @@ export class PrismaCheckinRecordRepository implements ICheckinRecordRepository {
         return total;
       }, 0);
       averageStayTime = Math.floor(
-        totalStayTime / completedCheckins.length / (1000 * 60)
+        totalStayTime / completedCheckins.length / (1000 * 60),
       );
     }
 
@@ -261,7 +261,7 @@ export class PrismaCheckinRecordRepository implements ICheckinRecordRepository {
             checkoutAt: true,
           },
         }),
-      ]
+      ],
     );
 
     // 平均滞在時間を計算（分単位）
@@ -276,7 +276,7 @@ export class PrismaCheckinRecordRepository implements ICheckinRecordRepository {
         return total;
       }, 0);
       averageStayTime = Math.floor(
-        totalStayTime / completedCheckins.length / (1000 * 60)
+        totalStayTime / completedCheckins.length / (1000 * 60),
       );
     }
 
@@ -335,7 +335,7 @@ export class PrismaCheckinRecordRepository implements ICheckinRecordRepository {
 
   async getGuestDailyStats(
     guestId: string,
-    days: number = 30
+    days: number = 30,
   ): Promise<GuestDailyStatItem[]> {
     const end = getTomorrowStartJST();
     const start = new Date(end.getTime() - days * 24 * 60 * 60 * 1000);
@@ -368,7 +368,7 @@ export class PrismaCheckinRecordRepository implements ICheckinRecordRepository {
       const endTime = r.checkoutAt ?? (r.isActive ? now : r.checkinAt);
       const stay = Math.max(
         0,
-        Math.floor((endTime.getTime() - r.checkinAt.getTime()) / (1000 * 60))
+        Math.floor((endTime.getTime() - r.checkinAt.getTime()) / (1000 * 60)),
       );
       item.stayMinutes += stay;
       map.set(key, item);
@@ -394,7 +394,7 @@ export class PrismaCheckinRecordRepository implements ICheckinRecordRepository {
 
   async getGuestDetailStats(
     guestId: string,
-    days: number = 30
+    days: number = 30,
   ): Promise<GuestDetailStats> {
     const [totalVisitCount, lastVisitAt, activeRecord, daily] =
       await Promise.all([
@@ -416,7 +416,7 @@ export class PrismaCheckinRecordRepository implements ICheckinRecordRepository {
         sum +
         Math.max(
           0,
-          Math.floor((end.getTime() - r.checkinAt.getTime()) / (1000 * 60))
+          Math.floor((end.getTime() - r.checkinAt.getTime()) / (1000 * 60)),
         )
       );
     }, 0);
@@ -432,7 +432,7 @@ export class PrismaCheckinRecordRepository implements ICheckinRecordRepository {
   }
 
   private mapToEntity(
-    record: Prisma.CheckinRecordUncheckedCreateInput & { id: string }
+    record: Prisma.CheckinRecordUncheckedCreateInput & { id: string },
   ): CheckinRecordEntity {
     const checkinAt =
       typeof record.checkinAt === "string"

@@ -29,12 +29,12 @@ export class CheckinRecordDomainService {
     if (!record.checkoutAt) {
       // チェックアウトしていない場合は現在時刻との差分
       return Math.floor(
-        (new Date().getTime() - record.checkinAt.getTime()) / (1000 * 60)
+        (Date.now() - record.checkinAt.getTime()) / (1000 * 60),
       );
     }
 
     return Math.floor(
-      (record.checkoutAt.getTime() - record.checkinAt.getTime()) / (1000 * 60)
+      (record.checkoutAt.getTime() - record.checkinAt.getTime()) / (1000 * 60),
     );
   }
 
@@ -89,12 +89,11 @@ export class CheckinRecordDomainService {
   static getCurrentStayDuration(record: CheckinRecordEntity): number {
     if (record.checkoutAt) {
       return Math.floor(
-        (record.checkoutAt.getTime() - record.checkinAt.getTime()) / (1000 * 60)
+        (record.checkoutAt.getTime() - record.checkinAt.getTime()) /
+          (1000 * 60),
       );
     }
 
-    return Math.floor(
-      (new Date().getTime() - record.checkinAt.getTime()) / (1000 * 60)
-    );
+    return Math.floor((Date.now() - record.checkinAt.getTime()) / (1000 * 60));
   }
 }

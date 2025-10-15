@@ -1,21 +1,21 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { Download, Loader2 } from "lucide-react";
+import { useCallback, useEffect, useId, useState } from "react";
 import { AdminLayout } from "@/components/admin-layout";
+import { GuestsTable } from "@/components/features/admin/guests-table";
+import { ErrorState } from "@/components/shared/error-state";
+import { GuestsTableSkeleton } from "@/components/shared/loading";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { GuestsTable } from "@/components/features/admin/guests-table";
 import { AppPagination as Pagination } from "@/components/ui/pagination";
-import { GuestsTableSkeleton } from "@/components/shared/loading";
-import { ErrorState } from "@/components/shared/error-state";
+import { formatGradeDisplay } from "@/domain/value-objects/grade";
 import { usePaginatedData } from "@/hooks/use-paginated-data";
-import { GuestData, PaginationData } from "@/types/api";
 import { downloadCsv } from "@/lib/csv";
 import { formatJST } from "@/lib/timezone";
-import { formatGradeDisplay } from "@/domain/value-objects/grade";
-import { Download, Loader2 } from "lucide-react";
+import type { GuestData, PaginationData } from "@/types/api";
 
 interface GuestsData {
   guests: GuestData[];
@@ -27,6 +27,8 @@ export default function AdminGuestsPage() {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [exporting, setExporting] = useState(false);
   const [exportError, setExportError] = useState("");
+
+  const searchId = useId();
 
   const {
     data,
@@ -135,7 +137,7 @@ export default function AdminGuestsPage() {
       downloadCsv(`guests_${fileSuffix}.csv`, headers, rows);
     } catch (error) {
       setExportError(
-        error instanceof Error ? error.message : "CSV出力に失敗しました"
+        error instanceof Error ? error.message : "CSV出力に失敗しました",
       );
     } finally {
       setExporting(false);
@@ -151,12 +153,12 @@ export default function AdminGuestsPage() {
             <CardTitle>ゲスト検索</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex space-x-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
               <div className="flex-1">
-                <Label htmlFor="search">名前または連絡先で検索</Label>
+                <Label htmlFor={searchId}>名前または連絡先で検索</Label>
                 <Input
-                  id="search"
-                  placeholder="名前または連絡先を入力"
+                  id={searchId}
+                  placeholder="検索..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   disabled={loading}
@@ -179,7 +181,7 @@ export default function AdminGuestsPage() {
                   {(pagination.page - 1) * pagination.limit + 1}-
                   {Math.min(
                     pagination.page * pagination.limit,
-                    pagination.totalCount
+                    pagination.totalCount,
                   )}
                   件を表示
                 </div>

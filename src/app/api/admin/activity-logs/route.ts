@@ -1,14 +1,14 @@
-import {
-  withApiHandler,
-  createSuccessResponse,
-  createErrorResponse,
-} from "@/lib/api-handler";
-import {
-  upsertActivityLogSchema,
-  ActivityLogService,
-} from "@/services/activity-log.service";
 import { getServerSession } from "next-auth";
+import {
+  createErrorResponse,
+  createSuccessResponse,
+  withApiHandler,
+} from "@/lib/api-handler";
 import { authOptions } from "@/lib/auth";
+import {
+  ActivityLogService,
+  upsertActivityLogSchema,
+} from "@/services/activity-log.service";
 
 const handler = withApiHandler(
   async (req) => {
@@ -36,7 +36,7 @@ const handler = withApiHandler(
           parsed.error.errors.map((e) => ({
             field: e.path.join("."),
             message: e.message,
-          }))
+          })),
         );
       }
       const result = await ActivityLogService.createOrUpdate(parsed.data);
@@ -45,7 +45,7 @@ const handler = withApiHandler(
 
     return createErrorResponse("METHOD_NOT_ALLOWED", "GET/POSTのみ対応", 405);
   },
-  { requireAuth: true, allowedMethods: ["GET", "POST"] }
+  { requireAuth: true, allowedMethods: ["GET", "POST"] },
 );
 
 export { handler as GET, handler as POST };

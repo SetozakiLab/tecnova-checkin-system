@@ -1,21 +1,15 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import { signIn, getSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { getSession, signIn } from "next-auth/react";
+import { useEffect, useId, useMemo, useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import {
   Command,
   CommandEmpty,
@@ -24,8 +18,14 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import Image from "next/image";
 
 const loginSchema = z.object({
   username: z.string().min(1, "ユーザー名は必須です"),
@@ -42,6 +42,9 @@ export default function AdminLoginPage() {
   const [mode, setMode] = useState<"select" | "create">("select");
   const [error, setError] = useState("");
 
+  const usernameId = useId();
+  const passwordId = useId();
+
   const {
     register,
     handleSubmit,
@@ -50,7 +53,7 @@ export default function AdminLoginPage() {
     formState: { errors },
   } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
-    defaultValues: { mode: "select" } as any,
+    defaultValues: { mode: "select", username: "", password: "" },
   });
 
   const onSubmit = async (data: LoginForm) => {
@@ -91,7 +94,7 @@ export default function AdminLoginPage() {
         if (res.ok) {
           const json = await res.json();
           const names = (json.data?.users || json.users || []).map(
-            (u: any) => u.username
+            (u: { username: string }) => u.username,
           );
           if (!ignore) setUsers(names);
         }
@@ -150,7 +153,7 @@ export default function AdminLoginPage() {
             variant="outline"
             className={cn(
               "w-full justify-between",
-              !value && "text-muted-foreground"
+              !value && "text-muted-foreground",
             )}
             disabled={disabled}
           >
@@ -162,6 +165,8 @@ export default function AdminLoginPage() {
               viewBox="0 0 24 24"
               strokeWidth={1.5}
               stroke="currentColor"
+              role="img"
+              aria-label="dropdown arrow"
             >
               <path
                 strokeLinecap="round"
@@ -270,7 +275,7 @@ export default function AdminLoginPage() {
                   />
                 ) : (
                   <Input
-                    id="username"
+                    id={usernameId}
                     {...register("username")}
                     autoComplete="off"
                     placeholder="例: admin_taro"
@@ -291,9 +296,9 @@ export default function AdminLoginPage() {
 
               {/* パスワード */}
               <div className="space-y-2">
-                <Label htmlFor="password">共通パスワード</Label>
+                <Label htmlFor={passwordId}>共通パスワード</Label>
                 <Input
-                  id="password"
+                  id={passwordId}
                   type="password"
                   {...register("password")}
                   placeholder="••••••••"
@@ -317,8 +322,8 @@ export default function AdminLoginPage() {
                 {loading
                   ? "ログイン中..."
                   : mode === "create"
-                  ? "作成してログイン"
-                  : "ログイン"}
+                    ? "作成してログイン"
+                    : "ログイン"}
               </Button>
             </form>
           </CardContent>

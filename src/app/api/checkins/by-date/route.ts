@@ -1,7 +1,7 @@
 import {
-  withApiHandler,
-  createSuccessResponse,
   createErrorResponse,
+  createSuccessResponse,
+  withApiHandler,
 } from "@/lib/api-handler";
 import { CheckinService } from "@/services/checkin.service";
 
@@ -23,8 +23,8 @@ export const GET = withApiHandler(
         checkinAt: r.checkinAt,
         checkoutAt: r.checkoutAt,
         isActive: r.isActive,
-      }))
+      })),
     );
   },
-  { requireAuth: true, allowedMethods: ["GET"] }
+  { requireAuth: true, allowedMethods: ["GET"] },
 );

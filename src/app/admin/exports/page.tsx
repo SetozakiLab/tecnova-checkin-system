@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { Loader2 } from "lucide-react";
+import { useId, useState } from "react";
 import { AdminLayout } from "@/components/admin-layout";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardAction,
@@ -11,10 +13,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -24,23 +26,21 @@ import {
 } from "@/components/ui/select";
 import {
   ACTIVITY_CATEGORIES,
+  type ActivityCategory,
   activityCategoryLabels,
   formatActivityCategory,
-  type ActivityCategory,
 } from "@/domain/activity-category";
 import {
-  GRADE_DEFINITIONS,
   formatGradeDisplay,
+  GRADE_DEFINITIONS,
 } from "@/domain/value-objects/grade";
 import { downloadCsv } from "@/lib/csv";
 import { formatJST } from "@/lib/timezone";
 import type {
   ActivityLogExportRow,
-  GuestExportRow,
   GradeValue,
+  GuestExportRow,
 } from "@/types/api";
-import { Loader2 } from "lucide-react";
-import { DatePicker } from "@/components/ui/date-picker";
 
 function toDateInputValue(base: Date): string {
   const date = new Date(base);
@@ -57,11 +57,18 @@ function getOffsetDate(days: number): string {
 type GuestExportStatus = "ALL" | "CHECKED_IN" | "CHECKED_OUT";
 
 export default function AdminExportsPage() {
+  const activityStartId = useId();
+  const activityEndId = useId();
+  const guestKeywordId = useId();
+  const guestRegStartId = useId();
+  const guestRegEndId = useId();
+  const guestMinVisitsId = useId();
+
   const [activityStartDate, setActivityStartDate] = useState(() =>
-    getOffsetDate(-6)
+    getOffsetDate(-6),
   );
   const [activityEndDate, setActivityEndDate] = useState(() =>
-    getOffsetDate(0)
+    getOffsetDate(0),
   );
   const [activityCategories, setActivityCategories] = useState<
     ActivityCategory[]
@@ -93,14 +100,14 @@ export default function AdminExportsPage() {
 
   const toggleActivityCategory = (
     value: ActivityCategory,
-    checked: boolean
+    checked: boolean,
   ) => {
     setActivityCategories((prev) =>
       checked
         ? prev.includes(value)
           ? prev
           : [...prev, value]
-        : prev.filter((item) => item !== value)
+        : prev.filter((item) => item !== value),
     );
   };
 
@@ -110,7 +117,7 @@ export default function AdminExportsPage() {
         ? prev.includes(value)
           ? prev
           : [...prev, value]
-        : prev.filter((item) => item !== value)
+        : prev.filter((item) => item !== value),
     );
   };
 
@@ -175,9 +182,9 @@ export default function AdminExportsPage() {
         values.push(
           (row.categories || [])
             .map((category) =>
-              formatActivityCategory(category as ActivityCategory)
+              formatActivityCategory(category as ActivityCategory),
             )
-            .join(" / ")
+            .join(" / "),
         );
         if (activityIncludeDescription) {
           values.push(row.description ?? "");
@@ -193,7 +200,7 @@ export default function AdminExportsPage() {
       setActivityInfo(`${rows.length}件の活動ログを出力しました`);
     } catch (error) {
       setActivityError(
-        error instanceof Error ? error.message : "CSV出力に失敗しました"
+        error instanceof Error ? error.message : "CSV出力に失敗しました",
       );
     } finally {
       setActivityLoading(false);
@@ -270,7 +277,7 @@ export default function AdminExportsPage() {
           values.push(
             row.lastVisitAt
               ? formatJST(row.lastVisitAt, "yyyy-MM-dd HH:mm")
-              : ""
+              : "",
           );
           values.push(row.totalStayMinutes != null ? row.totalStayMinutes : "");
         }
@@ -286,7 +293,7 @@ export default function AdminExportsPage() {
       setGuestInfo(`${rows.length}件のゲスト情報を出力しました`);
     } catch (error) {
       setGuestError(
-        error instanceof Error ? error.message : "CSV出力に失敗しました"
+        error instanceof Error ? error.message : "CSV出力に失敗しました",
       );
     } finally {
       setGuestLoading(false);
@@ -332,9 +339,9 @@ export default function AdminExportsPage() {
               </Label>
               <div className="mt-3 grid gap-4 sm:grid-cols-2">
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="activity-start">開始日</Label>
+                  <Label htmlFor={activityStartId}>開始日</Label>
                   <DatePicker
-                    id="activity-start"
+                    id={activityStartId}
                     value={activityStartDate || undefined}
                     max={activityEndDate || undefined}
                     onChange={(next) => setActivityStartDate(next ?? "")}
@@ -342,9 +349,9 @@ export default function AdminExportsPage() {
                   />
                 </div>
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="activity-end">終了日</Label>
+                  <Label htmlFor={activityEndId}>終了日</Label>
                   <DatePicker
-                    id="activity-end"
+                    id={activityEndId}
                     value={activityEndDate || undefined}
                     min={activityStartDate || undefined}
                     onChange={(next) => setActivityEndDate(next ?? "")}
@@ -459,7 +466,7 @@ export default function AdminExportsPage() {
                   size="sm"
                   onClick={() =>
                     setGuestGrades(
-                      GRADE_DEFINITIONS.map((grade) => grade.value)
+                      GRADE_DEFINITIONS.map((grade) => grade.value),
                     )
                   }
                 >
@@ -478,9 +485,9 @@ export default function AdminExportsPage() {
           <CardContent className="space-y-6">
             <div className="grid gap-4 md:grid-cols-2">
               <div className="flex flex-col gap-2">
-                <Label htmlFor="guest-keyword">キーワード</Label>
+                <Label htmlFor={guestKeywordId}>キーワード</Label>
                 <Input
-                  id="guest-keyword"
+                  id={guestKeywordId}
                   placeholder="名前・連絡先・表示IDで検索"
                   value={guestKeyword}
                   onChange={(event) => setGuestKeyword(event.target.value)}
@@ -533,9 +540,9 @@ export default function AdminExportsPage() {
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className="flex flex-col gap-2">
-                <Label htmlFor="guest-registered-start">登録日（開始）</Label>
+                <Label htmlFor={guestRegStartId}>登録日（開始）</Label>
                 <DatePicker
-                  id="guest-registered-start"
+                  id={guestRegStartId}
                   value={guestRegisteredStart || undefined}
                   max={guestRegisteredEnd || undefined}
                   onChange={(next) => setGuestRegisteredStart(next ?? "")}
@@ -543,9 +550,9 @@ export default function AdminExportsPage() {
                 />
               </div>
               <div className="flex flex-col gap-2">
-                <Label htmlFor="guest-registered-end">登録日（終了）</Label>
+                <Label htmlFor={guestRegEndId}>登録日（終了）</Label>
                 <DatePicker
-                  id="guest-registered-end"
+                  id={guestRegEndId}
                   value={guestRegisteredEnd || undefined}
                   min={guestRegisteredStart || undefined}
                   onChange={(next) => setGuestRegisteredEnd(next ?? "")}
@@ -555,9 +562,9 @@ export default function AdminExportsPage() {
             </div>
 
             <div className="flex flex-col gap-2 md:w-64">
-              <Label htmlFor="guest-min-visits">訪問回数（下限）</Label>
+              <Label htmlFor={guestMinVisitsId}>訪問回数（下限）</Label>
               <Input
-                id="guest-min-visits"
+                id={guestMinVisitsId}
                 type="number"
                 min={0}
                 placeholder="例: 5"

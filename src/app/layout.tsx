@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import type { ReactNode } from "react";
 import { Noto_Sans_JP, Roboto, Roboto_Mono } from "next/font/google";
+import type { ReactNode } from "react";
 import { SessionProvider } from "@/components/session-provider";
 import "./globals.css";
 
@@ -36,7 +36,7 @@ export default function RootLayout({
   return (
     <html lang="ja" suppressHydrationWarning>
       <body
-				className={`${notoSans.variable} ${roboto.variable} ${robotoMono.variable} antialiased touch-pan-y`}
+        className={`${notoSans.variable} ${roboto.variable} ${robotoMono.variable} antialiased touch-pan-y`}
       >
         <SessionProvider>{children}</SessionProvider>
       </body>

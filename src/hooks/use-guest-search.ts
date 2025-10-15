@@ -1,6 +1,6 @@
-import { useState, useCallback } from "react";
+import { useCallback, useState } from "react";
+import type { GuestData } from "@/types/api";
 import { useApi } from "./use-api";
-import { GuestData } from "@/types/api";
 
 interface UseGuestSearchReturn {
   searchQuery: string;
@@ -26,7 +26,7 @@ export function useGuestSearch(): UseGuestSearchReturn {
     }
 
     const result = await execute(
-      `/api/guests/search?q=${encodeURIComponent(searchQuery)}`
+      `/api/guests/search?q=${encodeURIComponent(searchQuery)}`,
     );
 
     if (result) {

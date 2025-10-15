@@ -1,16 +1,16 @@
-import { Prisma } from "@/generated/prisma";
-import { prisma } from "@/lib/prisma";
+import { z } from "zod";
+import type { Prisma } from "@/generated/prisma";
 import { generateDisplayId, getNextSequenceForYear } from "@/lib/date-utils";
-import {
+import { domain } from "@/lib/errors";
+import { buildPagination } from "@/lib/pagination";
+import { prisma } from "@/lib/prisma";
+import { getDateEndJST, getDateStartJST } from "@/lib/timezone";
+import type {
+  GradeValue,
   GuestData,
   GuestExportRow,
   PaginationData,
-  GradeValue,
 } from "@/types/api";
-import { buildPagination } from "@/lib/pagination";
-import { domain } from "@/lib/errors";
-import { z } from "zod";
-import { getDateEndJST, getDateStartJST } from "@/lib/timezone";
 
 const gradeEnumValues = [
   "ES1",
@@ -84,7 +84,7 @@ export class GuestService {
   // ゲスト作成
   static async createGuest(data: CreateGuestData): Promise<GuestData> {
     // ユニークなdisplayIdを生成
-    const displayId = await this.generateUniqueDisplayId();
+    const displayId = await GuestService.generateUniqueDisplayId();
 
     const guest = await prisma.guest.create({
       data: {
@@ -95,7 +95,7 @@ export class GuestService {
       },
     });
 
-    return this.formatGuestData(guest);
+    return GuestService.formatGuestData(guest);
   }
 
   // ゲスト取得（ID）
@@ -113,7 +113,7 @@ export class GuestService {
     if (!guest) return null;
 
     return {
-      ...this.formatGuestData(guest),
+      ...GuestService.formatGuestData(guest),
       isCurrentlyCheckedIn: guest.checkins.length > 0,
       currentCheckinId: guest.checkins[0]?.id || null,
       lastCheckinAt: guest.checkins[0]?.checkinAt.toISOString() || null,
@@ -123,7 +123,7 @@ export class GuestService {
   // ゲスト更新
   static async updateGuest(
     id: string,
-    data: UpdateGuestData
+    data: UpdateGuestData,
   ): Promise<GuestData> {
     const guest = await prisma.guest.findUnique({ where: { id } });
     if (!guest) throw domain("GUEST_NOT_FOUND");
@@ -137,7 +137,7 @@ export class GuestService {
       },
     });
 
-    return this.formatGuestData(updatedGuest);
+    return GuestService.formatGuestData(updatedGuest);
   }
 
   // ゲスト削除
@@ -175,7 +175,7 @@ export class GuestService {
     if (search) {
       const isNumeric = /^\d+$/.test(search);
       if (isNumeric) {
-        whereConditions.displayId = parseInt(search);
+        whereConditions.displayId = parseInt(search, 10);
       } else {
         whereConditions.name = {
           contains: search,
@@ -224,11 +224,11 @@ export class GuestService {
     });
 
     const lastVisitMap = new Map(
-      lastVisits.map((lv) => [lv.guestId, lv.checkoutAt])
+      lastVisits.map((lv) => [lv.guestId, lv.checkoutAt]),
     );
 
     const guestsData: GuestData[] = guests.map((guest) => ({
-      ...this.formatGuestData(guest),
+      ...GuestService.formatGuestData(guest),
       isCurrentlyCheckedIn: guest.checkins.length > 0,
       totalVisits: guest._count.checkins,
       lastVisitAt: lastVisitMap.get(guest.id)?.toISOString() || null,
@@ -240,7 +240,7 @@ export class GuestService {
   }
 
   static async exportGuests(
-    params: GuestExportParams
+    params: GuestExportParams,
   ): Promise<GuestExportRow[]> {
     const {
       keyword,
@@ -313,7 +313,7 @@ export class GuestService {
     const filteredGuests =
       typeof minTotalVisits === "number"
         ? guests.filter(
-            (guest) => (guest._count?.checkins ?? 0) >= minTotalVisits
+            (guest) => (guest._count?.checkins ?? 0) >= minTotalVisits,
           )
         : guests;
 
@@ -338,7 +338,9 @@ export class GuestService {
         const end = record.checkoutAt ?? now;
         const minutes = Math.max(
           0,
-          Math.floor((end.getTime() - record.checkinAt.getTime()) / (1000 * 60))
+          Math.floor(
+            (end.getTime() - record.checkinAt.getTime()) / (1000 * 60),
+          ),
         );
         current.totalStayMinutes += minutes;
         const candidate = record.checkoutAt ?? record.checkinAt;
@@ -360,9 +362,9 @@ export class GuestService {
         createdAt: guest.createdAt.toISOString(),
         isCurrentlyCheckedIn: guest.checkins.length > 0,
         totalVisits: guest._count?.checkins ?? 0,
-        lastVisitAt: includeVisitStats ? stats?.lastVisitAt ?? null : null,
+        lastVisitAt: includeVisitStats ? (stats?.lastVisitAt ?? null) : null,
         totalStayMinutes: includeVisitStats
-          ? stats?.totalStayMinutes ?? 0
+          ? (stats?.totalStayMinutes ?? 0)
           : null,
       } satisfies GuestExportRow;
     });
@@ -372,14 +374,14 @@ export class GuestService {
   static async searchGuestsPublic(query: string): Promise<GuestData[]> {
     const isNumeric = /^\d+$/.test(query);
 
-    let whereConditions: {
+    const whereConditions: {
       displayId?: number;
       name?: { contains: string; mode: "insensitive" };
     } = {};
 
     if (isNumeric) {
       // 数値の場合はdisplayIdで検索
-      whereConditions.displayId = parseInt(query);
+      whereConditions.displayId = parseInt(query, 10);
     } else {
       // 文字列の場合は名前で検索
       whereConditions.name = {
@@ -400,7 +402,7 @@ export class GuestService {
     });
 
     return guests.map((guest) => ({
-      ...this.formatGuestData(guest),
+      ...GuestService.formatGuestData(guest),
       isCurrentlyCheckedIn: guest.checkins.length > 0,
       currentCheckinId: guest.checkins[0]?.id || null,
       lastCheckinAt: guest.checkins[0]?.checkinAt.toISOString() || null,

@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 
 describe("env schema", () => {
   it("必要な環境変数が存在する場合に読み込める", async () => {

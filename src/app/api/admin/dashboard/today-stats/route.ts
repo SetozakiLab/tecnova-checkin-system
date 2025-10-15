@@ -1,4 +1,4 @@
-import { withApiHandler, createSuccessResponse } from "@/lib/api-handler";
+import { createSuccessResponse, withApiHandler } from "@/lib/api-handler";
 import { CheckinService } from "@/services/checkin.service";
 
 export const GET = withApiHandler(
@@ -6,5 +6,5 @@ export const GET = withApiHandler(
     const stats = await CheckinService.getTodayStats();
     return createSuccessResponse(stats);
   },
-  { requireAuth: true, allowedMethods: ["GET"] }
+  { requireAuth: true, allowedMethods: ["GET"] },
 );

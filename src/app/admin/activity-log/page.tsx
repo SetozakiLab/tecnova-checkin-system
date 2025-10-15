@@ -1,36 +1,36 @@
 "use client";
-import React, { useCallback, useMemo, useState } from "react";
+import { ChevronLeft, ChevronRight, Download, Loader2 } from "lucide-react";
+import { useCallback, useId, useMemo, useState } from "react";
 import { AdminLayout } from "@/components/admin-layout";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DatePicker } from "@/components/ui/date-picker";
+import { Input } from "@/components/ui/input";
 import {
   Select,
-  SelectTrigger,
-  SelectValue,
   SelectContent,
   SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import {
   Sheet,
   SheetContent,
+  SheetFooter,
   SheetHeader,
   SheetTitle,
-  SheetFooter,
 } from "@/components/ui/sheet";
-import { Loader2, ChevronLeft, ChevronRight, Download } from "lucide-react";
-import { formatGradeDisplay } from "@/domain/value-objects/grade";
-import { useActivityLog } from "@/hooks/use-activity-log";
+import { Textarea } from "@/components/ui/textarea";
 import {
   ACTIVITY_CATEGORIES,
-  activityCategoryLabels,
   activityCategoryColorClasses,
+  type activityCategoryLabels,
   formatActivityCategory,
 } from "@/domain/activity-category";
-import { formatJST } from "@/lib/timezone";
+import { formatGradeDisplay } from "@/domain/value-objects/grade";
+import { useActivityLog } from "@/hooks/use-activity-log";
 import { downloadCsv } from "@/lib/csv";
-import { DatePicker } from "@/components/ui/date-picker";
+import { formatJST } from "@/lib/timezone";
 
 const categories = ACTIVITY_CATEGORIES;
 
@@ -44,15 +44,22 @@ interface ActivityLogRow {
 }
 
 export default function ActivityLogPage() {
+  const scrollId = useId();
+  const guestSelectId = useId();
+  const timeInputId = useId();
+  const categoryLabelId = useId();
+  const descriptionId = useId();
+  const mentorNoteId = useId();
+
   function shiftDate(base: string, delta: number) {
     // base: YYYY-MM-DD (JST想定) をUTC日付として安全にずらし ISO の最初10文字を返す
     // タイムゾーン差異で+/-2日飛ぶのを防ぐため常にUTC基準 00:00:00Z に固定
-    const d = new Date(base + "T00:00:00Z");
+    const d = new Date(`${base}T00:00:00Z`);
     d.setUTCDate(d.getUTCDate() + delta);
     return d.toISOString().slice(0, 10);
   }
   const [date, setDate] = useState<string>(() =>
-    new Date().toISOString().slice(0, 10)
+    new Date().toISOString().slice(0, 10),
   );
   const {
     logs,
@@ -62,7 +69,7 @@ export default function ActivityLogPage() {
   } = useActivityLog(date);
   const isToday = useMemo(
     () => new Date().toISOString().slice(0, 10) === date,
-    [date]
+    [date],
   );
   const [sheetOpen, setSheetOpen] = useState(false);
   const [editing, setEditing] = useState<ActivityLogRow | null>(null);
@@ -78,7 +85,7 @@ export default function ActivityLogPage() {
   const timeSlots = useMemo(() => {
     const arr: string[] = [];
     for (let h = 8; h <= 20; h++) {
-      for (let m of [0, 30]) {
+      for (const m of [0, 30]) {
         if (h === 20 && m === 30) continue; // 20:30 不要
         arr.push(`${String(h).padStart(2, "0")}:${m === 0 ? "00" : "30"}`);
       }
@@ -104,8 +111,8 @@ export default function ActivityLogPage() {
       const end = g.checkoutAt
         ? new Date(g.checkoutAt)
         : isToday
-        ? new Date()
-        : new Date(g.checkinAt); // 過去日でcheckoutAt無いケースは同一スロットのみ
+          ? new Date()
+          : new Date(g.checkinAt); // 過去日でcheckoutAt無いケースは同一スロットのみ
       const slots = new Set<string>();
       const cursor = new Date(start);
       // 30分刻みで end まで
@@ -130,7 +137,7 @@ export default function ActivityLogPage() {
       const mm = String(d.getMinutes()).padStart(2, "0");
       const slot = `${hh}:${mm}`;
       if (!map.has(l.guestId)) map.set(l.guestId, new Set());
-      map.get(l.guestId)!.add(slot);
+      map.get(l.guestId)?.add(slot);
     }
     return map;
   }, [logs]);
@@ -261,7 +268,7 @@ export default function ActivityLogPage() {
     const rows = logs.map((log) => {
       const guest = currentGuests.find((g) => g.guestId === log.guestId);
       const categoryLabels = (log.categories || []).map((c) =>
-        formatActivityCategory(c as keyof typeof activityCategoryLabels)
+        formatActivityCategory(c as keyof typeof activityCategoryLabels),
       );
       return [
         formatJST(log.timeslotStart, "yyyy-MM-dd HH:mm"),
@@ -341,7 +348,7 @@ export default function ActivityLogPage() {
               {/* 横スクロール領域: 端までスクロールできるよう overflow-x-auto を明示 */}
               <div
                 className="overflow-x-auto overflow-y-auto max-h-[70vh]"
-                id="activity-log-scroll"
+                id={scrollId}
               >
                 {currentGuests.length > 0 && (
                   <div
@@ -407,10 +414,11 @@ export default function ActivityLogPage() {
                             const stateClasses = getCellStateClasses(
                               g.guestId,
                               slot,
-                              !!log
+                              !!log,
                             );
                             return (
                               <button
+                                type="button"
                                 key={g.guestId + slot}
                                 onClick={() =>
                                   isToday &&
@@ -486,7 +494,10 @@ export default function ActivityLogPage() {
           </SheetHeader>
           <div className="p-4 space-y-4">
             <div>
-              <label className="block text-xs font-medium mb-1">
+              <label
+                htmlFor={guestSelectId}
+                className="block text-xs font-medium mb-1"
+              >
                 ゲスト (表示ID)
               </label>
               <Select
@@ -519,10 +530,14 @@ export default function ActivityLogPage() {
               </Select>
             </div>
             <div>
-              <label className="block text-xs font-medium mb-1">
+              <label
+                htmlFor={timeInputId}
+                className="block text-xs font-medium mb-1"
+              >
                 時刻 (JST)
               </label>
               <Input
+                id={timeInputId}
                 type="time"
                 value={formTime}
                 onChange={(e) => setFormTime(e.target.value)}
@@ -530,10 +545,13 @@ export default function ActivityLogPage() {
               />
             </div>
             <div className="space-y-1">
-              <label className="block text-xs font-medium">
+              <label
+                htmlFor={categoryLabelId}
+                className="block text-xs font-medium"
+              >
                 カテゴリ(複数選択)
               </label>
-              <div className="flex flex-wrap gap-1">
+              <div id={categoryLabelId} className="flex flex-wrap gap-1">
                 {categories.map((c) => {
                   const active = formCategories.includes(c);
                   return (
@@ -544,7 +562,7 @@ export default function ActivityLogPage() {
                         setFormCategories((prev) =>
                           prev.includes(c)
                             ? prev.filter((x) => x !== c)
-                            : [...prev, c]
+                            : [...prev, c],
                         )
                       }
                       className={`px-2 py-0.5 rounded-md border text-[10px] font-medium transition ${
@@ -556,7 +574,7 @@ export default function ActivityLogPage() {
                       }`}
                     >
                       {formatActivityCategory(
-                        c as keyof typeof activityCategoryLabels
+                        c as keyof typeof activityCategoryLabels,
                       )}
                     </button>
                   );
@@ -564,10 +582,14 @@ export default function ActivityLogPage() {
               </div>
             </div>
             <div>
-              <label className="block text-xs font-medium mb-1">
+              <label
+                htmlFor={descriptionId}
+                className="block text-xs font-medium mb-1"
+              >
                 活動内容(任意)
               </label>
               <Textarea
+                id={descriptionId}
                 value={formDescription}
                 onChange={(e) => setFormDescription(e.target.value)}
                 maxLength={100}
@@ -577,10 +599,14 @@ export default function ActivityLogPage() {
               </div>
             </div>
             <div>
-              <label className="block text-xs font-medium mb-1">
+              <label
+                htmlFor={mentorNoteId}
+                className="block text-xs font-medium mb-1"
+              >
                 メンター対応(任意)
               </label>
               <Textarea
+                id={mentorNoteId}
                 value={formMentorNote}
                 onChange={(e) => setFormMentorNote(e.target.value)}
                 maxLength={200}

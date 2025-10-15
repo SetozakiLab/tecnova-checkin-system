@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { GuestService } from "../guest.service";
-import { prisma } from "@/lib/prisma";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as dateUtils from "@/lib/date-utils";
+import { prisma } from "@/lib/prisma";
+import { GuestService } from "../guest.service";
 
 // 型補助 (簡易)
 interface MockedPrisma {
@@ -53,7 +53,7 @@ describe("GuestService.createGuest", () => {
     vi.spyOn(dateUtils, "getNextSequenceForYear").mockResolvedValue(1000); // > 999
 
     await expect(
-      GuestService["generateUniqueDisplayId"]?.call(GuestService)
+      GuestService.generateUniqueDisplayId?.call(GuestService),
     ).rejects.toThrow("SEQUENCE_LIMIT_EXCEEDED");
   });
 });
@@ -66,7 +66,7 @@ describe("GuestService.updateGuest", () => {
   it("存在しないIDでエラー", async () => {
     mockPrisma.guest.findUnique.mockResolvedValue(null);
     await expect(
-      GuestService.updateGuest("nope", { name: "X" })
+      GuestService.updateGuest("nope", { name: "X" }),
     ).rejects.toThrow(/ゲストが見つかりません/);
   });
 

@@ -1,10 +1,10 @@
 import { z } from "zod";
+import { ACTIVITY_CATEGORIES } from "@/domain/activity-category";
 import {
-  withApiHandler,
   createErrorResponse,
   createSuccessResponse,
+  withApiHandler,
 } from "@/lib/api-handler";
-import { ACTIVITY_CATEGORIES } from "@/domain/activity-category";
 import { ActivityLogService } from "@/services/activity-log.service";
 
 const exportActivityLogSchema = z
@@ -47,7 +47,7 @@ const handler = withApiHandler(
         parsed.error.errors.map((issue) => ({
           field: issue.path.join("."),
           message: issue.message,
-        }))
+        })),
       );
     }
 
@@ -58,7 +58,7 @@ const handler = withApiHandler(
     });
     return createSuccessResponse(data);
   },
-  { requireAuth: true, allowedMethods: ["POST"] }
+  { requireAuth: true, allowedMethods: ["POST"] },
 );
 
 export { handler as POST };

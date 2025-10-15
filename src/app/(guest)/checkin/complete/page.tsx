@@ -1,8 +1,19 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import {
+  ArrowLeft,
+  CheckCircle2,
+  CheckCircle2Icon,
+  Clock,
+  Home,
+  LogOut,
+  UserCircle2,
+} from "lucide-react";
+import { motion } from "motion/react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -11,19 +22,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ApiResponse, GuestData } from "@/types/api";
 import { useGuestSoundEffects } from "@/hooks/use-guest-sound-effects";
-import { Badge } from "@/components/ui/badge";
-import { motion } from "motion/react";
-import {
-  CheckCircle2,
-  Clock,
-  Home,
-  LogOut,
-  ArrowLeft,
-  UserCircle2,
-  CheckCircle2Icon,
-} from "lucide-react";
+import type { ApiResponse, GuestData } from "@/types/api";
 
 function CheckinCompleteContent() {
   const searchParams = useSearchParams();
@@ -47,12 +47,12 @@ function CheckinCompleteContent() {
         const response = await fetch(`/api/guests/${guestId}`);
         const result: ApiResponse<GuestData> = await response.json();
 
-        if (!result.success) {
+        if (!result.success || !result.data) {
           setError("ゲスト情報の取得に失敗しました");
           return;
         }
 
-        setGuest(result.data!);
+        setGuest(result.data);
       } catch (err) {
         console.error("Fetch guest error:", err);
         setError("サーバーエラーが発生しました");

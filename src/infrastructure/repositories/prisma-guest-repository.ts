@@ -1,18 +1,18 @@
 // Infrastructure: Guest Repository Implementation
 // Prismaを使用したゲストリポジトリの実装
 
-import { prisma } from "@/lib/prisma";
-import { generateDisplayId, getNextSequenceForYear } from "@/lib/date-utils";
-import { Prisma } from "@/generated/prisma";
-import { GuestEntity, GuestWithStatus } from "@/domain/entities/guest";
-import {
-  IGuestRepository,
+import type { GuestEntity, GuestWithStatus } from "@/domain/entities/guest";
+import type {
+  CreateGuestParams,
   GuestSearchParams,
   GuestSearchResult,
-  CreateGuestParams,
+  IGuestRepository,
   UpdateGuestParams,
 } from "@/domain/repositories/guest-repository";
-import { GradeValue } from "@/domain/value-objects/grade";
+import type { GradeValue } from "@/domain/value-objects/grade";
+import type { Prisma } from "@/generated/prisma";
+import { generateDisplayId, getNextSequenceForYear } from "@/lib/date-utils";
+import { prisma } from "@/lib/prisma";
 
 export class PrismaGuestRepository implements IGuestRepository {
   async findById(id: string): Promise<GuestEntity | null> {
@@ -158,7 +158,7 @@ export class PrismaGuestRepository implements IGuestRepository {
           totalVisits: guest._count.checkins,
           lastVisitAt: lastCheckin?.checkinAt || null,
         };
-      })
+      }),
     );
 
     return {
@@ -205,7 +205,7 @@ export class PrismaGuestRepository implements IGuestRepository {
           totalVisits: guest._count.checkins,
           lastVisitAt: lastCheckin?.checkinAt || null,
         };
-      })
+      }),
     );
   }
 

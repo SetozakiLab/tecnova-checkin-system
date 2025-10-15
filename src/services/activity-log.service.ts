@@ -1,13 +1,13 @@
-import { prisma } from "@/lib/prisma";
 import { z } from "zod";
-import { domain } from "@/lib/errors";
-import { floorTo30MinSlotJST } from "@/lib/time-slot";
 import {
   ACTIVITY_CATEGORIES,
   type ActivityCategory,
 } from "@/domain/activity-category";
+import { domain } from "@/lib/errors";
+import { prisma } from "@/lib/prisma";
+import { floorTo30MinSlotJST } from "@/lib/time-slot";
 import { getDateEndJST, getDateStartJST } from "@/lib/timezone";
-import { ActivityLogExportRow } from "@/types/api";
+import type { ActivityLogExportRow } from "@/types/api";
 
 export const upsertActivityLogSchema = z.object({
   guestId: z.string().min(1),
@@ -65,7 +65,7 @@ export class ActivityLogService {
       },
     });
 
-    return this.format(log);
+    return ActivityLogService.format(log);
   }
 
   /** 削除 (SUPER のみ) */
@@ -95,9 +95,9 @@ export class ActivityLogService {
       const categories = Array.isArray(raw.categories)
         ? (raw.categories as ActivityCategory[])
         : raw.category
-        ? [raw.category]
-        : [];
-      return this.format({
+          ? [raw.category]
+          : [];
+      return ActivityLogService.format({
         id: raw.id,
         guestId: raw.guestId,
         categories,
@@ -111,7 +111,7 @@ export class ActivityLogService {
   }
 
   static async exportLogs(
-    params: ActivityLogExportParams
+    params: ActivityLogExportParams,
   ): Promise<ActivityLogExportRow[]> {
     const { startDate, endDate, categories } = params;
     const start = getDateStartJST(startDate);

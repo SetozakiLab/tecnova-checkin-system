@@ -1,7 +1,20 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import {
+  ArrowLeft,
+  ClipboardCheck,
+  DoorClosed,
+  Home,
+  LogOut,
+  Search,
+  Users,
+} from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { ErrorState } from "@/components/shared/error-state";
+import { RefreshButton } from "@/components/shared/refresh-button";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -10,7 +23,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -19,24 +31,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ErrorState } from "@/components/shared/error-state";
-import { RefreshButton } from "@/components/shared/refresh-button";
-import { ApiResponse, CheckinRecord, GuestData } from "@/types/api";
 import { useCheckinActions } from "@/hooks/use-checkin-actions";
-import { formatTime, formatStayDuration } from "@/lib/date-utils";
-import {
-  ArrowLeft,
-  Home,
-  LogOut,
-  Search,
-  Users,
-  ClipboardCheck,
-  DoorClosed,
-} from "lucide-react";
 import { useGuestSoundEffects } from "@/hooks/use-guest-sound-effects";
-import { motion, AnimatePresence } from "motion/react";
-import { Badge } from "@/components/ui/badge";
+import { formatStayDuration, formatTime } from "@/lib/date-utils";
+import type { ApiResponse, CheckinRecord, GuestData } from "@/types/api";
 
 export default function CheckoutPage() {
   const { loading, handleCheckout } = useCheckinActions();
@@ -48,7 +48,7 @@ export default function CheckoutPage() {
   const [selected, setSelected] = useState<CheckinRecord | null>(null);
   const { playClick, playSuccess } = useGuestSoundEffects();
 
-  const fetchCurrent = async () => {
+  const fetchCurrent = useCallback(async () => {
     try {
       setLoadingList(true);
       setListError("");
@@ -64,19 +64,19 @@ export default function CheckoutPage() {
     } finally {
       setLoadingList(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchCurrent();
-  }, []);
+  }, [fetchCurrent]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return records;
     return records.filter((r) =>
       [r.guestName, r.guestDisplayId?.toString()].some((v) =>
-        (v || "").toString().toLowerCase().includes(q)
-      )
+        (v || "").toString().toLowerCase().includes(q),
+      ),
     );
   }, [records, search]);
 
@@ -198,7 +198,7 @@ export default function CheckoutPage() {
                 <div className="space-y-3 px-6">
                   {Array.from({ length: 5 }).map((_, i) => (
                     <div
-                      key={i}
+                      key={`skeleton-${i}`}
                       className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4"
                     >
                       <div className="flex items-center gap-4">

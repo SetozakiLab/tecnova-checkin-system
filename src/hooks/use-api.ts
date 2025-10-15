@@ -1,5 +1,5 @@
-import { useState, useCallback } from "react";
-import { ApiResponse } from "@/types/api";
+import { useCallback, useState } from "react";
+import type { ApiResponse } from "@/types/api";
 
 interface UseApiState<T> {
   data: T | null;
@@ -54,7 +54,7 @@ export function useApi<T = unknown>(): UseApiReturn<T> {
         return null;
       }
     },
-    []
+    [],
   );
 
   const reset = useCallback(() => {

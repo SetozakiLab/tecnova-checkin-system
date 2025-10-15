@@ -1,16 +1,16 @@
-import { NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
 import { getServerSession } from "next-auth";
+import {
+  createErrorResponse,
+  createSuccessResponse,
+  validateRequest,
+  withApiHandler,
+} from "@/lib/api-handler";
 import { authOptions } from "@/lib/auth";
 import {
-  withApiHandler,
-  validateRequest,
-  createSuccessResponse,
-  createErrorResponse,
-} from "@/lib/api-handler";
-import {
   GuestService,
+  type UpdateGuestData,
   updateGuestSchema,
-  UpdateGuestData,
 } from "@/services/guest.service";
 
 export const PUT = withApiHandler(
@@ -33,7 +33,7 @@ export const PUT = withApiHandler(
     const guest = await GuestService.updateGuest(id, data);
     return createSuccessResponse(guest, "ゲスト情報を更新しました");
   },
-  { requireAuth: true, allowedMethods: ["PUT"] }
+  { requireAuth: true, allowedMethods: ["PUT"] },
 );
 
 export const DELETE = withApiHandler(
@@ -46,5 +46,5 @@ export const DELETE = withApiHandler(
     await GuestService.deleteGuest(id);
     return createSuccessResponse(null, "ゲストを削除しました");
   },
-  { requireAuth: true, allowedMethods: ["DELETE"] }
+  { requireAuth: true, allowedMethods: ["DELETE"] },
 );

@@ -2,30 +2,30 @@
 // ゲスト管理に関するアプリケーションロジック
 
 import {
-  GuestEntity,
-  GuestWithStatus,
   GuestDomainService,
+  type GuestEntity,
+  type GuestWithStatus,
 } from "@/domain/entities/guest";
-import {
-  IGuestRepository,
+import type { ICheckinRecordRepository } from "@/domain/repositories/checkin-record-repository";
+import type {
   CreateGuestParams,
-  UpdateGuestParams,
   GuestSearchParams,
+  IGuestRepository,
+  UpdateGuestParams,
 } from "@/domain/repositories/guest-repository";
-import { ICheckinRecordRepository } from "@/domain/repositories/checkin-record-repository";
 import { Grade } from "@/domain/value-objects/grade";
 
 export class GuestManagementUseCase {
   constructor(
     private readonly guestRepository: IGuestRepository,
-    private readonly checkinRecordRepository: ICheckinRecordRepository
+    private readonly checkinRecordRepository: ICheckinRecordRepository,
   ) {}
 
   /**
    * ゲストを作成
    */
   async createGuest(
-    params: CreateGuestParams
+    params: CreateGuestParams,
   ): Promise<{ success: boolean; guest?: GuestEntity; error?: string }> {
     // ドメインバリデーション
     const nameValidation = GuestDomainService.validateName(params.name);
@@ -34,7 +34,7 @@ export class GuestManagementUseCase {
     }
 
     const contactValidation = GuestDomainService.validateContact(
-      params.contact
+      params.contact,
     );
     if (!contactValidation.isValid) {
       return { success: false, error: contactValidation.error };
@@ -59,7 +59,7 @@ export class GuestManagementUseCase {
    */
   async updateGuest(
     id: string,
-    params: UpdateGuestParams
+    params: UpdateGuestParams,
   ): Promise<{ success: boolean; guest?: GuestEntity; error?: string }> {
     // 既存ゲストの確認
     const existingGuest = await this.guestRepository.findById(id);
@@ -77,7 +77,7 @@ export class GuestManagementUseCase {
 
     if (params.contact !== undefined) {
       const contactValidation = GuestDomainService.validateContact(
-        params.contact
+        params.contact,
       );
       if (!contactValidation.isValid) {
         return { success: false, error: contactValidation.error };
@@ -183,7 +183,7 @@ export class GuestManagementUseCase {
       if (!guest) return null;
       const stats = await this.checkinRecordRepository.getGuestDetailStats(
         guestId,
-        days
+        days,
       );
       return { guest, stats };
     } catch (error) {

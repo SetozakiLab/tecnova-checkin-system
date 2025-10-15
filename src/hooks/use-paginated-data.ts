@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useApi } from "./use-api";
 
 interface PaginationData {
@@ -21,7 +21,7 @@ interface UsePaginatedDataReturn<T> {
   pagination: PaginationData | null;
   fetchData: (
     page?: number,
-    additionalParams?: Record<string, string>
+    additionalParams?: Record<string, string>,
   ) => Promise<void>;
   handlePageChange: (page: number) => void;
   refresh: () => Promise<void>;
@@ -29,7 +29,7 @@ interface UsePaginatedDataReturn<T> {
 
 export function usePaginatedData<T>(
   baseUrl: string,
-  { limit = 20, initialParams = {} }: UsePaginatedDataOptions = {}
+  { limit = 20, initialParams = {} }: UsePaginatedDataOptions = {},
 ): UsePaginatedDataReturn<T> {
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState<PaginationData | null>(null);
@@ -63,14 +63,14 @@ export function usePaginatedData<T>(
 
       setCurrentPage(page);
     },
-    [baseUrl, limit, execute]
+    [baseUrl, limit, execute],
   );
 
   const handlePageChange = useCallback(
     (page: number) => {
       fetchData(page);
     },
-    [fetchData]
+    [fetchData],
   );
 
   const refresh = useCallback(() => {

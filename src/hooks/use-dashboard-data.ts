@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { CheckinRecord } from "@/types/api";
+import { useEffect, useState } from "react";
+import type { CheckinRecord } from "@/types/api";
 
 interface TodayStats {
   totalCheckins: number;
@@ -68,7 +68,7 @@ export function useDashboardData(): UseDashboardDataReturn {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [fetchData]);
 
   const handleRefetch = () => fetchData(true);
 

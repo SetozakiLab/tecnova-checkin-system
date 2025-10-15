@@ -1,4 +1,4 @@
-import { withApiHandler, createSuccessResponse } from "@/lib/api-handler";
+import { createSuccessResponse, withApiHandler } from "@/lib/api-handler";
 import { CheckinService } from "@/services/checkin.service";
 
 // 現在チェックイン中のゲスト一覧を返す
@@ -8,5 +8,5 @@ export const GET = withApiHandler(
     // Service 層でのデータ整形をそのまま返却（API レイヤーでの無駄な再マッピングを避ける）
     return createSuccessResponse(await CheckinService.getCurrentGuests());
   },
-  { allowedMethods: ["GET"] }
+  { allowedMethods: ["GET"] },
 );

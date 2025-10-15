@@ -6,7 +6,7 @@
  */
 export function floorTo30MinSlotJST(input: string | Date): Date {
   const date = typeof input === "string" ? new Date(input) : input;
-  if (isNaN(date.getTime())) throw new Error("INVALID_DATE");
+  if (Number.isNaN(date.getTime())) throw new Error("INVALID_DATE");
   // JSTでの各成分を計算
   const jstOffset = 9 * 60; // 分
   const utcMinutes = Math.floor(date.getTime() / 60000);

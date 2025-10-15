@@ -10,7 +10,7 @@ function formatCsvValue(value: CsvValue): string {
 
 export function buildCsv(headers: string[], rows: CsvValue[][]): string {
   const lines = [headers, ...rows].map((row) =>
-    row.map((cell) => formatCsvValue(cell)).join(",")
+    row.map((cell) => formatCsvValue(cell)).join(","),
   );
   return lines.join("\r\n");
 }
@@ -18,11 +18,11 @@ export function buildCsv(headers: string[], rows: CsvValue[][]): string {
 export function downloadCsv(
   filename: string,
   headers: string[],
-  rows: CsvValue[][]
+  rows: CsvValue[][],
 ): void {
   if (typeof window === "undefined") return;
   const csvContent = buildCsv(headers, rows);
-  const blob = new Blob(["\uFEFF" + csvContent], {
+  const blob = new Blob([`\uFEFF${csvContent}`], {
     type: "text/csv;charset=utf-8;",
   });
   const url = URL.createObjectURL(blob);

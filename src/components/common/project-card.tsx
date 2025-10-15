@@ -1,13 +1,13 @@
 // Common Components: Project Card
 // プロジェクト表示用のカードコンポーネント
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Calendar, Clock, User } from "lucide-react";
+import type * as React from "react";
 import { Button } from "@/components/ui/button";
-import { UserAvatarWithStatus } from "./user-avatar-with-status";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { cn } from "@/lib/utils";
-import { Clock, User, Calendar } from "lucide-react";
-import * as React from "react";
+import { UserAvatarWithStatus } from "./user-avatar-with-status";
 
 export interface ProjectCardProps extends React.HTMLAttributes<HTMLDivElement> {
   id: string;
@@ -41,7 +41,7 @@ export function ProjectCard({
   const totalGuests = guests.length;
 
   return (
-    <Card 
+    <Card
       className={cn("hover:shadow-md transition-shadow", className)}
       data-slot="project-card"
       {...props}

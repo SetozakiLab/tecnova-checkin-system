@@ -1,12 +1,12 @@
-import { AdminLayout } from "@/components/admin-layout";
+import { Activity, Clock, User } from "lucide-react";
 import { notFound } from "next/navigation";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { formatDateTime } from "@/lib/date-utils";
+import { AdminLayout } from "@/components/admin-layout";
+import { GuestDetailCharts } from "@/components/features/admin/guest-detail-charts";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatGradeDisplay } from "@/domain/value-objects/grade";
 import { getServerGuestDetailStats } from "@/infrastructure/server-data";
-import { Activity, Clock, User } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { GuestDetailCharts } from "@/components/features/admin/guest-detail-charts";
+import { formatDateTime } from "@/lib/date-utils";
 
 // Adapted to Next.js generated types where params/searchParams may be Promises
 interface GuestDetailPageProps {

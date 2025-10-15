@@ -1,8 +1,8 @@
-import { NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
 import {
-  withApiHandler,
-  createSuccessResponse,
   createErrorResponse,
+  createSuccessResponse,
+  withApiHandler,
 } from "@/lib/api-handler";
 import { GuestService } from "@/services/guest.service";
 
@@ -20,5 +20,5 @@ export const GET = withApiHandler(
     }
     return createSuccessResponse(guest);
   },
-  { allowedMethods: ["GET"] }
+  { allowedMethods: ["GET"] },
 );

@@ -8,7 +8,7 @@ type UseGuestSoundEffectsOptions = {
 };
 
 export function useGuestSoundEffects(
-  options: UseGuestSoundEffectsOptions = {}
+  options: UseGuestSoundEffectsOptions = {},
 ) {
   const { clickVolume = 0.6, successVolume = 0.6 } = options;
 

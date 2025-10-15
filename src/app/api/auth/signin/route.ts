@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { signIn } from "next-auth/react";
-import { ApiResponse } from "@/types/api";
+import type { ApiResponse } from "@/types/api";
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
             message: "ユーザー名とパスワードは必須です",
           },
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
             message: "ユーザー名またはパスワードが正しくありません",
           },
         },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
           message: "サーバー内部エラーが発生しました",
         },
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

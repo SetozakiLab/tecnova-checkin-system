@@ -1,11 +1,9 @@
 "use client";
 
-import * as React from "react";
 import { format, isAfter, isBefore } from "date-fns";
 import { ja } from "date-fns/locale";
 import { CalendarIcon, X } from "lucide-react";
-
-import { cn } from "@/lib/utils";
+import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -13,6 +11,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 function parseDate(value?: string): Date | undefined {
   if (!value) return undefined;
@@ -54,7 +53,7 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
       sideOffset,
       ...buttonProps
     },
-    ref
+    ref,
   ) => {
     const [open, setOpen] = React.useState(false);
     const selectedDate = React.useMemo(() => parseDate(value), [value]);
@@ -71,7 +70,7 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
         if (maxDate && isAfter(date, maxDate)) return true;
         return false;
       },
-      [minDate, maxDate]
+      [minDate, maxDate],
     );
 
     const handleSelect = (date: Date | undefined) => {
@@ -102,7 +101,7 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
               className={cn(
                 "w-full justify-start text-left font-normal",
                 !selectedDate && "text-muted-foreground",
-                className
+                className,
               )}
               {...buttonProps}
             >
@@ -139,7 +138,7 @@ export const DatePicker = React.forwardRef<HTMLButtonElement, DatePickerProps>(
         </PopoverContent>
       </Popover>
     );
-  }
+  },
 );
 
 DatePicker.displayName = "DatePicker";

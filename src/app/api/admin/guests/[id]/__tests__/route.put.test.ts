@@ -1,11 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { PUT } from "../route";
 import { NextRequest } from "next/server";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { PUT } from "../route";
 
 // getServerSession をモック
 vi.mock("next-auth", () => ({
   getServerSession: vi.fn(() =>
-    Promise.resolve({ user: { id: "u1", role: "MANAGER" } })
+    Promise.resolve({ user: { id: "u1", role: "MANAGER" } }),
   ),
 }));
 
@@ -50,7 +50,7 @@ describe("PUT /api/admin/guests/[id] MANAGER grade 更新", () => {
   it("MANAGER が grade を更新できる", async () => {
     const res = await PUT(
       buildRequest({ name: "Alice", contact: "", grade: "JH2" }),
-      { params: { id: "g1" } }
+      { params: { id: "g1" } },
     );
     const json: any = await res.json();
     expect(res.status).toBe(200);

@@ -1,4 +1,4 @@
-import { PublicConfiguration } from "swr/_internal";
+import type { PublicConfiguration } from "swr/_internal";
 
 export const swrFetcher = async <T = unknown>(url: string): Promise<T> => {
   const res = await fetch(url);

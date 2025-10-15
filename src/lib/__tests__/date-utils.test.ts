@@ -1,11 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { generateDisplayId, formatStayDuration } from "../date-utils";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { formatStayDuration, generateDisplayId } from "../date-utils";
 import * as timezone from "../timezone";
 
 // nowInJST を安定化
 beforeEach(() => {
   vi.spyOn(timezone, "nowInJST").mockReturnValue(
-    new Date("2025-01-15T00:00:00+09:00")
+    new Date("2025-01-15T00:00:00+09:00"),
   );
 });
 

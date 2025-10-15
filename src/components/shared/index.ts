@@ -1,7 +1,7 @@
 export * from "./error-state";
 export {
-  LoadingState,
   DashboardSkeleton,
   GuestsTableSkeleton,
+  LoadingState,
 } from "./loading";
 export * from "./refresh-button";

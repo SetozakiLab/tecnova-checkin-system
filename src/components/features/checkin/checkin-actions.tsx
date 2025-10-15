@@ -1,3 +1,5 @@
+import { ClipboardList, DoorClosed, DoorOpen } from "lucide-react";
+import { ErrorState } from "@/components/shared/error-state";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -8,10 +10,8 @@ import {
 } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { useCheckinActions } from "@/hooks/use-checkin-actions";
-import { ErrorState } from "@/components/shared/error-state";
-import { GuestData } from "@/types/api";
 import { useGuestSoundEffects } from "@/hooks/use-guest-sound-effects";
-import { DoorClosed, DoorOpen, ClipboardList } from "lucide-react";
+import type { GuestData } from "@/types/api";
 
 interface CheckinActionsProps {
   guest: GuestData;

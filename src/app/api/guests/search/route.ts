@@ -1,8 +1,8 @@
-import { NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
 import {
-  withApiHandler,
-  createSuccessResponse,
   createErrorResponse,
+  createSuccessResponse,
+  withApiHandler,
 } from "@/lib/api-handler";
 import { GuestService } from "@/services/guest.service";
 
@@ -15,12 +15,12 @@ export const GET = withApiHandler(
       return createErrorResponse(
         "VALIDATION_ERROR",
         "検索語を入力してください",
-        400
+        400,
       );
     }
 
     const guests = await GuestService.searchGuestsPublic(query);
     return createSuccessResponse(guests);
   },
-  { allowedMethods: ["GET"] }
+  { allowedMethods: ["GET"] },
 );

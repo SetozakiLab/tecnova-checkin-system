@@ -1,6 +1,6 @@
+import type * as React from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import * as React from "react";
 
 export interface ErrorStateProps extends React.HTMLAttributes<HTMLDivElement> {
   message: string;
@@ -17,7 +17,7 @@ export function ErrorState({
     <div
       className={cn(
         "bg-red-50 border border-red-200 rounded-lg p-6",
-        className
+        className,
       )}
       data-slot="error-state"
       {...props}

@@ -1,15 +1,15 @@
-import { prisma } from "@/lib/prisma";
-import { CheckinData, CheckinRecord, PaginationData } from "@/types/api";
-import { buildPagination } from "@/lib/pagination";
-import { domain } from "@/lib/errors";
 import { z } from "zod";
+import { domain } from "@/lib/errors";
+import { buildPagination } from "@/lib/pagination";
+import { prisma } from "@/lib/prisma";
 import {
-  nowInJST,
+  getDateEndJST,
+  getDateStartJST,
   getTodayStartJST,
   getTomorrowStartJST,
-  getDateStartJST,
-  getDateEndJST,
+  nowInJST,
 } from "@/lib/timezone";
+import type { CheckinData, CheckinRecord, PaginationData } from "@/types/api";
 
 // Zodスキーマ
 export const checkinSearchSchema = z.object({
@@ -55,7 +55,7 @@ export class CheckinService {
       },
     });
 
-    return this.formatCheckinData(checkinRecord);
+    return CheckinService.formatCheckinData(checkinRecord);
   }
 
   // チェックアウト実行
@@ -85,7 +85,7 @@ export class CheckinService {
       },
     });
 
-    return this.formatCheckinData(checkinRecord);
+    return CheckinService.formatCheckinData(checkinRecord);
   }
 
   // チェックイン記録取得（管理者用）
@@ -149,7 +149,7 @@ export class CheckinService {
       duration: record.checkoutAt
         ? Math.floor(
             (record.checkoutAt.getTime() - record.checkinAt.getTime()) /
-              (1000 * 60)
+              (1000 * 60),
           )
         : null,
     }));
@@ -188,7 +188,7 @@ export class CheckinService {
       prev.totalVisitCount += 1;
       const end = v.checkoutAt ?? now;
       prev.totalStayMinutes += Math.floor(
-        (end.getTime() - v.checkinAt.getTime()) / (1000 * 60)
+        (end.getTime() - v.checkinAt.getTime()) / (1000 * 60),
       );
       statsMap.set(v.guestId, prev);
     }
@@ -204,7 +204,7 @@ export class CheckinService {
         checkoutAt: null,
         isActive: true,
         duration: Math.floor(
-          (Date.now() - record.checkinAt.getTime()) / (1000 * 60)
+          (Date.now() - record.checkinAt.getTime()) / (1000 * 60),
         ),
         guestGrade: record.guest.grade ?? null,
         totalVisitCount: stat?.totalVisitCount ?? 1,
@@ -230,7 +230,7 @@ export class CheckinService {
         if (!acc.some((r) => r.guestId === cur.guestId)) acc.push(cur);
         return acc;
       },
-      []
+      [],
     );
 
     // 各ゲストの累計統計（全期間）
@@ -251,7 +251,7 @@ export class CheckinService {
       prev.totalVisitCount += 1;
       const end = v.checkoutAt ?? new Date();
       prev.totalStayMinutes += Math.floor(
-        (end.getTime() - v.checkinAt.getTime()) / (1000 * 60)
+        (end.getTime() - v.checkinAt.getTime()) / (1000 * 60),
       );
       statsMap.set(v.guestId, prev);
     }
@@ -261,7 +261,7 @@ export class CheckinService {
       const duration = record.checkoutAt
         ? Math.floor(
             (record.checkoutAt.getTime() - record.checkinAt.getTime()) /
-              (1000 * 60)
+              (1000 * 60),
           )
         : Math.floor((Date.now() - record.checkinAt.getTime()) / (1000 * 60));
       return {
@@ -295,7 +295,7 @@ export class CheckinService {
         if (!acc.some((r) => r.guestId === cur.guestId)) acc.push(cur);
         return acc;
       },
-      []
+      [],
     );
 
     const guestIds = representative.map((r) => r.guestId);
@@ -316,7 +316,7 @@ export class CheckinService {
       prev.totalVisitCount += 1;
       const endTime = v.checkoutAt ?? new Date();
       prev.totalStayMinutes += Math.floor(
-        (endTime.getTime() - v.checkinAt.getTime()) / (1000 * 60)
+        (endTime.getTime() - v.checkinAt.getTime()) / (1000 * 60),
       );
       statsMap.set(v.guestId, prev);
     }
@@ -325,7 +325,7 @@ export class CheckinService {
       const duration = record.checkoutAt
         ? Math.floor(
             (record.checkoutAt.getTime() - record.checkinAt.getTime()) /
-              (1000 * 60)
+              (1000 * 60),
           )
         : Math.floor((Date.now() - record.checkinAt.getTime()) / (1000 * 60));
       return {
@@ -386,12 +386,12 @@ export class CheckinService {
     let averageStayTime = 0;
     if (completedVisits.length > 0) {
       const totalStayTime = completedVisits.reduce((sum, visit) => {
-        const duration =
-          visit.checkoutAt!.getTime() - visit.checkinAt.getTime();
+        if (!visit.checkoutAt) return sum;
+        const duration = visit.checkoutAt.getTime() - visit.checkinAt.getTime();
         return sum + duration;
       }, 0);
       averageStayTime = Math.floor(
-        totalStayTime / (completedVisits.length * 1000 * 60)
+        totalStayTime / (completedVisits.length * 1000 * 60),
       );
     }
 

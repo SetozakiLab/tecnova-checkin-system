@@ -1,8 +1,37 @@
-import { useState } from "react";
+import { MoreHorizontal } from "lucide-react";
+import Link from "next/link";
 import { useSession } from "next-auth/react";
+import { useState } from "react";
+import { ErrorState } from "@/components/shared/error-state";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { formatGrade, GradeSelect } from "@/components/ui/grade-select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { StatusBadge } from "@/components/ui/status-badge";
 import {
   Table,
   TableBody,
@@ -11,39 +40,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { StatusBadge } from "@/components/ui/status-badge";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
-import {
-  AlertDialog,
-  AlertDialogTrigger,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogCancel,
-  AlertDialogAction,
-} from "@/components/ui/alert-dialog";
-import { MoreHorizontal } from "lucide-react";
-import { formatDateTime } from "@/lib/date-utils";
 import { useApi } from "@/hooks/use-api";
 import { useConfirmDelete } from "@/hooks/use-confirm-delete";
-import { ErrorState } from "@/components/shared/error-state";
-import { GuestData, GradeValue } from "@/types/api";
-import { GradeSelect, formatGrade } from "@/components/ui/grade-select";
-import Link from "next/link";
+import { formatDateTime } from "@/lib/date-utils";
+import type { GradeValue, GuestData } from "@/types/api";
 
 interface GuestsTableProps {
   guests: GuestData[];
@@ -148,7 +148,9 @@ export function GuestsTable({ guests, onUpdate }: GuestsTableProps) {
                 <TableCell>{formatGrade(guest.grade)}</TableCell>
                 <TableCell>{formatDateTime(guest.createdAt)}</TableCell>
                 <TableCell>
-                  <StatusBadge status={guest.isCurrentlyCheckedIn ? "active" : "inactive"}>
+                  <StatusBadge
+                    status={guest.isCurrentlyCheckedIn ? "active" : "inactive"}
+                  >
                     {guest.isCurrentlyCheckedIn ? "滞在中" : "退場済み"}
                   </StatusBadge>
                 </TableCell>

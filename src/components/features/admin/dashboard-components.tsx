@@ -1,16 +1,18 @@
 // Updated Dashboard Components using Clean Architecture and Design System
 // 新しいデザインシステムを使用したダッシュボードコンポーネント
 
+import { Activity, Clock, TrendingUp, Users } from "lucide-react";
+import Link from "next/link";
+import { MetricCard, UserAvatarWithStatus } from "@/components/common";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { MetricCard, UserAvatarWithStatus } from "@/components/common";
-import { formatTime } from "@/lib/date-utils";
-import { CheckinRecordWithGuest } from "@/domain/entities/checkin-record";
-import { TodayStats } from "@/domain/repositories/checkin-record-repository";
-import { CheckinRecordDomainService } from "@/domain/entities/checkin-record";
-import { Users, Clock, Activity, TrendingUp } from "lucide-react";
+import {
+  CheckinRecordDomainService,
+  type CheckinRecordWithGuest,
+} from "@/domain/entities/checkin-record";
+import type { TodayStats } from "@/domain/repositories/checkin-record-repository";
 import { formatGradeDisplay } from "@/domain/value-objects/grade";
-import Link from "next/link";
+import { formatTime } from "@/lib/date-utils";
 
 // Loading components for Suspense fallbacks
 export function StatsCardsSkeleton() {
@@ -108,7 +110,7 @@ export function DashboardStats({ stats }: DashboardStatsProps) {
       <MetricCard
         title="平均滞在時間"
         value={CheckinRecordDomainService.formatStayDuration(
-          stats.averageStayTime
+          stats.averageStayTime,
         )}
         icon={Clock}
         variant="default"
@@ -121,8 +123,8 @@ export function DashboardStats({ stats }: DashboardStatsProps) {
           stats.currentGuests >= 10
             ? "混雑"
             : stats.currentGuests >= 5
-            ? "やや混雑"
-            : "空いている"
+              ? "やや混雑"
+              : "空いている"
         }
         subtitle={stats.currentGuests > 0 ? "滞在中" : "待機中"}
         icon={TrendingUp}
@@ -130,8 +132,8 @@ export function DashboardStats({ stats }: DashboardStatsProps) {
           stats.currentGuests >= 10
             ? "success"
             : stats.currentGuests >= 5
-            ? "warning"
-            : "default"
+              ? "warning"
+              : "default"
         }
       />
     </div>
@@ -204,7 +206,7 @@ export function CurrentGuestsList({ guests }: CurrentGuestsListProps) {
                   </span>
                   {guest.totalStayMinutes != null
                     ? CheckinRecordDomainService.formatStayDuration(
-                        guest.totalStayMinutes
+                        guest.totalStayMinutes,
                       )
                     : "-"}
                 </div>
@@ -249,7 +251,7 @@ export function TodaySummary({ stats }: TodaySummaryProps) {
     {
       label: "平均滞在時間",
       value: CheckinRecordDomainService.formatStayDuration(
-        stats.averageStayTime
+        stats.averageStayTime,
       ),
       unit: "",
       description: "平均的な利用時間",

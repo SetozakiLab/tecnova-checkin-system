@@ -1,18 +1,18 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { AdminLayout } from "@/components/admin-layout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { HistoryTable } from "@/components/features/admin/history-table";
 import {
   SearchFilter,
-  SearchFilters,
+  type SearchFilters,
 } from "@/components/features/admin/search-filter";
-import { HistoryTable } from "@/components/features/admin/history-table";
-import { AppPagination as Pagination } from "@/components/ui/pagination";
-import { LoadingState } from "@/components/shared/loading";
 import { ErrorState } from "@/components/shared/error-state";
+import { LoadingState } from "@/components/shared/loading";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppPagination as Pagination } from "@/components/ui/pagination";
 import { usePaginatedData } from "@/hooks/use-paginated-data";
-import { CheckinRecord, PaginationData } from "@/types/api";
+import type { CheckinRecord, PaginationData } from "@/types/api";
 
 interface HistoryData {
   records: CheckinRecord[];
@@ -34,20 +34,21 @@ export default function AdminHistoryPage() {
     limit: 20,
   });
 
-  const convertFiltersToParams = (
-    filters: SearchFilters
-  ): Record<string, string> => {
-    const params: Record<string, string> = {};
-    if (filters.startDate) params.startDate = filters.startDate;
-    if (filters.endDate) params.endDate = filters.endDate;
-    if (filters.guestName) params.guestName = filters.guestName;
-    return params;
-  };
+  const convertFiltersToParams = useCallback(
+    (filters: SearchFilters): Record<string, string> => {
+      const params: Record<string, string> = {};
+      if (filters.startDate) params.startDate = filters.startDate;
+      if (filters.endDate) params.endDate = filters.endDate;
+      if (filters.guestName) params.guestName = filters.guestName;
+      return params;
+    },
+    [],
+  );
 
   // フィルタ適用時のフェッチをメモ化
   const runFilterFetch = useCallback(() => {
     fetchData(1, convertFiltersToParams(searchFilters));
-  }, [fetchData, searchFilters]);
+  }, [fetchData, searchFilters, convertFiltersToParams]);
 
   // 初回 & フィルタ変更時に再取得 (検索 UI が setSearchFilters を呼ぶため同期)
   useEffect(() => {
@@ -78,7 +79,7 @@ export default function AdminHistoryPage() {
                 {(pagination.page - 1) * pagination.limit + 1}-
                 {Math.min(
                   pagination.page * pagination.limit,
-                  pagination.totalCount
+                  pagination.totalCount,
                 )}
                 件を表示
               </div>
@@ -94,7 +95,7 @@ export default function AdminHistoryPage() {
                   onUpdated={() =>
                     fetchData(
                       currentPage,
-                      convertFiltersToParams(searchFilters)
+                      convertFiltersToParams(searchFilters),
                     )
                   }
                 />

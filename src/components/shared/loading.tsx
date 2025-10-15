@@ -1,8 +1,9 @@
+import type * as React from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { cn } from "@/lib/utils"; 
-import * as React from "react";
+import { cn } from "@/lib/utils";
 
-export interface LoadingStateProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface LoadingStateProps
+  extends React.HTMLAttributes<HTMLDivElement> {
   message?: string;
   size?: "sm" | "md" | "lg";
 }
@@ -20,7 +21,7 @@ export function LoadingState({
   };
 
   return (
-    <div 
+    <div
       className={cn("text-center py-12", className)}
       data-slot="loading-state"
       {...props}

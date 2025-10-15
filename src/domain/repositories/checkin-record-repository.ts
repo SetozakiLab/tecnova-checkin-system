@@ -1,7 +1,7 @@
 // Domain Repository Interface: CheckinRecord Repository
 // チェックイン記録データアクセスの抽象化インターフェース
 
-import {
+import type {
   CheckinRecordEntity,
   CheckinRecordWithGuest,
 } from "@/domain/entities/checkin-record";
@@ -104,12 +104,12 @@ export interface ICheckinRecordRepository {
   /** 直近N日 (デフォルト30) の日次集計を取得 */
   getGuestDailyStats(
     guestId: string,
-    days?: number
+    days?: number,
   ): Promise<GuestDailyStatItem[]>;
 
   /** 個別ゲスト詳細統計(集約) */
   getGuestDetailStats(
     guestId: string,
-    days?: number
+    days?: number,
   ): Promise<GuestDetailStats>;
 }

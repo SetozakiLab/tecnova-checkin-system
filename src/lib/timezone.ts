@@ -1,5 +1,5 @@
-import { formatInTimeZone, toZonedTime, fromZonedTime } from "date-fns-tz";
 import { ja } from "date-fns/locale";
+import { formatInTimeZone, fromZonedTime, toZonedTime } from "date-fns-tz";
 
 /**
  * アプリケーション全体で使用するタイムゾーン
@@ -70,7 +70,7 @@ export function getTodayStartJST(): Date {
     0,
     0,
     0,
-    0
+    0,
   );
   return fromJST(startOfDay);
 }
@@ -87,7 +87,7 @@ export function getTodayEndJST(): Date {
     23,
     59,
     59,
-    999
+    999,
   );
   return fromJST(endOfDay);
 }
@@ -104,7 +104,7 @@ export function getTomorrowStartJST(): Date {
     0,
     0,
     0,
-    0
+    0,
   );
   return fromJST(tomorrow);
 }
@@ -122,7 +122,7 @@ export function getDateStartJST(date: Date | string): Date {
     0,
     0,
     0,
-    0
+    0,
   );
   return fromJST(startOfDay);
 }
@@ -140,7 +140,7 @@ export function getDateEndJST(date: Date | string): Date {
     23,
     59,
     59,
-    999
+    999,
   );
   return fromJST(endOfDay);
 }

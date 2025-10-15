@@ -1,11 +1,14 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { ArrowLeft, CheckCircle2, Home, UserPlus } from "lucide-react";
+import { motion } from "motion/react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useId, useState } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -14,15 +17,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { GradeSelect } from "@/components/ui/grade-select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import { ApiResponse, GuestData, GradeValue } from "@/types/api";
-import { GradeSelect } from "@/components/ui/grade-select";
 import { useGuestSoundEffects } from "@/hooks/use-guest-sound-effects";
-import { motion } from "motion/react";
-import { ArrowLeft, Home, UserPlus, CheckCircle2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import type { ApiResponse, GradeValue, GuestData } from "@/types/api";
 
 const registerSchema = z.object({
   name: z
@@ -49,7 +49,7 @@ const registerSchema = z.object({
       "HS2",
       "HS3",
     ] as const,
-    { required_error: "学年を選択してください" }
+    { required_error: "学年を選択してください" },
   ),
   acceptTerms: z.boolean().refine((val) => val === true, {
     message: "利用規約に同意してください",
@@ -70,6 +70,9 @@ function RegisterForm({ soundEffects }: RegisterFormProps) {
   const [error, setError] = useState<string>("");
   const [agreedFromTerms, setAgreedFromTerms] = useState(false);
   const { playClick, playSuccess } = soundEffects;
+
+  const nameId = useId();
+  const acceptTermsId = useId();
 
   const {
     register,
@@ -121,7 +124,7 @@ function RegisterForm({ soundEffects }: RegisterFormProps) {
 
       // 登録後は自動チェックイン済みのため、チェックイン完了ページへ
       playSuccess();
-      router.push(`/checkin/complete?type=checkin&guestId=${result.data!.id}`);
+      router.push(`/checkin/complete?type=checkin&guestId=${result.data?.id}`);
     } catch (err) {
       console.error("Registration error:", err);
       setError("サーバーエラーが発生しました");
@@ -162,13 +165,13 @@ function RegisterForm({ soundEffects }: RegisterFormProps) {
           {/* 名前 */}
           <div className="space-y-2">
             <Label
-              htmlFor="name"
+              htmlFor={nameId}
               className="text-sm font-medium text-slate-700"
             >
               お名前（ニックネーム） <span className="text-rose-500">*</span>
             </Label>
             <Input
-              id="name"
+              id={nameId}
               {...register("name")}
               placeholder="テッくん"
               className="h-12 text-base"
@@ -224,7 +227,7 @@ function RegisterForm({ soundEffects }: RegisterFormProps) {
             <div className="space-y-4">
               <div className="flex items-start space-x-3">
                 <Checkbox
-                  id="acceptTerms"
+                  id={acceptTermsId}
                   checked={acceptTerms}
                   onCheckedChange={(checked) =>
                     setValue("acceptTerms", checked === true)
@@ -232,7 +235,7 @@ function RegisterForm({ soundEffects }: RegisterFormProps) {
                   disabled={loading}
                 />
                 <div>
-                  <Label htmlFor="acceptTerms" className="text-lg">
+                  <Label htmlFor={acceptTermsId} className="text-lg">
                     <Link
                       href="/terms"
                       className="text-slate-900 underline"

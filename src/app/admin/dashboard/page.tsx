@@ -1,30 +1,30 @@
 // New Dashboard Page - Clean Architecture + Enhanced Design
 // 情報設計に基づくダッシュボード画面 - クリーンアーキテクチャ + 強化されたデザイン
 
+import {
+  Activity,
+  AlertTriangle,
+  Clock,
+  TrendingUp,
+  Users,
+} from "lucide-react";
 import { Suspense } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AdminLayout } from "@/components/admin-layout";
 import {
-  DashboardStats,
   CurrentGuestsList,
-  TodaySummary,
-  StatsCardsSkeleton,
   CurrentGuestsSkeleton,
+  DashboardStats,
+  StatsCardsSkeleton,
+  TodaySummary,
   TodaySummarySkeleton,
 } from "@/components/features/admin/dashboard-components";
 import { RefreshButton } from "@/components/shared";
-import {
-  getServerTodayStats,
-  getServerCurrentGuests,
-} from "@/infrastructure/server-data";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  AlertTriangle,
-  Users,
-  Activity,
-  Clock,
-  TrendingUp,
-} from "lucide-react";
+  getServerCurrentGuests,
+  getServerTodayStats,
+} from "@/infrastructure/server-data";
 
 // Force dynamic rendering for real-time data
 export const dynamic = "force-dynamic";
@@ -142,7 +142,10 @@ function QuickActionsCard() {
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="grid grid-cols-2 gap-3">
-          <button className="p-3 text-left rounded-lg border border-border hover:bg-accent transition-colors">
+          <button
+            type="button"
+            className="p-3 text-left rounded-lg border border-border hover:bg-accent transition-colors"
+          >
             <div className="flex items-center gap-2 mb-1">
               <Users className="h-4 w-4 text-primary" />
               <span className="font-medium text-sm">ゲスト管理</span>
@@ -152,7 +155,10 @@ function QuickActionsCard() {
             </p>
           </button>
 
-          <button className="p-3 text-left rounded-lg border border-border hover:bg-accent transition-colors">
+          <button
+            type="button"
+            className="p-3 text-left rounded-lg border border-border hover:bg-accent transition-colors"
+          >
             <div className="flex items-center gap-2 mb-1">
               <Activity className="h-4 w-4 text-primary" />
               <span className="font-medium text-sm">履歴確認</span>
@@ -162,7 +168,10 @@ function QuickActionsCard() {
             </p>
           </button>
 
-          <button className="p-3 text-left rounded-lg border border-border hover:bg-accent transition-colors">
+          <button
+            type="button"
+            className="p-3 text-left rounded-lg border border-border hover:bg-accent transition-colors"
+          >
             <div className="flex items-center gap-2 mb-1">
               <Clock className="h-4 w-4 text-primary" />
               <span className="font-medium text-sm">時間管理</span>
@@ -170,7 +179,10 @@ function QuickActionsCard() {
             <p className="text-xs text-muted-foreground">滞在時間の分析</p>
           </button>
 
-          <button className="p-3 text-left rounded-lg border border-border hover:bg-accent transition-colors">
+          <button
+            type="button"
+            className="p-3 text-left rounded-lg border border-border hover:bg-accent transition-colors"
+          >
             <div className="flex items-center gap-2 mb-1">
               <TrendingUp className="h-4 w-4 text-primary" />
               <span className="font-medium text-sm">レポート</span>

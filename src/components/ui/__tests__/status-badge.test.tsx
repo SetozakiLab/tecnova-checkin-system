@@ -1,10 +1,9 @@
-import * as React from "react";
 import { render, screen } from "@testing-library/react";
-import { describe, it, expect } from "vitest";
-import { 
-  StatusBadge, 
-  CheckinStatusBadge, 
-  GradeStatusBadge 
+import { describe, expect, it } from "vitest";
+import {
+  CheckinStatusBadge,
+  GradeStatusBadge,
+  StatusBadge,
 } from "../status-badge";
 
 describe("StatusBadge Components", () => {
@@ -15,10 +14,18 @@ describe("StatusBadge Components", () => {
     });
 
     it("renders with different status variants", () => {
-      const statuses = ['active', 'inactive', 'pending', 'error', 'info'] as const;
-      
-      statuses.forEach(status => {
-        const { rerender } = render(<StatusBadge status={status}>Test</StatusBadge>);
+      const statuses = [
+        "active",
+        "inactive",
+        "pending",
+        "error",
+        "info",
+      ] as const;
+
+      statuses.forEach((status) => {
+        const { rerender } = render(
+          <StatusBadge status={status}>Test</StatusBadge>,
+        );
         expect(screen.getByText("Test")).toBeInTheDocument();
         rerender(<div />);
       });
@@ -26,15 +33,15 @@ describe("StatusBadge Components", () => {
 
     it("supports custom className and props", () => {
       render(
-        <StatusBadge 
-          status="active" 
-          className="custom-class" 
+        <StatusBadge
+          status="active"
+          className="custom-class"
           data-testid="status-badge"
         >
           Test
-        </StatusBadge>
+        </StatusBadge>,
       );
-      
+
       const badge = screen.getByTestId("status-badge");
       expect(badge).toHaveClass("custom-class");
     });

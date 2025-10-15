@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { CheckinService } from "../checkin.service";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { prisma } from "@/lib/prisma";
+import { CheckinService } from "../checkin.service";
 
 // NOTE: テスト簡易モック用 (本番型安全性には影響しない)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

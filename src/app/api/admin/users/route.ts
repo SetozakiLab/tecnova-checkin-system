@@ -1,5 +1,5 @@
-import { withApiHandler, createSuccessResponse } from "@/lib/api-handler";
 import { PrismaClient, type User } from "@/generated/prisma";
+import { createSuccessResponse, withApiHandler } from "@/lib/api-handler";
 
 const prisma = new PrismaClient();
 
@@ -14,5 +14,5 @@ export const GET = withApiHandler(
       users: Pick<User, "id" | "username" | "role">[];
     }>({ users });
   },
-  { requireAuth: true, allowedMethods: ["GET"] }
+  { requireAuth: true, allowedMethods: ["GET"] },
 );

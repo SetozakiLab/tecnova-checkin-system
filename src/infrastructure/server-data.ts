@@ -1,8 +1,8 @@
 // Infrastructure: Server-side Data Access
 // サーバーサイドでの使用に適したデータアクセス関数
 
+import type { GradeValue } from "@/domain/value-objects/grade";
 import { container } from "@/infrastructure/container";
-import { GradeValue } from "@/domain/value-objects/grade";
 
 /**
  * サーバーコンポーネント用のデータ取得関数
@@ -43,7 +43,7 @@ export async function getServerCheckinHistory(params: {
 
 export async function getServerGuestDetailStats(
   guestId: string,
-  days: number = 30
+  days: number = 30,
 ) {
   const guestManagement = container.guestManagementUseCase;
   return await guestManagement.getGuestDetailStats(guestId, days);

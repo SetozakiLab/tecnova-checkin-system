@@ -1,21 +1,21 @@
 // Infrastructure: Dependency Injection Container
 // クリーンアーキテクチャの依存関係を管理
 
-import { IGuestRepository } from "@/domain/repositories/guest-repository";
-import { ICheckinRecordRepository } from "@/domain/repositories/checkin-record-repository";
-import { PrismaGuestRepository } from "@/infrastructure/repositories/prisma-guest-repository";
-import { PrismaCheckinRecordRepository } from "@/infrastructure/repositories/prisma-checkin-record-repository";
-import { GuestManagementUseCase } from "@/application/use-cases/guest-management";
 import { CheckinManagementUseCase } from "@/application/use-cases/checkin-management";
+import { GuestManagementUseCase } from "@/application/use-cases/guest-management";
+import type { ICheckinRecordRepository } from "@/domain/repositories/checkin-record-repository";
+import type { IGuestRepository } from "@/domain/repositories/guest-repository";
+import { PrismaCheckinRecordRepository } from "@/infrastructure/repositories/prisma-checkin-record-repository";
+import { PrismaGuestRepository } from "@/infrastructure/repositories/prisma-guest-repository";
 
 // シングルトンコンテナクラス
 class DIContainer {
   private static instance: DIContainer;
-  
+
   // Repository instances
   private _guestRepository?: IGuestRepository;
   private _checkinRecordRepository?: ICheckinRecordRepository;
-  
+
   // Use Case instances
   private _guestManagementUseCase?: GuestManagementUseCase;
   private _checkinManagementUseCase?: CheckinManagementUseCase;
@@ -49,7 +49,7 @@ class DIContainer {
     if (!this._guestManagementUseCase) {
       this._guestManagementUseCase = new GuestManagementUseCase(
         this.guestRepository,
-        this.checkinRecordRepository
+        this.checkinRecordRepository,
       );
     }
     return this._guestManagementUseCase;
@@ -59,7 +59,7 @@ class DIContainer {
     if (!this._checkinManagementUseCase) {
       this._checkinManagementUseCase = new CheckinManagementUseCase(
         this.guestRepository,
-        this.checkinRecordRepository
+        this.checkinRecordRepository,
       );
     }
     return this._checkinManagementUseCase;

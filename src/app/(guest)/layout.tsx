@@ -1,8 +1,8 @@
 "use client";
 
-import { ReactNode } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { usePathname } from "next/navigation";
+import type { ReactNode } from "react";
 
 import { GuestHeader } from "@/components/features";
 

@@ -1,4 +1,4 @@
-import useSWR, { SWRConfiguration, BareFetcher } from "swr";
+import useSWR, { type BareFetcher, type SWRConfiguration } from "swr";
 import { baseSWRConfig, swrFetcher } from "@/lib/swr";
 
 export interface TodayGuestItem {
@@ -28,7 +28,7 @@ export function useTodayGuests(date: string) {
   const { data, error, isLoading, mutate } = useSWR<TodayGuestItem[]>(
     key,
     fetcher,
-    config
+    config,
   );
   return {
     guests: data || [],

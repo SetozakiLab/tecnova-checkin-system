@@ -1,13 +1,13 @@
 import { differenceInMinutes } from "date-fns";
 import { prisma } from "./prisma";
-import { nowInJST, formatJSTDateTime, formatJSTTime } from "./timezone";
+import { formatJSTDateTime, formatJSTTime, nowInJST } from "./timezone";
 
 export function generateDisplayId(sequence: number): number {
   const now = nowInJST();
   const year = now.getFullYear().toString().slice(-2);
   const sequenceStr = sequence.toString().padStart(3, "0");
 
-  return parseInt(`${year}${sequenceStr}`);
+  return parseInt(`${year}${sequenceStr}`, 10);
 }
 
 export async function getNextSequenceForYear(year?: number): Promise<number> {
@@ -18,9 +18,10 @@ export async function getNextSequenceForYear(year?: number): Promise<number> {
   const maxDisplayId = await prisma.guest.findFirst({
     where: {
       displayId: {
-        gte: parseInt(`${yearPrefix}000`),
+        gte: parseInt(`${yearPrefix}000`, 10),
         lt: parseInt(
-          `${(parseInt(yearPrefix) + 1).toString().padStart(2, "0")}000`
+          `${(parseInt(yearPrefix, 10) + 1).toString().padStart(2, "0")}000`,
+          10,
         ),
       },
     },
@@ -40,7 +41,7 @@ export async function getNextSequenceForYear(year?: number): Promise<number> {
 
 export function formatStayDuration(
   checkinAt: Date,
-  checkoutAt?: Date | null
+  checkoutAt?: Date | null,
 ): string {
   const endTime = checkoutAt || new Date();
   const minutes = differenceInMinutes(endTime, checkinAt);

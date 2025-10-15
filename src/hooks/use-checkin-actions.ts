@@ -1,7 +1,7 @@
-import { useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useCallback } from "react";
+import type { CheckinData, GuestData } from "@/types/api";
 import { useApi } from "./use-api";
-import { GuestData, CheckinData } from "@/types/api";
 
 interface UseCheckinActionsReturn {
   loading: boolean;
@@ -31,7 +31,7 @@ export function useCheckinActions(): UseCheckinActionsReturn {
 
       return false;
     },
-    [execute, router]
+    [execute, router],
   );
 
   const handleCheckout = useCallback(
@@ -51,7 +51,7 @@ export function useCheckinActions(): UseCheckinActionsReturn {
 
       return false;
     },
-    [execute, router]
+    [execute, router],
   );
 
   return {

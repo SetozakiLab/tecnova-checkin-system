@@ -1,10 +1,10 @@
 // Common Components: Metric Card
 // ダッシュボード用の統計表示カード
 
+import type { LucideIcon } from "lucide-react";
+import type * as React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { LucideIcon } from "lucide-react";
-import * as React from "react";
 
 export interface MetricCardProps extends React.HTMLAttributes<HTMLDivElement> {
   title: string;
@@ -61,8 +61,8 @@ export function MetricCard({
   const styles = getVariantStyles(variant);
 
   return (
-    <Card 
-      className={cn(styles.card, className)} 
+    <Card
+      className={cn(styles.card, className)}
       data-slot="metric-card"
       {...props}
     >
@@ -70,35 +70,30 @@ export function MetricCard({
         <CardTitle className="text-sm font-medium text-muted-foreground">
           {title}
         </CardTitle>
-        {Icon && (
-          <Icon className={cn("h-4 w-4", styles.icon)} />
-        )}
+        {Icon && <Icon className={cn("h-4 w-4", styles.icon)} />}
       </CardHeader>
       <CardContent>
         <div className="space-y-1">
-          <div className={cn("text-3xl font-bold", styles.value)}>
-            {value}
-          </div>
-          
+          <div className={cn("text-3xl font-bold", styles.value)}>{value}</div>
+
           {subtitle && (
-            <p className="text-xs text-muted-foreground">
-              {subtitle}
-            </p>
+            <p className="text-xs text-muted-foreground">{subtitle}</p>
           )}
-          
+
           {trend && (
             <div className="flex items-center text-xs">
               <span
                 className={cn(
                   "font-medium",
-                  trend.isPositive !== false ? "text-success" : "text-destructive"
+                  trend.isPositive !== false
+                    ? "text-success"
+                    : "text-destructive",
                 )}
               >
-                {trend.isPositive !== false ? "+" : ""}{trend.value}
+                {trend.isPositive !== false ? "+" : ""}
+                {trend.value}
               </span>
-              <span className="text-muted-foreground ml-1">
-                {trend.label}
-              </span>
+              <span className="text-muted-foreground ml-1">{trend.label}</span>
             </div>
           )}
         </div>
@@ -137,7 +132,9 @@ export function AverageStayTimeCard({ minutes }: { minutes: number }) {
     }
     const hours = Math.floor(minutes / 60);
     const remainingMinutes = minutes % 60;
-    return remainingMinutes > 0 ? `${hours}時間${remainingMinutes}分` : `${hours}時間`;
+    return remainingMinutes > 0
+      ? `${hours}時間${remainingMinutes}分`
+      : `${hours}時間`;
   };
 
   return (

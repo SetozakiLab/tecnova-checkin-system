@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { ApiResponse } from "@/types/api";
 import { z } from "zod";
+import { authOptions } from "@/lib/auth";
 import { isDomainError } from "@/lib/errors";
+import type { ApiResponse } from "@/types/api";
 
 // ドメインエラーコード → HTTPステータス/メッセージマッピング
 const domainErrorMap: Record<string, { status: number; message: string }> = {
@@ -35,23 +35,23 @@ export interface ApiHandlerOptions {
 // 公開シグネチャはゆるく any を受け取り、内部で安全に絞り込む。ジェネリック利用時は
 // RouteContext<P> を想定するが、Next.js の型チェック回避のため公開型は緩める。
 export interface RouteContext<
-  P extends Record<string, string> = Record<string, string>
+  P extends Record<string, string> = Record<string, string>,
 > {
   params: P;
 }
 export type StrictApiHandler<P extends Record<string, string>> = (
   _request: NextRequest,
-  context: RouteContext<P>
+  context: RouteContext<P>,
 ) => Promise<NextResponse>;
 export type ApiHandler = (
   _request: NextRequest,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- framework provided dynamic context shape
-  context: any
+  context: any,
 ) => Promise<NextResponse>;
 
 // 認証チェックミドルウェア
 export async function requireAuth(
-  request: NextRequest
+  _request: NextRequest,
 ): Promise<NextResponse | null> {
   const session = await getServerSession(authOptions);
   if (!session) {
@@ -63,7 +63,7 @@ export async function requireAuth(
           message: "認証が必要です",
         },
       },
-      { status: 401 }
+      { status: 401 },
     );
   }
   return null; // 認証成功
@@ -81,7 +81,7 @@ export function checkMethod(allowedMethods: HTTPMethod[]) {
             message: `${request.method} メソッドは許可されていません`,
           },
         },
-        { status: 405 }
+        { status: 405 },
       );
     }
     return null; // メソッドチェック成功
@@ -91,7 +91,7 @@ export function checkMethod(allowedMethods: HTTPMethod[]) {
 // Zodバリデーションヘルパー
 export function validateRequest<T>(schema: z.ZodSchema<T>) {
   return async (
-    request: NextRequest
+    request: NextRequest,
   ): Promise<{ data: T } | { error: NextResponse }> => {
     try {
       const body = await request.json();
@@ -112,7 +112,7 @@ export function validateRequest<T>(schema: z.ZodSchema<T>) {
                 })),
               },
             },
-            { status: 400 }
+            { status: 400 },
           ),
         };
       }
@@ -125,7 +125,7 @@ export function validateRequest<T>(schema: z.ZodSchema<T>) {
               message: "リクエストボディの形式が正しくありません",
             },
           },
-          { status: 400 }
+          { status: 400 },
         ),
       };
     }
@@ -139,7 +139,7 @@ export function createErrorResponse(
   code: string,
   message: string,
   status: number = 500,
-  details?: ValidationDetail[]
+  details?: ValidationDetail[],
 ): NextResponse {
   const detailsArray = details && details.length > 0 ? details : undefined;
   return NextResponse.json<ApiResponse>(
@@ -151,7 +151,7 @@ export function createErrorResponse(
         ...(detailsArray ? { details: detailsArray } : {}),
       },
     },
-    { status }
+    { status },
   );
 }
 
@@ -159,7 +159,7 @@ export function createErrorResponse(
 export function createSuccessResponse<T>(
   data?: T,
   message?: string,
-  status: number = 200
+  status: number = 200,
 ): NextResponse {
   return NextResponse.json<ApiResponse<T>>(
     {
@@ -167,14 +167,14 @@ export function createSuccessResponse<T>(
       ...(data !== undefined && { data }),
       ...(message && { message }),
     },
-    { status }
+    { status },
   );
 }
 
 // 共通エラーハンドラー
 export function handleApiError(
   error: unknown,
-  operation: string
+  operation: string,
 ): NextResponse {
   console.error(`${operation} error:`, error);
 
@@ -186,7 +186,7 @@ export function handleApiError(
       error.errors.map((err) => ({
         field: err.path.join("."),
         message: err.message,
-      }))
+      })),
     );
   }
 
@@ -201,18 +201,18 @@ export function handleApiError(
 
   return createErrorResponse(
     "INTERNAL_SERVER_ERROR",
-    "サーバー内部エラーが発生しました"
+    "サーバー内部エラーが発生しました",
   );
 }
 
 // APIハンドラーラッパー
 export function withApiHandler<
-  P extends Record<string, string> = Record<string, string>
+  P extends Record<string, string> = Record<string, string>,
 >(handler: StrictApiHandler<P>, options: ApiHandlerOptions = {}): ApiHandler {
   return async (
     _request: NextRequest,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Next.js supplies context dynamically
-    context: any
+    context: any,
   ) => {
     try {
       if (options.allowedMethods) {

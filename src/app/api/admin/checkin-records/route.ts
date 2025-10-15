@@ -1,9 +1,9 @@
-import { NextRequest } from "next/server";
-import { withApiHandler, createSuccessResponse } from "@/lib/api-handler";
+import type { NextRequest } from "next/server";
+import { createSuccessResponse, withApiHandler } from "@/lib/api-handler";
 import {
+  type CheckinSearchParams,
   CheckinService,
   checkinSearchSchema,
-  CheckinSearchParams,
 } from "@/services/checkin.service";
 
 export const GET = withApiHandler(
@@ -23,5 +23,5 @@ export const GET = withApiHandler(
     const result = await CheckinService.getCheckinRecords(params);
     return createSuccessResponse(result);
   },
-  { requireAuth: true, allowedMethods: ["GET"] }
+  { requireAuth: true, allowedMethods: ["GET"] },
 );

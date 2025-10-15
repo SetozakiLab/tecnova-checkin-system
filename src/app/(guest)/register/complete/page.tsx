@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ApiResponse, GuestData } from "@/types/api";
+import type { ApiResponse, GuestData } from "@/types/api";
 
 function RegisterCompleteContent() {
   const searchParams = useSearchParams();
@@ -27,12 +27,12 @@ function RegisterCompleteContent() {
         const response = await fetch(`/api/guests/${guestId}`);
         const result: ApiResponse<GuestData> = await response.json();
 
-        if (!result.success) {
+        if (!result.success || !result.data) {
           setError("ゲスト情報の取得に失敗しました");
           return;
         }
 
-        setGuest(result.data!);
+        setGuest(result.data);
       } catch (err) {
         console.error("Fetch guest error:", err);
         setError("サーバーエラーが発生しました");

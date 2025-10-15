@@ -1,26 +1,25 @@
 "use client";
-import { useState, useId, useMemo } from "react";
-import { Label } from "@/components/ui/label";
-import {
-  GRADE_DEFINITIONS,
-  GradeValue,
-  formatGradeDisplay,
-} from "@/domain/value-objects/grade";
-import { cn } from "@/lib/utils";
+import { useId, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-} from "@/components/ui/popover";
-import {
   Command,
-  CommandInput,
-  CommandList,
   CommandEmpty,
   CommandGroup,
+  CommandInput,
   CommandItem,
+  CommandList,
 } from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  formatGradeDisplay,
+  GRADE_DEFINITIONS,
+  type GradeValue,
+} from "@/domain/value-objects/grade";
+import { cn } from "@/lib/utils";
 
 export interface GradeSelectProps {
   value: GradeValue | null | undefined;
@@ -60,7 +59,7 @@ export function GradeSelect({
             id={compId}
             className={cn(
               "w-full justify-between",
-              !value && "text-muted-foreground"
+              !value && "text-muted-foreground",
             )}
             disabled={disabled}
             aria-haspopup="listbox"

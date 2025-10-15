@@ -1,15 +1,15 @@
-import { NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
 import {
-  withApiHandler,
-  validateRequest,
   createSuccessResponse,
+  validateRequest,
+  withApiHandler,
 } from "@/lib/api-handler";
-import {
-  GuestService,
-  createGuestSchema,
-  CreateGuestData,
-} from "@/services/guest.service";
 import { CheckinService } from "@/services/checkin.service";
+import {
+  type CreateGuestData,
+  createGuestSchema,
+  GuestService,
+} from "@/services/guest.service";
 
 export const POST = withApiHandler(
   async (request: NextRequest) => {
@@ -24,5 +24,5 @@ export const POST = withApiHandler(
     await CheckinService.checkinGuest(guest.id);
     return createSuccessResponse(guest, "ゲストを登録しました", 201);
   },
-  { allowedMethods: ["POST"] }
+  { allowedMethods: ["POST"] },
 );

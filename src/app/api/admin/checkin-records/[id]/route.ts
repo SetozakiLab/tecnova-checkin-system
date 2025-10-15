@@ -1,13 +1,13 @@
-import { NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import {
-  withApiHandler,
-  createSuccessResponse,
-  createErrorResponse,
-} from "@/lib/api-handler";
-import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import {
+  createErrorResponse,
+  createSuccessResponse,
+  withApiHandler,
+} from "@/lib/api-handler";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
 // 入退場時刻編集用スキーマ
 const updateCheckinRecordSchema = z.object({
@@ -37,7 +37,7 @@ export const PATCH = withApiHandler<{ id: string }>(
         parsed.error.errors.map((e) => ({
           field: e.path.join("."),
           message: e.message,
-        }))
+        })),
       );
     }
 
@@ -62,7 +62,7 @@ export const PATCH = withApiHandler<{ id: string }>(
         ? new Date(parsed.data.checkoutAt)
         : null;
       // checkoutAt が null なら isActive を true に戻す / 値があれば false
-      data.isActive = data.checkoutAt ? false : true;
+      data.isActive = !data.checkoutAt;
     }
 
     if (Object.keys(data).length === 0) {
@@ -77,7 +77,7 @@ export const PATCH = withApiHandler<{ id: string }>(
       return createErrorResponse(
         "INVALID_RANGE",
         "チェックアウト時刻がチェックイン時刻より前です",
-        400
+        400,
       );
     }
 
@@ -97,10 +97,10 @@ export const PATCH = withApiHandler<{ id: string }>(
         checkoutAt: updated.checkoutAt?.toISOString() || null,
         isActive: updated.isActive,
       },
-      "入退場記録を更新しました"
+      "入退場記録を更新しました",
     );
   },
-  { requireAuth: true, allowedMethods: ["PATCH"] }
+  { requireAuth: true, allowedMethods: ["PATCH"] },
 );
 
 export const DELETE = withApiHandler<{ id: string }>(
@@ -120,7 +120,7 @@ export const DELETE = withApiHandler<{ id: string }>(
       return createErrorResponse(
         "FORBIDDEN",
         "この操作を行う権限がありません",
-        403
+        403,
       );
     }
 
@@ -133,5 +133,5 @@ export const DELETE = withApiHandler<{ id: string }>(
     await prisma.checkinRecord.delete({ where: { id } });
     return createSuccessResponse(null, "入退場記録を削除しました");
   },
-  { requireAuth: true, allowedMethods: ["DELETE"] }
+  { requireAuth: true, allowedMethods: ["DELETE"] },
 );

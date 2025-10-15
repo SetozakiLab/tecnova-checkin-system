@@ -1,13 +1,12 @@
 "use client";
 
+import { Home, ShieldCheck } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { Home, ShieldCheck } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
-import { useGuestSoundEffects } from "@/hooks/use-guest-sound-effects";
-import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { useGuestSoundEffects } from "@/hooks/use-guest-sound-effects";
 
 export function GuestHeader() {
   const { playClick } = useGuestSoundEffects();

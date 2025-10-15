@@ -1,7 +1,7 @@
 // Domain Entity: Guest
 // ゲストドメインエンティティ - ビジネスルールと不変条件を含む
 
-import { GradeValue } from "@/domain/value-objects/grade";
+import type { GradeValue } from "@/domain/value-objects/grade";
 
 export interface GuestEntity {
   readonly id: string;
@@ -39,23 +39,32 @@ export class GuestDomainService {
   /**
    * 連絡先のバリデーション
    */
-  static validateContact(contact?: string): { isValid: boolean; error?: string } {
+  static validateContact(contact?: string): {
+    isValid: boolean;
+    error?: string;
+  } {
     if (!contact || contact.trim().length === 0) {
       return { isValid: true }; // 連絡先は任意
     }
-    
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(contact)) {
-      return { isValid: false, error: "有効なメールアドレスを入力してください" };
+      return {
+        isValid: false,
+        error: "有効なメールアドレスを入力してください",
+      };
     }
-    
+
     return { isValid: true };
   }
 
   /**
    * ゲストがチェックイン可能かどうかを判定
    */
-  static canCheckin(guest: GuestWithStatus): { canCheckin: boolean; reason?: string } {
+  static canCheckin(guest: GuestWithStatus): {
+    canCheckin: boolean;
+    reason?: string;
+  } {
     if (guest.isCurrentlyCheckedIn) {
       return { canCheckin: false, reason: "既にチェックイン済みです" };
     }
@@ -65,7 +74,10 @@ export class GuestDomainService {
   /**
    * ゲストがチェックアウト可能かどうかを判定
    */
-  static canCheckout(guest: GuestWithStatus): { canCheckout: boolean; reason?: string } {
+  static canCheckout(guest: GuestWithStatus): {
+    canCheckout: boolean;
+    reason?: string;
+  } {
     if (!guest.isCurrentlyCheckedIn) {
       return { canCheckout: false, reason: "チェックインしていません" };
     }

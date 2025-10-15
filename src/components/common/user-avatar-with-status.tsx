@@ -1,12 +1,13 @@
 // Common Components: User Avatar with Status
 // ゲスト情報と状態を表示するアバターコンポーネント
 
+import type * as React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { cn } from "@/lib/utils";
-import * as React from "react";
 
-export interface UserAvatarWithStatusProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface UserAvatarWithStatusProps
+  extends React.HTMLAttributes<HTMLDivElement> {
   name: string;
   displayId?: number;
   grade?: string | null;
@@ -48,7 +49,7 @@ export function UserAvatarWithStatus({
   };
 
   return (
-    <div 
+    <div
       className={cn("flex items-center gap-3", className)}
       data-slot="user-avatar-with-status"
       {...props}
@@ -61,7 +62,7 @@ export function UserAvatarWithStatus({
             {getInitials(name)}
           </AvatarFallback>
         </Avatar>
-        
+
         {/* Active status indicator */}
         {isActive && (
           <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-success border-2 border-background rounded-full" />
@@ -84,17 +85,20 @@ export function UserAvatarWithStatus({
         {/* Status and Grade Badges */}
         <div className="flex items-center gap-2 flex-wrap">
           {showStatus && (
-            <StatusBadge 
-              status={isActive ? "active" : "inactive"} 
-              size="sm"
-            >
+            <StatusBadge status={isActive ? "active" : "inactive"} size="sm">
               {isActive ? "滞在中" : "退場済み"}
             </StatusBadge>
           )}
-          
+
           {showGrade && grade && (
-            <StatusBadge 
-              status={grade.startsWith("ES") ? "info" : grade.startsWith("JH") ? "pending" : "active"} 
+            <StatusBadge
+              status={
+                grade.startsWith("ES")
+                  ? "info"
+                  : grade.startsWith("JH")
+                    ? "pending"
+                    : "active"
+              }
               size="sm"
             >
               {grade}
