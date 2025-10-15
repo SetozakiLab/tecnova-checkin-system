@@ -36,7 +36,7 @@ export default function RootLayout({
   return (
     <html lang="ja" suppressHydrationWarning>
       <body
-        className={`${notoSans.variable} ${roboto.variable} ${robotoMono.variable} antialiased`}
+				className={`${notoSans.variable} ${roboto.variable} ${robotoMono.variable} antialiased touch-pan-y`}
       >
         <SessionProvider>{children}</SessionProvider>
       </body>
