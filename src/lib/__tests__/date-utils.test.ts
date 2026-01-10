@@ -10,10 +10,10 @@ beforeEach(() => {
 });
 
 describe("generateDisplayId", () => {
-  it("シーケンス番号を3桁ゼロ埋めし 下2桁の年を先頭に結合する", () => {
+  it("シーケンス番号を3桁ゼロ埋めし 下2桁の年度を先頭に結合する", () => {
     const id = generateDisplayId(7);
-    // 2025年 => '25' + '007'
-    expect(id).toBe(25007);
+    // 2025年1月 => 2024年度 => '24' + '007'
+    expect(id).toBe(24007);
   });
 });
 

@@ -411,8 +411,8 @@ export class GuestService {
 
   // ユニークなdisplayIdを生成
   private static async generateUniqueDisplayId(): Promise<number> {
-    const currentYear = new Date().getFullYear();
-    const sequence = await getNextSequenceForYear(currentYear);
+    // 年度ベースでシーケンスを取得（getNextSequenceForYear()は年度を自動計算）
+    const sequence = await getNextSequenceForYear();
 
     if (sequence > 999) {
       throw new Error("SEQUENCE_LIMIT_EXCEEDED");
