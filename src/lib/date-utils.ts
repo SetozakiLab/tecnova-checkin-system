@@ -2,27 +2,51 @@ import { differenceInMinutes } from "date-fns";
 import { prisma } from "./prisma";
 import { formatJSTDateTime, formatJSTTime, nowInJST } from "./timezone";
 
+/**
+ * 与えられた日付から年度を計算します
+ * 4月～12月は当年度、1月～3月は前年度
+ * @param date - 対象日付（デフォルトは現在）
+ * @returns 年度の下2桁（例：25は2025年度）
+ */
+export function getAcademicYear(date: Date = nowInJST()): string {
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1; // getMonth()は0-11なので+1
+
+  // 1月～3月は前年度
+  if (month < 4) {
+    return (year - 1).toString().slice(-2);
+  }
+
+  // 4月～12月は当年度
+  return year.toString().slice(-2);
+}
+
 export function generateDisplayId(sequence: number): number {
   const now = nowInJST();
-  const year = now.getFullYear().toString().slice(-2);
+  const yearCode = getAcademicYear(now);
   const sequenceStr = sequence.toString().padStart(3, "0");
 
-  return parseInt(`${year}${sequenceStr}`, 10);
+  return parseInt(`${yearCode}${sequenceStr}`, 10);
 }
 
 export async function getNextSequenceForYear(year?: number): Promise<number> {
-  const targetYear = year || nowInJST().getFullYear();
-  const yearPrefix = targetYear.toString().slice(-2);
+  // 年度コードを取得
+  let academicYearCode: string;
+  if (year) {
+    academicYearCode = year.toString().slice(-2);
+  } else {
+    academicYearCode = getAcademicYear();
+  }
 
-  // 該当年のdisplayIdの最大値を取得
+  const yearCodeNum = parseInt(academicYearCode, 10);
+  const nextYearCode = ((yearCodeNum + 1) % 100).toString().padStart(2, "0");
+
+  // 該当年度のdisplayIdの最大値を取得
   const maxDisplayId = await prisma.guest.findFirst({
     where: {
       displayId: {
-        gte: parseInt(`${yearPrefix}000`, 10),
-        lt: parseInt(
-          `${(parseInt(yearPrefix, 10) + 1).toString().padStart(2, "0")}000`,
-          10,
-        ),
+        gte: parseInt(`${academicYearCode}000`, 10),
+        lt: parseInt(`${nextYearCode}000`, 10),
       },
     },
     orderBy: {
@@ -31,7 +55,7 @@ export async function getNextSequenceForYear(year?: number): Promise<number> {
   });
 
   if (!maxDisplayId) {
-    return 1; // 該当年の最初のゲスト
+    return 1; // 該当年度の最初のゲスト
   }
 
   // 現在の最大displayIdから連番部分を抽出
